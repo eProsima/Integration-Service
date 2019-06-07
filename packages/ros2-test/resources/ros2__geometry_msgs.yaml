@@ -1,0 +1,17 @@
+systems:
+  ros2: { type: ros2 }
+  mock: { type: mock }
+
+routes:
+  mock_to_ros2: { from: mock, to: ros2 }
+  ros2_to_mock: { from: ros2, to: mock }
+  mock_srv: { server: mock, clients: ros2 }
+  ros2_srv: { server: ros2, clients: mock }
+
+topics:
+  transmit_pose: { type: "geometry_msgs/Pose", route: ros2_to_mock }
+  echo_pose: { type: "geometry_msgs/Pose", route: mock_to_ros2 }
+
+services:
+  get_plan: { type: "nav_msgs/GetPlan", route: ros2_srv }
+  echo_plan: { type: "nav_msgs/GetPlan", route: mock_srv }

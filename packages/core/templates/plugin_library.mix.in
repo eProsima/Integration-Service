@@ -1,0 +1,1 @@
+dl: "@plugin_library_directory@/$<TARGET_SONAME_FILE_NAME:@plugin_library_target@>"

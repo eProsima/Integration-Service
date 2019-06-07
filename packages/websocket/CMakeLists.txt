@@ -1,0 +1,80 @@
+cmake_minimum_required(VERSION 3.5.0)
+
+project(soss-websocket)
+
+if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+endif()
+
+find_package(soss-core REQUIRED)
+find_package(soss-json REQUIRED)
+
+if(NOT CMAKE_CXX_STANDARD)
+  # TODO(MXG): Remove this block and use target_compile_features(~)
+  # instead when we no longer need to support Ubuntu 16.04.
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+include(GNUInstallDirs)
+
+find_package(websocketpp QUIET)
+
+if(NOT WEBSOCKETPP_FOUND)
+
+  message("Could not find package [websocketpp] -- we will skip configuring [soss-websocket]")
+  return()
+
+endif()
+
+find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
+
+message(STATUS "Configuring [soss-websocket]")
+
+add_library(soss-websocket SHARED
+  src/Client.cpp
+  src/Endpoint.cpp
+  src/JwtValidator.cpp
+  src/rosbridge_v2_encoding.cpp
+  src/Server.cpp
+  src/ServerConfig.cpp
+  src/ServiceProvider.cpp
+  src/TopicPublisher.cpp
+)
+
+target_link_libraries(soss-websocket
+  PRIVATE
+    soss::core
+    soss::json
+    OpenSSL::SSL
+    Boost::system
+)
+
+target_include_directories(soss-websocket
+  PRIVATE
+    ${WEBSOCKETPP_INCLUDE_DIR}
+    OpenSSL::SSL
+  PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cpp-jwt-v1.1.1/include>
+  INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+)
+
+
+###############################
+# Install soss-websocket
+soss_install_middleware_plugin(
+  MIDDLEWARE websocket
+  TARGET soss-websocket
+  TYPES websocket_client websocket_server
+)
+
+include(CTest)
+
+if(BUILD_TESTING)
+  add_subdirectory(unit-test)
+endif()

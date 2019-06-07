@@ -1,0 +1,21 @@
+systems:
+  ws_server: { type: websocket_server, port: 12345, cert: share/websocket-server-test/certs/websocket_server_test.crt, key: share/websocket-server-test/certs/websocket_server_test.key,
+  authentication:
+  {
+    policies:
+    [
+      {
+        secret: soss-websocket-test,
+        algo: HS256
+      }
+    ]
+  }}
+  mock: { type: mock }
+
+routes:
+  mock_to_server: { from: mock, to: ws_server }
+  server_to_mock: { from: ws_server, to: mock }
+
+topics:
+  client_to_server: { type: "websocket_test/ClientToServer", route: server_to_mock }
+  server_to_client: { type: "websocket_test/ServerToClient", route: mock_to_server }

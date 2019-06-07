@@ -1,0 +1,57 @@
+cmake_minimum_required(VERSION 3.5.0)
+
+project(soss-ros2-test)
+
+# Get soss dependencies
+find_package(soss-core REQUIRED)
+find_package(soss-mock REQUIRED)
+find_package(soss-rosidl REQUIRED)
+find_package(soss-ros2 REQUIRED)
+
+# Get message dependencies
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(test_msgs REQUIRED)
+
+soss_rosidl_mix(
+  PACKAGES geometry_msgs nav_msgs test_msgs
+  MIDDLEWARES ros2
+)
+
+add_executable(soss-ros2-test
+  main.cpp
+  integration/ros2__geometry_msgs.cpp
+  integration/ros2__test_msgs.cpp
+)
+
+set(thirdparty_dir "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty")
+
+list(APPEND CMAKE_MODULE_PATH "${thirdparty_dir}/catch2/cmake")
+
+include(CTest)
+include(Catch)
+catch_discover_tests(soss-ros2-test)
+
+target_link_libraries(soss-ros2-test
+  PRIVATE
+    soss::mock
+    soss::ros2
+    ${geometry_msgs_LIBRARIES}
+    ${nav_msgs_LIBRARIES}
+    ${test_msgs_LIBRARIES}
+)
+
+target_include_directories(soss-ros2-test
+  PRIVATE
+    "${thirdparty_dir}/catch2/include"
+    ${geometry_msgs_INCLUDE_DIRS}
+    ${nav_msgs_INCLUDE_DIRS}
+    ${test_msgs_INCLUDE_DIRS}
+)
+
+target_compile_definitions(soss-ros2-test
+  PRIVATE
+    "ROS2__GEOMETRY_MSGS__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/ros2__geometry_msgs.yaml\""
+    "ROS2__TEST_MSGS__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/ros2__test_msgs.yaml\""
+    "ROS2__ROSIDL__BUILD_DIR=\"${CMAKE_BINARY_DIR}/soss/rosidl/ros2/lib\""
+)
