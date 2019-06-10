@@ -1,5 +1,5 @@
 systems:
-  ws_server: { type: websocket_server, port: 12345, cert: share/websocket-server-test/certs/websocket_server_test.crt, key: share/websocket-server-test/certs/websocket_server_test.key,
+  ws_server: { type: websocket_server, port: 12345, cert: certs/websocket_test.crt, key: certs/websocket_test.key,
   authentication:
   {
     policies:

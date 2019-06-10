@@ -44,10 +44,12 @@ static std::string find_websocket_config_file(
     const std::string& config_key,
     const std::string& explanation)
 {
-  soss::Search search(WebsocketMiddlewareName);
+  const soss::Search search = soss::Search(WebsocketMiddlewareName)
+      .relative_to_config()
+      .relative_to_home();
 
-  const YAML::Node cert = configuration[config_key];
-  if(!cert)
+  const YAML::Node node = configuration[config_key];
+  if(!node)
   {
     std::cerr << "[soss::websocket::Server] websocket_server is missing a "
               << "value for the required parameter [" << config_key
@@ -55,19 +57,24 @@ static std::string find_websocket_config_file(
     return {};
   }
 
-  // Add the home directory as a fallback middleware prefix for searching for
-  // certificate files.
-  const char* var_value = getenv(HomeEnvVar.c_str());
-  if(var_value)
-    search.add_fallback_middleware_prefix(var_value);
+  std::vector<std::string> checked_paths;
 
-  const std::string& parameter = cert.as<std::string>();
-  const std::string& result = search.find_file(parameter);
+  const std::string& parameter = node.as<std::string>();
+  const std::string& result = search.find_file(parameter, "", &checked_paths);
   if(result.empty())
   {
-    std::cerr << "[soss::websocket::Server] websocket_server failed to find "
-              << "the specified file for the [" << config_key << "] parameter: "
-              << parameter << std::endl;
+    std::string err = std::string()
+        + "[soss::websocket::Server] websocket_server failed to find the "
+        + "specified file for the [" + config_key + "] parameter: [" +parameter
+        + "]. Checked the following paths:\n";
+    for(const std::string& checked_path : checked_paths)
+      err += " -- " + checked_path + "\n";
+    std::cerr << err << std::endl;
+  }
+  else
+  {
+    std::cout << "[soss::websocket::Server] For [" << config_key << "] using ["
+              << result << "]" << std::endl;
   }
 
   return result;

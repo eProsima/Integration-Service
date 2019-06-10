@@ -200,6 +200,17 @@ public:
   /// \returns a reference to this same Search instance.
   Search& relative_to_config(bool toggle=true);
 
+  /// \brief Use this to toggle whether the Search should check for files
+  /// relative to the user's home directory.
+  ///
+  /// By default this behavior is turned off.
+  ///
+  /// The home directory will be treated as a middleware prefix whose priority
+  /// is the same as the relative_to_config() priority, except
+  /// relative_to_config() will have higher priority if both are activated at
+  /// the same time.
+  Search& relative_to_home(bool toggle=true);
+
   /// \brief Use this to toggle whether system prefixes should be ignored. Note
   /// that this has some overlap with the ignore_soss_prefixes option.
   ///

@@ -232,11 +232,33 @@ public:
   Implementation(
       const YAML::Node& config_node,
       const std::vector<std::string>& soss_prefixes,
-      const MiddlewarePrefixPathMap& middleware_prefixes)
-    : _config_file("<internal>")
+      const MiddlewarePrefixPathMap& middleware_prefixes,
+      const std::string& config_file = "")
   {
     register_prefixes(soss_prefixes, middleware_prefixes);
     _run_instance = parse_configuration(config_node);
+
+    if(config_file.empty())
+    {
+      _config_file = "<internal>";
+    }
+    else
+    {
+      _config_file = config_file;
+      const auto abs_config_path = filesystem::absolute(config_file);
+      if(filesystem::exists(abs_config_path))
+      {
+        Search::Implementation::set_config_file_directory(
+              abs_config_path.parent_path());
+      }
+      else
+      {
+        std::cerr << "[soss::Instance] WARNING: Could not locate the "
+                  << "config-file [" << _config_file << "]. This will make it "
+                  << "impossible for plugins to search for files relative to "
+                  << "the input config-file." << std::endl;
+      }
+    }
   }
 
   bool parse_arguments(int argc, char* argv[])
@@ -512,6 +534,18 @@ Instance::Instance(
 }
 
 //==============================================================================
+Instance::Instance(
+    const std::string& config_file_path,
+    const std::vector<std::string>& soss_prefixes,
+    const MiddlewarePrefixPathMap& middleware_prefixes)
+  : _pimpl(new Implementation(YAML::LoadFile(config_file_path),
+                              soss_prefixes, middleware_prefixes,
+                              config_file_path))
+{
+  // Do nothing
+}
+
+//==============================================================================
 InstanceHandle Instance::run()
 {
   return _pimpl->run();
@@ -536,6 +570,15 @@ InstanceHandle run_instance(
     const MiddlewarePrefixPathMap& middleware_prefixes)
 {
   return Instance(config_node, soss_prefixes, middleware_prefixes).run();
+}
+
+//==============================================================================
+InstanceHandle run_instance(
+    const std::string& config_file_path,
+    const std::vector<std::string>& soss_prefixes,
+    const MiddlewarePrefixPathMap& middleware_prefixes)
+{
+  return Instance(config_file_path, soss_prefixes, middleware_prefixes).run();
 }
 
 } // namespace soss

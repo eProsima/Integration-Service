@@ -65,6 +65,8 @@ public:
 
   void search_relative_to_config(bool toggle);
 
+  void search_relative_to_home(bool toggle);
+
   void search_system_prefixes(bool toggle);
 
   void search_soss_prefixes(bool toggle);
@@ -147,6 +149,9 @@ private:
 
   // Fallback middleware prefixes set by the user of the Search object
   PathSet _fallback_middleware_prefixes;
+
+  // Home directory prefix
+  PathSet _home_prefix;
 
 };
 

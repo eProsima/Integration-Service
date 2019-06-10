@@ -99,6 +99,13 @@ public:
            const std::vector<std::string>& soss_prefixes,
            const MiddlewarePrefixPathMap& middleware_prefixes);
 
+  /// \brief Create a soss instance
+  ///
+  /// Explicitly set the relevant properties
+  Instance(const std::string& config_file_path,
+           const std::vector<std::string>& soss_prefixes,
+           const MiddlewarePrefixPathMap& middleware_prefixes);
+
   /// \brief Run the soss instance in its own thread. The handle will allow you
   /// to wait on that thread or instruct it to quit. The handle uses RAII, so
   /// the instance will stop running automatically if the InstanceHandle dies.
@@ -132,6 +139,14 @@ InstanceHandle run_instance(int argc, char* argv[]);
 /// Create a soss instance for the specified YAML and run it in its own thread
 InstanceHandle run_instance(
     const YAML::Node& config_node,
+    const std::vector<std::string>& soss_prefixes = {},
+    const MiddlewarePrefixPathMap& middleware_prefixes = {});
+
+//==============================================================================
+/// Create a soss instance for the specified config file and run it in its own
+/// thread
+InstanceHandle run_instance(
+    const std::string& config_file_path,
     const std::vector<std::string>& soss_prefixes = {},
     const MiddlewarePrefixPathMap& middleware_prefixes = {});
 

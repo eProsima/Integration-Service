@@ -26,6 +26,8 @@
 
 namespace soss {
 
+const std::string HomeEnvVar = "HOME";
+
 namespace filesystem = std::experimental::filesystem;
 
 //==============================================================================
@@ -109,26 +111,33 @@ Search::Implementation::Implementation(const std::string& middleware)
   // Search object, so we re-check these each time a Search instance is created.
 
   // Add LD_LIBRARY_PATH values first because they are the lowest priority
-  std::vector<std::string> ld_library_paths =
+  const std::vector<std::string> ld_library_paths =
       get_environment_variable_path_list("LD_LIBRARY_PATH");
   for(auto it = ld_library_paths.rbegin(); it != ld_library_paths.rend(); ++it)
     _env_soss_prefixes.add_path(*it);
 
   // The explicitly set SOSS_PREFIX_PATH has a higher priority than
   // LD_LIBRARY_PATH so we add that next.
-  std::vector<std::string> soss_prefix_path =
+  const std::vector<std::string> soss_prefix_path =
       get_environment_variable_path_list("SOSS_PREFIX_PATH");
   for(auto it = soss_prefix_path.rbegin(); it != soss_prefix_path.rend(); ++it)
     _env_soss_prefixes.add_path(*it);
 
   // Now we get the paths specific to this middleware and add it to the
   // environment middleware paths.
-  std::vector<std::string> mw_prefix_paths =
+  const std::vector<std::string> mw_prefix_paths =
       get_environment_variable_path_list(
         "SOSS_"+to_env_format(middleware)+"_PREFIX_PATH");
 
   for(auto it = mw_prefix_paths.rbegin(); it != mw_prefix_paths.rend(); ++it)
     _env_middleware_prefixes.add_path(*it);
+
+  // Add the home path based on the $HOME environment variable, but set it to
+  // inactive by default.
+  _home_prefix.active = false;
+  const char* home_path = getenv(HomeEnvVar.c_str());
+  if(home_path)
+    _home_prefix.add_path(home_path);
 }
 
 //==============================================================================
@@ -151,6 +160,9 @@ std::string Search::Implementation::find_file(
     const std::string& subdir,
     std::vector<std::string>& checked_paths) const
 {
+  if(filename.at(0) == '/')
+    return filename;
+
   auto check_and_append = [&](
       const filesystem::path test) -> bool
   {
@@ -164,6 +176,7 @@ std::string Search::Implementation::find_file(
           _global_paths.get_cli_middleware_prefixes(_middleware),
           _env_middleware_prefixes,
           _global_paths.config_file_prefix,
+          _home_prefix,
           _fallback_middleware_prefixes
         })
   {
@@ -296,6 +309,12 @@ std::string Search::Implementation::find_middleware_mix(
 void Search::Implementation::search_relative_to_config(bool toggle)
 {
   _global_paths.config_file_prefix.active = toggle;
+}
+
+//==============================================================================
+void Search::Implementation::search_relative_to_home(bool toggle)
+{
+  _home_prefix.active = toggle;
 }
 
 //==============================================================================
@@ -499,6 +518,13 @@ std::string Search::find_file(
 Search& Search::relative_to_config(bool toggle)
 {
   _pimpl->search_relative_to_config(toggle);
+  return *this;
+}
+
+//==============================================================================
+Search& Search::relative_to_home(bool toggle)
+{
+  _pimpl->search_relative_to_home(toggle);
   return *this;
 }
 

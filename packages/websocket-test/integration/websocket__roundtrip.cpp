@@ -27,14 +27,12 @@ TEST_CASE("Transmit and receive all test messages", "[websocket]")
 {
   using namespace std::chrono_literals;
 
-  const YAML::Node server_config_node =
-      YAML::LoadFile(WEBSOCKET__ROUNDTRIP_SERVER__TEST_CONFIG);
-  soss::InstanceHandle server_handle = soss::run_instance(server_config_node);
+  soss::InstanceHandle server_handle =
+      soss::run_instance(WEBSOCKET__ROUNDTRIP_SERVER__TEST_CONFIG);
   REQUIRE(server_handle);
 
-  const YAML::Node client_config_node =
-      YAML::LoadFile(WEBSOCKET__ROUNDTRIP_CLIENT__TEST_CONFIG);
-  soss::InstanceHandle client_handle = soss::run_instance(client_config_node);
+  soss::InstanceHandle client_handle =
+      soss::run_instance(WEBSOCKET__ROUNDTRIP_CLIENT__TEST_CONFIG);
   REQUIRE(client_handle);
 
   std::cout << " -- Waiting to make sure the client has time to connect"

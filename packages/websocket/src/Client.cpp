@@ -17,6 +17,8 @@
 
 #include "Endpoint.hpp"
 
+#include <soss/Search.hpp>
+
 #include <chrono>
 #include <thread>
 #include <unordered_map>
@@ -26,9 +28,12 @@
 namespace soss {
 namespace websocket {
 
+const std::string WebsocketMiddlewareName = "websocket";
 const std::string YamlClientTokenKey = "token";
 const std::string WebsocketUriPrefix = "wss://";
 const std::string DefaultHostname = "localhost";
+
+const std::string YamlCertAuthoritiesKey = "cert_authorities";
 
 const std::string YamlAuthKey = "authentication";
 const std::string YamlJwtTokenKey = "jwt_secret";
@@ -70,13 +75,27 @@ public:
     if (auth_node)
       _load_auth_config(auth_node);
 
-    if(!configure_client(hostname, static_cast<uint16_t>(port)))
+    const std::vector<std::string> extra_ca = [&]()
+    {
+      std::vector<std::string> extra_ca;
+      const YAML::Node cert_authorities_node =
+          configuration[YamlCertAuthoritiesKey];
+      for(const auto node : cert_authorities_node)
+        extra_ca.push_back(node.as<std::string>());
+
+      return extra_ca;
+    }();
+
+    if(!configure_client(hostname, static_cast<uint16_t>(port), extra_ca))
       return nullptr;
 
     return &_client;
   }
 
-  bool configure_client(const std::string& hostname, const uint16_t port)
+  bool configure_client(
+      const std::string& hostname,
+      const uint16_t port,
+      const std::vector<std::string>& extra_certificate_authorities)
   {
     _host_uri = WebsocketUriPrefix + hostname + ":" + std::to_string(port);
 
@@ -90,6 +109,47 @@ public:
       std::cerr << "[soss::websocket::Client] Failed to load the default "
                 << "certificate authorities: " << ec.message() << std::endl;
       return false;
+    }
+
+    if(!extra_certificate_authorities.empty())
+    {
+      soss::Search ca_search = soss::Search(WebsocketMiddlewareName)
+          .relative_to_config()
+          .relative_to_home();
+      std::vector<std::string> checked_paths;
+
+      for(const std::string& ca_file_name : extra_certificate_authorities)
+      {
+        checked_paths.clear();
+
+        const std::string ca_file_path =
+            ca_search.find_file(ca_file_name, "", &checked_paths);
+
+        if(ca_file_path.empty())
+        {
+          std::string err = std::string()
+              + "[soss::websocket::Client] Could not find the specified "
+              + "certificate authority [" + ca_file_name + "]. The following "
+              + "paths were checked:\n";
+
+          for(const std::string& checked_path : checked_paths)
+            err += " -- " + checked_path + "\n";
+
+          std::cerr << err << std::endl;
+          return false;
+        }
+
+        _context->load_verify_file(ca_file_path, ec);
+        if(ec)
+        {
+          std::cerr << "[soss::websocket::Client] Failed to load the specified "
+                    << "certificate authority: " << ca_file_path << std::endl;
+          return false;
+        }
+
+        std::cout << "[soss::websocket::Client] Using an extra certificate "
+                  << "authority [" << ca_file_path << "]" << std::endl;
+      }
     }
 
     _context->set_verify_mode(boost::asio::ssl::context::verify_peer, ec);
