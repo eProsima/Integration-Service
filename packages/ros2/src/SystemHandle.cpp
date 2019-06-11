@@ -77,9 +77,9 @@ bool SystemHandle::configure(
   bool success = true;
   argv[0] = "soss";
 
-  if (!rclcpp::is_initialized())
+  if(!rclcpp::is_initialized())
   {
-      rclcpp::init(argc, argv);
+    rclcpp::init(argc, argv);
   }
 
   std::string ns = "";
@@ -96,29 +96,29 @@ bool SystemHandle::configure(
 
   if(const YAML::Node domain_node = configuration["domain"])
   {
-      std::string previous_domain;
-      if (getenv("ROS_DOMAIN_ID") != nullptr)
-      {
-        previous_domain = getenv("ROS_DOMAIN_ID");
-      }
+    std::string previous_domain;
+    if(getenv("ROS_DOMAIN_ID") != nullptr)
+    {
+      previous_domain = getenv("ROS_DOMAIN_ID");
+    }
 
-      std::string domain = domain_node.as<std::string>();
-      success += setenv("ROS_DOMAIN_ID", domain.c_str(), true);
+    std::string domain = domain_node.as<std::string>();
+    success += setenv("ROS_DOMAIN_ID", domain.c_str(), true);
 
-      _node = std::make_shared<rclcpp::Node>(name, ns);
+    _node = std::make_shared<rclcpp::Node>(name, ns);
 
-      if (previous_domain.empty())
-      {
-          success += unsetenv("ROS_DOMAIN_ID");
-      }
-      else
-      {
-          success += setenv("ROS_DOMAIN_ID", previous_domain.c_str(), true);
-      }
+    if(previous_domain.empty())
+    {
+        success += unsetenv("ROS_DOMAIN_ID");
+    }
+    else
+    {
+        success += setenv("ROS_DOMAIN_ID", previous_domain.c_str(), true);
+    }
   }
   else
   {
-      _node = std::make_shared<rclcpp::Node>(name, ns);
+    _node = std::make_shared<rclcpp::Node>(name, ns);
   }
 
   // TODO(MXG): Allow the type of executor to be specified by the configuration
