@@ -74,8 +74,13 @@ bool SystemHandle::configure(
 {
   const int argc = 1;
   const char* argv[argc];
+  bool success = true;
   argv[0] = "soss";
-  rclcpp::init(argc, argv);
+
+  if (!rclcpp::is_initialized())
+  {
+      rclcpp::init(argc, argv);
+  }
 
   std::string ns = "";
   if(const YAML::Node namespace_node = configuration["namespace"])
@@ -83,12 +88,41 @@ bool SystemHandle::configure(
     ns = namespace_node.as<std::string>("");
   }
 
-  _node = std::make_shared<rclcpp::Node>("soss_ros2", ns);
+  std::string name = "soss_ros2";
+  if(const YAML::Node name_node = configuration["node_name"])
+  {
+    name = name_node.as<std::string>("");
+  }
+
+  if(const YAML::Node domain_node = configuration["domain"])
+  {
+      std::string previous_domain;
+      if (getenv("ROS_DOMAIN_ID") != nullptr)
+      {
+        previous_domain = getenv("ROS_DOMAIN_ID");
+      }
+
+      std::string domain = domain_node.as<std::string>();
+      success += setenv("ROS_DOMAIN_ID", domain.c_str(), true);
+
+      _node = std::make_shared<rclcpp::Node>(name, ns);
+
+      if (previous_domain.empty())
+      {
+          success += unsetenv("ROS_DOMAIN_ID");
+      }
+      else
+      {
+          success += setenv("ROS_DOMAIN_ID", previous_domain.c_str(), true);
+      }
+  }
+  else
+  {
+      _node = std::make_shared<rclcpp::Node>(name, ns);
+  }
 
   // TODO(MXG): Allow the type of executor to be specified by the configuration
   _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
-
-  bool success = true;
 
   soss::Search search("ros2");
   for(const std::string& type : types.messages)
