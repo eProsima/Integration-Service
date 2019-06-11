@@ -12,6 +12,8 @@
  * **Finished** `soss-websocket` -- websocket extension for soss
  * *In progress* - `soss-rest server` -- REST API server extension for soss
  * **Finished** `soss-mock` -- a mock middleware used for testing extensions of soss
+ * **Finished** `soss-fiware` -- [FIWARE extension for soss](https://github.com/eProsima/SOSS-FIWARE.git) (from eProsima)
+ * **Finished** `soss-dds` -- [DDS extension for soss](https://github.com/eProsima/SOSS-DDS.git) (from eProsima)
 
  *soss v3.0*
 
