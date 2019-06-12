@@ -8,6 +8,9 @@ if(soss-rosidl_CONFIG_INCLUDED)
 endif()
 set(soss-rosidl_CONFIG_INCLUDED TRUE)
 
+include(CMakeFindDependencyMacro)
+find_dependency(soss-core REQUIRED)
+
 set(SOSS_ROSIDL_GENERATE_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/soss_rosidl_generate.py")
 set(SOSS_ROSIDL_FIND_PACKAGE_INFO_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/soss_rosidl_find_package_info.py")
 
