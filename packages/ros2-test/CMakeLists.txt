@@ -13,6 +13,12 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(test_msgs REQUIRED)
 
+if(NOT CMAKE_CXX_STANDARD)
+  # TODO(MXG): Remove this block and use target_compile_features(~)
+  # instead when we no longer need to support Ubuntu 16.04.
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
 soss_rosidl_mix(
   PACKAGES geometry_msgs nav_msgs test_msgs
   MIDDLEWARES ros2
