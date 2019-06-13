@@ -43,7 +43,7 @@ public:
     // Do nothing
   }
 
-  bool publish(const soss::Message& message) override
+  bool publish(const soss::Message& message) override final
   {
     const std::string topic_name = _topic_template.compute_string(message);
 

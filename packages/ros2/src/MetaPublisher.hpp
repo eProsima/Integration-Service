@@ -25,6 +25,7 @@
 namespace soss {
 namespace ros2 {
 
+//==============================================================================
 std::shared_ptr<TopicPublisher> make_meta_publisher(
     const std::string& message_type,
     rclcpp::Node& node,

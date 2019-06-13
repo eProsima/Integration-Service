@@ -18,6 +18,8 @@
 #include <soss/StringTemplate.hpp>
 #include <soss/FieldToString.hpp>
 
+#include <vector>
+
 namespace soss {
 
 //==============================================================================
@@ -30,25 +32,30 @@ public:
       const std::string& usage_details)
     : converter(usage_details)
   {
-    std::size_t last_start = 0;
-    std::size_t start = template_string.find('{', 0);
+    std::size_t last_end = 0;
+    std::size_t start = template_string.find('{', last_end);
     while(start < template_string.size())
     {
-      components.push_back(template_string.substr(last_start, start));
+      components.push_back(template_string.substr(last_end, start-last_end));
 
-      const std::size_t end = template_string.find('}', start);
-      if(end == std::string::npos)
+      last_end = template_string.find('}', start) + 1;
+      if(last_end == std::string::npos)
       {
         throw InvalidTemplateFormat(template_string, usage_details);
       }
 
-      substitutions[components.size()] = template_string.substr(start+1, end);
+      const std::string substitution_string = template_string.substr(start+1, last_end-start-2);
+      if(substitution_string.substr(0,8) != "message.")
+      {
+        throw InvalidTemplateFormat(template_string, usage_details);
+      }
+      substitutions[components.size()] = substitution_string.substr(8);
+
       // We use an empty string to represent components that will get
       // substituted later.
       components.push_back("");
 
-      last_start = start;
-      start = template_string.find('{', start);
+      start = template_string.find('{', last_end);
     }
   }
 
