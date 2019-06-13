@@ -16,6 +16,7 @@
 */
 
 #include "SystemHandle.hpp"
+#include "MetaPublisher.hpp"
 
 #include <soss/ros2/Factory.hpp>
 
@@ -219,6 +220,9 @@ std::shared_ptr<TopicPublisher> SystemHandle::advertise(
     const std::string& message_type,
     const YAML::Node& configuration)
 {
+  if(topic_name.find('{') != std::string::npos)
+    return make_meta_publisher(topic_name, message_type, configuration);
+
   return Factory::instance().create_publisher(
         message_type, *_node, topic_name,
         parse_rmw_qos_configuration(configuration));

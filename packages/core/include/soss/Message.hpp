@@ -103,10 +103,14 @@ public:
   /// The string that uniquely defines this message type
   std::string type;
 
+  using FieldMap = std::map<std::string, Field>;
+  using iterator = FieldMap::iterator;
+  using const_iterator = FieldMap::const_iterator;
+
   /// The data that this message contains. This will point to a middleware
   /// neutral type defined in a soss library. Each middleware will have its own
   /// functions for converting to/from this type.
-  std::map<std::string, Field> data;
+  FieldMap data;
 
 };
 

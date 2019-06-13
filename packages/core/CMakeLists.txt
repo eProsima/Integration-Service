@@ -34,6 +34,7 @@ add_library(soss-core SHARED
   src/MiddlewareInterfaceExtension.cpp
   src/register_system.cpp
   src/Search.cpp
+  src/FieldToString.cpp
 )
 
 target_link_libraries(soss-core
