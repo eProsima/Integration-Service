@@ -20,12 +20,16 @@
 
 #include <soss/SystemHandle.hpp>
 
+#include <rclcpp/node.hpp>
+
 namespace soss {
 namespace ros2 {
 
 std::shared_ptr<TopicPublisher> make_meta_publisher(
-    const std::string& topic_name,
     const std::string& message_type,
+    rclcpp::Node& node,
+    const std::string& topic_name,
+    const rmw_qos_profile_t& qos_profile,
     const YAML::Node& configuration);
 
 } // namespace ros2

@@ -45,6 +45,9 @@ public:
       const std::string& template_string,
       const std::string& usage_details);
 
+  StringTemplate(const StringTemplate& other);
+  StringTemplate(StringTemplate&& other);
+
   /// Compute the desired output string given the input message.
   std::string compute_string(const soss::Message& message) const;
 
@@ -53,6 +56,9 @@ public:
 
   /// Const reference to the usage details for this StringTemplate
   const std::string& usage_details() const;
+
+  // Destructor
+  ~StringTemplate();
 
 private:
 

@@ -109,6 +109,20 @@ StringTemplate::StringTemplate(
 }
 
 //==============================================================================
+StringTemplate::StringTemplate(const StringTemplate& other)
+  : pimpl(new Implementation(*other.pimpl))
+{
+  // Do nothing
+}
+
+//==============================================================================
+StringTemplate::StringTemplate(StringTemplate&& other)
+  : pimpl(new Implementation(std::move(*other.pimpl)))
+{
+  // Do nothing
+}
+
+//==============================================================================
 std::string StringTemplate::compute_string(const soss::Message& message) const
 {
   return pimpl->compute_string(message);
@@ -124,6 +138,12 @@ std::string& StringTemplate::usage_details()
 const std::string& StringTemplate::usage_details() const
 {
   return pimpl->converter.details;
+}
+
+//==============================================================================
+StringTemplate::~StringTemplate()
+{
+  // Do nothing
 }
 
 //==============================================================================

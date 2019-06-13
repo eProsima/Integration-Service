@@ -31,6 +31,7 @@ message(STATUS "Configuring [soss-ros2]")
 add_library(soss-ros2 SHARED
   src/Factory.cpp
   src/SystemHandle.cpp
+  src/MetaPublisher.cpp
 )
 
 target_link_libraries(soss-ros2
