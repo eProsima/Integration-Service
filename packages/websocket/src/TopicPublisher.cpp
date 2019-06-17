@@ -17,6 +17,8 @@
 
 #include "Endpoint.hpp"
 
+#include <soss/StringTemplate.hpp>
+
 namespace soss {
 namespace websocket {
 
@@ -27,11 +29,14 @@ public:
 
   TopicPublisher(
       const std::string& topic,
+      const std::string& message_type,
+      const std::string& id,
+      const YAML::Node& configuration,
       Endpoint& endpoint)
     : _topic(topic),
       _endpoint(endpoint)
   {
-    // Do nothing
+    _endpoint.startup_advertisement(topic, message_type, id, configuration);
   }
 
   bool publish(const soss::Message& message)
@@ -46,11 +51,74 @@ private:
 
 };
 
+namespace {
+//==============================================================================
+std::string make_detail_string(
+    const std::string& topic_name,
+    const std::string& message_type)
+{
+  return
+      "[Middleware: Websocket, topic template: "
+      + topic_name + ", message type: " + message_type + "]";
+}
+} // anonymous namespace
+
+//==============================================================================
+class MetaTopicPublisher : public soss::TopicPublisher
+{
+public:
+
+  MetaTopicPublisher(
+      soss::StringTemplate&& string_template,
+      const std::string& message_type,
+      const std::string& id,
+      const YAML::Node& configuration,
+      Endpoint& endpoint)
+    : _string_template(std::move(string_template)),
+      _message_type(message_type),
+      _id(id),
+      _configuration(configuration),
+      _endpoint(endpoint)
+  {
+    // Do nothing
+  }
+
+  bool publish(const soss::Message& message)
+  {
+    const std::string& topic = _string_template.compute_string(message);
+    _endpoint.startup_advertisement(topic, _message_type, _id, _configuration);
+    _endpoint.runtime_advertisement(topic, _message_type, _id, _configuration);
+
+    return _endpoint.publish(topic, message);
+  }
+
+private:
+
+  const soss::StringTemplate _string_template;
+  const std::string _message_type;
+  const std::string _id;
+  const YAML::Node _configuration;
+  Endpoint& _endpoint;
+
+};
+
 //==============================================================================
 std::shared_ptr<soss::TopicPublisher> make_topic_publisher(
-    const std::string& topic, Endpoint& endpoint)
+    const std::string& topic,
+    const std::string& message_type,
+    const std::string& id,
+    const YAML::Node& configuration,
+    Endpoint& endpoint)
 {
-  return std::make_shared<websocket::TopicPublisher>(topic, endpoint);
+  if(topic.find('{') != std::string::npos)
+  {
+    return std::make_shared<websocket::MetaTopicPublisher>(
+          soss::StringTemplate(topic, make_detail_string(topic, message_type)),
+          message_type, id, configuration, endpoint);
+  }
+
+  return std::make_shared<websocket::TopicPublisher>(
+        topic, message_type, id, configuration, endpoint);
 }
 
 } // namespace websocket

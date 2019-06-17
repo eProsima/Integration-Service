@@ -331,6 +331,20 @@ public:
     return true;
   }
 
+  void runtime_advertisement(
+      const std::string& topic,
+      const std::string& message_type,
+      const std::string& id,
+      const YAML::Node& configuration) override
+  {
+    const std::string advertise_msg =
+        get_encoding().encode_advertise_msg(
+          topic, message_type, id, configuration);
+
+    for(const WsCppConnectionPtr& connection : _open_connections)
+      connection->send(advertise_msg);
+  }
+
 private:
 
   void _handle_message(

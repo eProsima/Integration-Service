@@ -121,14 +121,8 @@ std::shared_ptr<TopicPublisher> Endpoint::advertise(
     const std::string& message_type,
     const YAML::Node& configuration)
 {
-  _startup_messages.emplace_back(
-        _encoding->encode_advertise_msg(
-          topic_name, message_type, "", configuration));
-
-  TopicPublishInfo& info = _topic_publish_info[topic_name];
-  info.type = message_type;
-
-  return make_topic_publisher(topic_name, *this);
+  return make_topic_publisher(
+        topic_name, message_type, "", configuration, *this);
 }
 
 //==============================================================================
@@ -156,6 +150,21 @@ std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
   info.configuration = configuration;
 
   return make_service_provider(service_name, *this);
+}
+
+//==============================================================================
+void Endpoint::startup_advertisement(
+    const std::string& topic,
+    const std::string& message_type,
+    const std::string& id,
+    const YAML::Node& configuration)
+{
+  TopicPublishInfo& info = _topic_publish_info[topic];
+  info.type = message_type;
+
+  _startup_messages.emplace_back(
+        _encoding->encode_advertise_msg(
+          topic, message_type, id, configuration));
 }
 
 //==============================================================================
@@ -284,23 +293,27 @@ void Endpoint::receive_subscribe_request_ws(
     const std::string& id,
     std::shared_ptr<void> connection_handle)
 {
-  auto it = _topic_publish_info.find(topic_name);
-  if(it == _topic_publish_info.end())
+  auto insertion = _topic_publish_info.insert(
+        std::make_pair(topic_name, TopicPublishInfo{}));
+  const bool inserted = insertion.second;
+  TopicPublishInfo& info = insertion.first->second;
+
+  if(inserted)
   {
     std::cerr << "[soss::websocket] Received subscription request for a "
-              << "topic that we are not advertising [" << topic_name << "]"
-              << std::endl;
-    return;
+              << "topic that we are not currently advertising ["
+              << topic_name << "]" << std::endl;
   }
-
-  TopicPublishInfo& info = it->second;
-  if(!message_type.empty() && message_type != info.type)
+  else
   {
-    std::cerr << "[soss::websocket] Received subscription request for topic ["
-              << topic_name << "], but the requested message type ["
-              << message_type << "] does not match the one we are publishing "
-              << "[" << info.type << "]" << std::endl;
-    return;
+    if(!message_type.empty() && message_type != info.type)
+    {
+      std::cerr << "[soss::websocket] Received subscription request for topic ["
+                << topic_name << "], but the requested message type ["
+                << message_type << "] does not match the one we are publishing "
+                << "[" << info.type << "]" << std::endl;
+      return;
+    }
   }
 
   info.listeners[connection_handle].insert(id);

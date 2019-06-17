@@ -14,6 +14,7 @@ endif()
 add_executable(soss-websocket-test
   main.cpp
   integration/websocket__roundtrip.cpp
+  integration/websocket__dispatch.cpp
 )
 
 set(thirdparty_dir "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty")
@@ -34,8 +35,17 @@ target_include_directories(soss-websocket-test
     "${thirdparty_dir}/catch2/include"
 )
 
-target_compile_definitions(soss-websocket-test
-  PRIVATE
-    "WEBSOCKET__ROUNDTRIP_SERVER__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/websocket__roundtrip_server.yaml\""
-    "WEBSOCKET__ROUNDTRIP_CLIENT__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/websocket__roundtrip_client.yaml\""
-)
+foreach(resource
+    websocket__roundtrip_server.yaml
+    websocket__roundtrip_client.yaml
+    websocket__dispatch.yaml)
+
+  get_filename_component(resource_name ${resource} NAME_WE)
+  string(TOUPPER ${resource_name} CAPS_RESOURCE_NAME)
+
+  target_compile_definitions(soss-websocket-test
+    PRIVATE
+      "${CAPS_RESOURCE_NAME}__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/${resource}\""
+  )
+
+endforeach()
