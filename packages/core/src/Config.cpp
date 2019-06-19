@@ -628,7 +628,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
     }
 
     TopicSubscriberSystem::SubscriptionCallback callback =
-        [=](const soss::Message& message)
+        [=](const xtypes::DynamicData& message)
     {
       for(const std::shared_ptr<TopicPublisher>& publisher : publishers)
       {
@@ -693,7 +693,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     }
 
     ServiceClientSystem::RequestCallback callback =
-        [=](const soss::Message& request,
+        [=](const xtypes::DynamicData& request,
             ServiceClient& client,
             const std::shared_ptr<void>& call_handle)
     {

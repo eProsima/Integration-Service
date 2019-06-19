@@ -18,7 +18,7 @@
 #ifndef SOSS__SYSTEMHANDLE_HPP
 #define SOSS__SYSTEMHANDLE_HPP
 
-#include <soss/Message.hpp>
+#include <soss/xtypes.hpp>
 #include <soss/detail/SystemHandle-head.hpp>
 
 #include <yaml-cpp/yaml.h>
@@ -110,7 +110,7 @@ class TopicSubscriberSystem : public virtual SystemHandle
 {
 public:
 
-  using SubscriptionCallback = std::function<void(const Message& message)>;
+  using SubscriptionCallback = std::function<void(const xtypes::DynamicData& message)>;
 
   /// \brief Have this node subscribe to a topic
   ///
@@ -149,8 +149,8 @@ public:
   ///   Name of the topic to publish
   ///
   /// \param[in] message
-  ///   Message that's being published
-  virtual bool publish(const Message& message) = 0;
+  ///   DynamicData that's being published
+  virtual bool publish(const xtypes::DynamicData& message) = 0;
 
   virtual ~TopicPublisher() = default;
 };
@@ -213,7 +213,7 @@ public:
   ///
   virtual void receive_response(
       std::shared_ptr<void> call_handle,
-      const Message& response) = 0;
+      const xtypes::DynamicData& response) = 0;
 
   virtual ~ServiceClient() = default;
 };
@@ -227,7 +227,7 @@ public:
   /// request.
   using RequestCallback =
     std::function<void(
-      const Message& request,
+      const xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle)>;
 
@@ -279,7 +279,7 @@ public:
   ///   to the ServiceClientNode later when receive_response(~) is called.
   ///
   virtual void call_service(
-      const Message& request,
+      const xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle) = 0;
 
