@@ -18,8 +18,9 @@
 #ifndef SOSS__SYSTEMHANDLE_HPP
 #define SOSS__SYSTEMHANDLE_HPP
 
-#include <soss/xtypes.hpp>
 #include <soss/detail/SystemHandle-head.hpp>
+
+#include <xtypes.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -48,7 +49,7 @@ namespace soss {
 //==============================================================================
 struct RequiredTypes
 {
-  std::set<std::string> messages;
+  std::map<std::string, xtypes::DynamicType*> messages;
   std::set<std::string> services;
 };
 
