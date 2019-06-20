@@ -110,12 +110,12 @@ public:
   bool configure_services(const SystemHandleInfoMap& info_map) const;
 
   std::map<std::string, MiddlewareConfig> m_middlewares;
+  std::map<std::string, xtypes::DynamicType> m_dynamic_types;
   std::map<std::string, TopicRoute> m_topic_routes;
   std::map<std::string, ServiceRoute> m_service_routes;
   std::map<std::string, TopicConfig> m_topic_configs;
   std::map<std::string, ServiceConfig> m_service_configs;
   std::map<std::string, RequiredTypes> m_required_types;
-
 
 private:
 

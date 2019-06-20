@@ -18,6 +18,8 @@
 #include "Search-impl.hpp"
 #include "Config.hpp"
 
+#include <idl4.hpp>
+
 #include <soss/MiddlewareInterfaceExtension.hpp>
 
 #include <iostream>
@@ -410,7 +412,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
   if(!config_node.IsMap())
   {
     std::cerr << "The config-file [" << file << "] needs to be a map "
-              << "containing [systems], and possibly [routes], [topics], "
+              << "containing [systems] and [idls], and possibly [routes], [topics], "
               << "and/or [services]!" << std::endl;
     return false;
   }
@@ -447,6 +449,21 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
     return false;
   }
 
+  const YAML::Node& idls = config_node["idls"];
+  if(!idls || !idls.IsSequence())
+  {
+    std::cerr << "The config-file [" << file << "] is missing a "
+              << "list for [idls]! You must specify at least one "
+              << "idl in your config-file." << std::endl;
+    return false;
+  }
+
+  for(YAML::const_iterator it = idls.begin(); it != idls.end(); ++it)
+  {
+    const std::string& file_path = (*it).as<std::string>();
+    std::map<std::string, xtypes::DynamicType> dynamic_types_map = idl4::compile(file_path);
+  }
+
   auto read_route = [&](const std::string& key, const YAML::Node& n) -> bool
   {
     return add_named_route(key, n, m_topic_routes, m_service_routes);
@@ -480,9 +497,19 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
                   << entry.first << "]" << std::endl;
         return false;
       }
-      m_required_types[mw].messages.insert(config.message_type);
+
+      auto it = m_dynamic_types.find(config.message_type);
+      if (it == m_dynamic_types.end())
+      {
+        std::cerr << "Unrecognized type [" << config.message_type << "] requested for topic ["
+                  << entry.first << "]" << std::endl;
+        return false;
+      }
+
+      m_required_types[mw].messages[config.message_type] = &it->second;
     }
   }
+
 
   for(const auto& entry : m_service_configs)
   {
@@ -593,6 +620,12 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
   {
     const std::string& topic_name = entry.first;
     const TopicConfig& config = entry.second;
+
+
+    //Check the QoS between the possible two types in the communication
+    // if there is remap
+    //   if m_dynamic_type[config.remap.type].is_subset_of(m_dynamic_type[config.type])
+    //     // OK!!
 
     std::vector<std::shared_ptr<TopicPublisher>> publishers;
     publishers.reserve(config.route.to.size());
