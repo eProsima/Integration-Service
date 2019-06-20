@@ -43,11 +43,17 @@ using ToJsonMap =
       std::string,
       std::function<Json(const const_field_iterator& input)>>;
 
+using ToStringMap =
+  std::unordered_map<
+      value_t,
+      std::function<std::string(const Json& input)>>;
+
 //==============================================================================
 struct Converter
 {
   Converter()
   {
+    // Conversions to/from soss::Message
     add_object_conversion();
     add_array_conversions();
     add_primitive_conversion<std::string>(value_t::string);
@@ -55,6 +61,13 @@ struct Converter
     add_primitive_conversion<int64_t>(value_t::number_integer);
     add_primitive_conversion<uint64_t>(value_t::number_unsigned);
     add_primitive_conversion<double>(value_t::number_float);
+
+    // Conversions to std::string
+    add_string_forwarding();
+    add_primitive_to_string<bool>(value_t::boolean);
+    add_primitive_to_string<int64_t>(value_t::number_integer);
+    add_primitive_to_string<uint64_t>(value_t::number_unsigned);
+    add_primitive_to_string<double>(value_t::number_float);
   }
 
 
@@ -238,6 +251,25 @@ struct Converter
     };
   }
 
+  void add_string_forwarding()
+  {
+    map_to_string[value_t::string] =
+        [](const Json& input) -> std::string
+    {
+      return input.get<std::string>();
+    };
+  }
+
+  template<typename T>
+  void add_primitive_to_string(nlohmann::json::value_t type)
+  {
+    map_to_string[type] =
+        [](const Json& input) -> std::string
+    {
+      return std::to_string(input.get<T>());
+    };
+  }
+
   static void convert_from_json_object(const Json& input, soss::Message& output)
   {
     for(Json::const_iterator it = input.begin(); it != input.end(); ++it)
@@ -287,6 +319,21 @@ struct Converter
     return output;
   }
 
+  static std::string to_string(const Json& input)
+  {
+    const auto& conversion_map = instance().map_to_string;
+    const auto it = conversion_map.find(input.type());
+    if(it == conversion_map.end())
+    {
+      throw std::runtime_error(
+            "[soss::json] Cannot convert from Json type ["
+            + std::to_string(static_cast<int>(input.type()))
+            + "] to std::string");
+    }
+
+    return it->second(input);
+  }
+
   static Converter& instance()
   {
     static Converter converter;
@@ -296,6 +343,7 @@ struct Converter
   ToSossMap map_to_soss;
   ToSossArrayMap map_to_soss_array;
   ToJsonMap map_to_json;
+  ToStringMap map_to_string;
 };
 
 //==============================================================================
@@ -308,6 +356,12 @@ Json convert(const soss::Message& input)
 soss::Message convert(const std::string& type, const Json& message)
 {
   return Converter::to_soss(type, message);
+}
+
+//==============================================================================
+std::string to_string(const Json& input)
+{
+  return Converter::to_string(input);
 }
 
 } // namespace json
