@@ -407,6 +407,7 @@ private:
       connection_ptr->set_status(websocketpp::http::status_code::unauthorized);
       return false;
     }
+    connection_ptr->select_subprotocol(token);
     return true;
   }
 
