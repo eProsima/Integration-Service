@@ -303,6 +303,9 @@ SOSS_CONVERT_LOW_PRECISION(int64_t, int8_t);
 SOSS_CONVERT_LOW_PRECISION(int64_t, int16_t);
 SOSS_CONVERT_LOW_PRECISION(int64_t, int32_t);
 
+/// This is done to accommodate ROS1, which represents booleans using uint8.
+/// Hopefully using xtypes can remedy this in the future.
+SOSS_CONVERT_LOW_PRECISION(uint64_t, bool);
 
 //==============================================================================
 /// \brief A class that helps create a Convert<> specialization for compound
