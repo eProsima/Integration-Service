@@ -27,13 +27,18 @@ namespace {
 void run_test_case(
     const std::string& initial_topic,
     const std::string& name,
-    const uint32_t number)
+    const uint32_t number,
+    const std::string& suffix)
 {
+  const std::string topic =
+      initial_topic + "/" + name + "_" + std::to_string(number) + suffix;
+
+  std::cout << "Testing topic [" << topic << "]" << std::endl;
+
   std::promise<soss::Message> message_promise;
   auto message_future = message_promise.get_future();
   REQUIRE(soss::mock::subscribe(
-            initial_topic + "/" + name + "_" + std::to_string(number),
-            [&](const soss::Message& incoming_message)
+          topic, [&](const soss::Message& incoming_message)
   {
     message_promise.set_value(incoming_message);
   }));
@@ -75,13 +80,13 @@ TEST_CASE("Transmit and dispatch messages", "[websocket]")
   std::this_thread::sleep_for(5s);
   std::cout << " -- Done waiting!" << std::endl;
 
-  run_test_case("dispatch_into_client", "apple", 1);
-  run_test_case("dispatch_into_client", "banana", 2);
-  run_test_case("dispatch_into_client", "cherry", 3);
+  run_test_case("dispatch_into_client", "apple", 1, "/topic");
+  run_test_case("dispatch_into_client", "banana", 2, "/topic");
+  run_test_case("dispatch_into_client", "cherry", 3, "/topic");
 
-  run_test_case("dispatch_into_server", "avocado", 10);
-  run_test_case("dispatch_into_server", "blueberry", 20);
-  run_test_case("dispatch_into_server", "citrus", 30);
+  run_test_case("dispatch_into_server", "avocado", 10, "");
+  run_test_case("dispatch_into_server", "blueberry", 20, "");
+  run_test_case("dispatch_into_server", "citrus", 30, "");
 
   CHECK(handle.quit().wait() == 0);
 

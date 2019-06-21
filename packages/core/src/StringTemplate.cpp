@@ -57,6 +57,9 @@ public:
 
       start = template_string.find('{', last_end);
     }
+
+    if(last_end < template_string.size())
+      components.push_back(template_string.substr(last_end));
   }
 
   std::string compute_string(const soss::Message& message) const

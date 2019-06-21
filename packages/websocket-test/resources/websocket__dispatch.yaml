@@ -22,17 +22,17 @@ topics:
   dispatch_into_client:
     type: "websocket_test/Dispatch"
     route: mock_to_client
-    remap: { ws_client: "dispatch_into_client/{message.name}_{message.number}" }
+    remap: { ws_client: "dispatch_into_client/{message.name}_{message.number}/topic" }
 
-  "dispatch_into_client/apple_1":
+  "dispatch_into_client/apple_1/topic":
     type: "websocket_test/Dispatch"
     route: server_to_mock
 
-  "dispatch_into_client/banana_2":
+  "dispatch_into_client/banana_2/topic":
     type: "websocket_test/Dispatch"
     route: server_to_mock
 
-  "dispatch_into_client/cherry_3":
+  "dispatch_into_client/cherry_3/topic":
     type: "websocket_test/Dispatch"
     route: server_to_mock
 
