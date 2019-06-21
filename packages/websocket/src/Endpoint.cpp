@@ -181,12 +181,13 @@ bool Endpoint::publish(
   for(const auto& v_handle : info.listeners)
   {
     auto connection_handle = _endpoint->get_con_from_hdl(v_handle.first);
+
     auto ec = connection_handle->send(
           _encoding->encode_publication_msg(topic, info.type, "", message));
 
     if(ec)
     {
-      std::cerr << "[soss::websocket::Client] Failed to send publication on "
+      std::cerr << "[soss::websocket::Endpoint] Failed to send publication on "
                 << "topic [" << topic << "]: " << ec.message() << std::endl;
     }
   }
@@ -366,6 +367,7 @@ void Endpoint::receive_service_request_ws(
     const std::string& id,
     std::shared_ptr<void> connection_handle)
 {
+
   auto it = _client_proxy_info.find(service_name);
   if(it == _client_proxy_info.end())
   {

@@ -71,7 +71,7 @@ static std::string get_optional_string(
     const std::string& key)
 {
   const auto it = object.find(key);
-  return it == object.end()? "" : it.value().get<std::string>();
+  return it == object.end()? "" : soss::json::to_string(it.value());
 }
 
 //==============================================================================
@@ -83,7 +83,7 @@ static std::string get_required_string(
   if(it == object.end())
     throw_missing_key(object, key);
 
-  return it.value().get<std::string>();
+  return soss::json::to_string(it.value());
 }
 
 //==============================================================================

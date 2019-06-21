@@ -33,6 +33,15 @@ Json convert(const soss::Message& input);
 /// Convert from a JSON message to a soss message
 soss::Message convert(const std::string& type, const Json& input);
 
+//==============================================================================
+/// Convert from a Json object to a string. The following types are supported:
+/// * string
+/// * boolean
+/// * number_integer
+/// * number_unsigned
+/// * number_float
+std::string to_string(const Json& input);
+
 } // namespace json
 } // namespace soss
 
