@@ -77,7 +77,7 @@ public:
     : _string_template(std::move(string_template)),
       _message_type(message_type),
       _id(id),
-      _configuration(configuration),
+      _config(configuration),
       _endpoint(endpoint)
   {
     // Do nothing
@@ -86,8 +86,13 @@ public:
   bool publish(const soss::Message& message)
   {
     const std::string& topic = _string_template.compute_string(message);
-    _endpoint.startup_advertisement(topic, _message_type, _id, _configuration);
-    _endpoint.runtime_advertisement(topic, _message_type, _id, _configuration);
+    const bool inserted = _advertised_topics.insert(topic).second;
+
+    if(inserted)
+    {
+      _endpoint.startup_advertisement(topic, _message_type, _id, _config);
+      _endpoint.runtime_advertisement(topic, _message_type, _id, _config);
+    }
 
     return _endpoint.publish(topic, message);
   }
@@ -97,7 +102,8 @@ private:
   const soss::StringTemplate _string_template;
   const std::string _message_type;
   const std::string _id;
-  const YAML::Node _configuration;
+  const YAML::Node _config;
+  std::unordered_set<std::string> _advertised_topics;
   Endpoint& _endpoint;
 
 };
