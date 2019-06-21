@@ -77,8 +77,23 @@ public:
       const std::string& service_type,
       const YAML::Node& configuration) override final;
 
+  /// Send out an advertisement the next time a connection is made.
+  void startup_advertisement(
+      const std::string& topic,
+      const std::string& message_type,
+      const std::string& id,
+      const YAML::Node& configuration);
+
 
   // ----------- Functions for reacting to soss messages -----------
+
+  /// Send out an advertisement to all existing connections right away. This is
+  /// for publication topics that are determined at runtime by topic templates.
+  virtual void runtime_advertisement(
+      const std::string& topic,
+      const std::string& message_type,
+      const std::string& id,
+      const YAML::Node& configuration) = 0;
 
   bool publish(
       const std::string& topic,
@@ -227,7 +242,11 @@ using EndpointPtr = std::unique_ptr<Endpoint>;
 
 //==============================================================================
 std::shared_ptr<TopicPublisher> make_topic_publisher(
-    const std::string& topic, Endpoint& endpoint);
+    const std::string& topic,
+    const std::string& message_type,
+    const std::string& id,
+    const YAML::Node& configuration,
+    Endpoint& endpoint);
 
 std::shared_ptr<ServiceProvider> make_service_provider(
     const std::string& service, Endpoint& endpoint);
