@@ -126,13 +126,16 @@ struct convert_bounded_vector<bool, UpperBound>
   static void convert(
       const FromContainer& from,
       ToContainer& to,
-      void(* /*unused*/ )(const bool& from, bool& to),
-      bool(* /*unused*/ )() = []() { return bool(); })
+      void(* /*unused*/ )(
+        const typename FromContainer::value_type& from,
+        typename ToContainer::value_type& to),
+      typename ToContainer::value_type(* /*unused*/ )() =
+          []() { return typename ToContainer::value_type(); })
   {
     const std::size_t N = std::min(from.size(), UpperBound);
     vector_resize(to, N);
-    std::copy(from.begin(), from.begin() + static_cast<long long int>(N),
-              to.begin());
+    for(std::size_t i=0; i < N; ++i)
+      to[i] = static_cast<typename ToContainer::value_type>(from[i]);
   }
 };
 
