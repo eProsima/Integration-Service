@@ -166,7 +166,7 @@ struct Converter
 
     add_object_array_conversion();
     add_primitive_array_conversion<std::string>(value_t::string);
-    add_primitive_array_conversion<bool>(value_t::boolean);
+    add_primitive_array_conversion<bool, uint64_t>(value_t::boolean);
     add_primitive_array_conversion<int64_t>(value_t::number_integer);
     add_primitive_array_conversion<uint64_t>(value_t::number_unsigned);
     add_primitive_array_conversion<double>(value_t::number_float);
@@ -193,27 +193,33 @@ struct Converter
     };
   }
 
-  template<typename T>
+  template<typename JsonT, typename SossT=JsonT>
   void add_primitive_array_conversion(nlohmann::json::value_t type)
   {
     map_to_soss_array[type] =
         [](const Json& input) -> Field
     {
-      std::vector<T> output;
+      std::vector<SossT> output;
       output.reserve(input.size());
       for(Json::const_iterator it = input.begin(); it != input.end(); ++it)
       {
-        output.push_back(it->get<T>());
+        output.push_back(static_cast<SossT>(it->get<JsonT>()));
       }
 
-      return soss::Convert<std::vector<T>>::make_soss_field(output);
+      return soss::Convert<std::vector<SossT>>::make_soss_field(output);
     };
 
-    map_to_json[typeid(std::vector<T>).name()] =
+    map_to_json[typeid(std::vector<SossT>).name()] =
         [](const const_field_iterator& input) -> Json
     {
-      std::vector<T> output;
-      soss::Convert<std::vector<T>>::from_soss_field(input, output);
+      std::vector<SossT> content;
+      soss::Convert<std::vector<SossT>>::from_soss_field(input, content);
+
+      std::vector<JsonT> output;
+      output.reserve(content.size());
+      for(const SossT& c : content)
+        output.push_back(static_cast<JsonT>(c));
+
       return Json(output);
     };
   }
