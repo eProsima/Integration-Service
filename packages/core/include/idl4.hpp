@@ -11,9 +11,9 @@
 namespace idl4
 {
 
-  static std::map<std::string, xtypes::DynamicType> compile(const std::string& /*file_path*/)
+  static std::map<std::string, xtypes::DynamicType*> compile(const std::string& /*file_path*/)
   {
-      return std::map<std::string, xtypes::DynamicType>();
+      return std::map<std::string, xtypes::DynamicType*>();
   }
 
 }

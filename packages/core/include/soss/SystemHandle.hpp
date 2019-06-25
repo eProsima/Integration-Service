@@ -49,7 +49,7 @@ namespace soss {
 //==============================================================================
 struct RequiredTypes
 {
-  std::map<std::string, xtypes::DynamicType*> messages;
+  std::set<std::string> messages;
   std::set<std::string> services;
 };
 
@@ -83,7 +83,8 @@ public:
   /// \return true if configuration was successful, otherwise false
   virtual bool configure(
       const RequiredTypes& types,
-      const YAML::Node& configuration) = 0;
+      const YAML::Node& configuration,
+      std::map<std::string, xtypes::DynamicType*>& xtypes) = 0;
 
   /// Is the system handle still working
   virtual bool okay() const = 0;

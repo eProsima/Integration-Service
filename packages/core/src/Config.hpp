@@ -103,14 +103,14 @@ public:
   bool okay() const { return _okay; }
   operator bool() const { return okay(); }
 
-  bool load_middlewares(SystemHandleInfoMap& info_map) const;
+  bool load_middlewares(SystemHandleInfoMap& info_map);
 
   bool configure_topics(const SystemHandleInfoMap& info_map) const;
 
   bool configure_services(const SystemHandleInfoMap& info_map) const;
 
   std::map<std::string, MiddlewareConfig> m_middlewares;
-  std::map<std::string, xtypes::DynamicType> m_dynamic_types;
+  std::map<std::string, xtypes::DynamicType*> m_types;
   std::map<std::string, TopicRoute> m_topic_routes;
   std::map<std::string, ServiceRoute> m_service_routes;
   std::map<std::string, TopicConfig> m_topic_configs;

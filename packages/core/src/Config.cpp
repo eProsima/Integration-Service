@@ -417,6 +417,24 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
     return false;
   }
 
+  const YAML::Node& idls = config_node["idls"];
+  if(!idls || !idls.IsSequence())
+  {
+    std::cerr << "The config-file [" << file << "] is missing a "
+              << "list for [idls]! You must specify at least one "
+              << "idl in your config-file." << std::endl;
+    return false;
+  }
+
+  for(YAML::const_iterator it = idls.begin(); it != idls.end(); ++it)
+  {
+    const std::string& file_path = (*it).as<std::string>();
+    for (auto&& dynamic_type: idl4::compile(file_path))
+    {
+      m_types.insert(dynamic_type);
+    }
+  }
+
   const YAML::Node& systems = config_node["systems"];
   if(!systems || !systems.IsMap())
   {
@@ -447,21 +465,6 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
               << "middlewares [" << m_middlewares.size() << "]! The "
               << "minimum is 2." << std::endl;
     return false;
-  }
-
-  const YAML::Node& idls = config_node["idls"];
-  if(!idls || !idls.IsSequence())
-  {
-    std::cerr << "The config-file [" << file << "] is missing a "
-              << "list for [idls]! You must specify at least one "
-              << "idl in your config-file." << std::endl;
-    return false;
-  }
-
-  for(YAML::const_iterator it = idls.begin(); it != idls.end(); ++it)
-  {
-    const std::string& file_path = (*it).as<std::string>();
-    std::map<std::string, xtypes::DynamicType> dynamic_types_map = idl4::compile(file_path);
   }
 
   auto read_route = [&](const std::string& key, const YAML::Node& n) -> bool
@@ -498,15 +501,15 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
         return false;
       }
 
-      auto it = m_dynamic_types.find(config.message_type);
-      if (it == m_dynamic_types.end())
+      auto it = m_types.find(config.message_type);
+      if (it == m_types.end())
       {
         std::cerr << "Unrecognized type [" << config.message_type << "] requested for topic ["
                   << entry.first << "]" << std::endl;
         return false;
       }
 
-      m_required_types[mw].messages[config.message_type] = &it->second;
+      m_required_types[mw].messages.insert(config.message_type);
     }
   }
 
@@ -557,7 +560,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
 }
 
 //==============================================================================
-bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
+bool Config::load_middlewares(SystemHandleInfoMap& info_map)
 {
   for(const auto& mw_entry : m_middlewares)
   {
@@ -597,16 +600,28 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
     if(!info)
       return false;
 
+    std::map<std::string, xtypes::DynamicType*> local_types_map;
     bool configured = true;
     const auto requirements = m_required_types.find(mw_name);
     if(requirements != m_required_types.end())
-      configured &=
-          info.handle->configure(requirements->second, mw_config.config_node);
+      configured =
+          info.handle->configure(requirements->second, mw_config.config_node, local_types_map);
 
-    if(!configured)
+    if(configured)
+    {
+      for(auto&& dynamic: local_types_map)
+      {
+        if(m_types.find(dynamic.first) != m_types.end())
+        {
+          m_types.insert(dynamic);
+        }
+        m_types[mw_name + "::" + dynamic.first] = dynamic.second;
+      }
+
+      info_map.insert(std::make_pair(mw_name, std::move(info)));
+    }
+    else
       return false;
-
-    info_map.insert(std::make_pair(mw_name, std::move(info)));
   }
 
   return true;
@@ -620,7 +635,6 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
   {
     const std::string& topic_name = entry.first;
     const TopicConfig& config = entry.second;
-
 
     //Check the QoS between the possible two types in the communication
     // if there is remap
