@@ -8,7 +8,7 @@ namespace xtypes
 
   class DynamicType
   {
-    bool if_subset(const DynamicType& /*other*/) const
+    bool is_subset(const DynamicType& /*other*/) const
     {
       return true; //Check compatibility by QoS
     }
