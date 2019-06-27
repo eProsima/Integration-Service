@@ -8,6 +8,9 @@ endif()
 
 find_package(soss-core REQUIRED)
 find_package(soss-json REQUIRED)
+find_package(websocketpp REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -20,18 +23,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 include(GNUInstallDirs)
-
-find_package(websocketpp QUIET)
-
-if(NOT WEBSOCKETPP_FOUND)
-
-  message("Could not find package [websocketpp] -- we will skip configuring [soss-websocket]")
-  return()
-
-endif()
-
-find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
 
 message(STATUS "Configuring [soss-websocket]")
 

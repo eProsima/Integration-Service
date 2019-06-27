@@ -4,6 +4,7 @@ project(soss-ros2)
 
 find_package(soss-core REQUIRED)
 find_package(soss-rosidl REQUIRED)
+find_package(rclcpp REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -16,15 +17,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 include(GNUInstallDirs)
-
-find_package(rclcpp QUIET)
-
-if(NOT rclcpp_FOUND)
-
-  message("Could not find package [rclcpp] -- we will skip configuring [soss-ros2]")
-  return()
-
-endif()
 
 message(STATUS "Configuring [soss-ros2]")
 
