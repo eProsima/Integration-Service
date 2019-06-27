@@ -11,11 +11,11 @@
 namespace idl4
 {
 
-  static std::map<std::string, xtypes::DynamicType*> compile(const std::string& /*file_path*/)
-  {
-      return std::map<std::string, xtypes::DynamicType*>();
-  }
+    static std::map<std::string, xtypes::DynamicType*> compile(const std::string& /*file_path*/)
+    {
+        return std::map<std::string, xtypes::DynamicType*>();
+    }
 
-}
+} //idl4
 
 #endif //LIB__IDL4_HPP

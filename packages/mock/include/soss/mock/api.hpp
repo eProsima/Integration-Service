@@ -1,7 +1,7 @@
 #ifndef SOSS__MOCK__API_HPP
 #define SOSS__MOCK__API_HPP
 
-#include <soss/Message.hpp>
+#include <xtypes.hpp>
 
 #include <chrono>
 #include <functional>
@@ -14,10 +14,10 @@ namespace mock {
 
 bool SOSS_MOCK_API publish_message(
     const std::string& topic,
-    const soss::Message& msg);
+    const xtypes::DynamicData* msg);
 
 
-using MockSubscriptionCallback = std::function<void(const soss::Message&)>;
+using MockSubscriptionCallback = std::function<void(const xtypes::DynamicData*)>;
 
 bool SOSS_MOCK_API subscribe(
     const std::string& topic,
@@ -30,13 +30,13 @@ bool SOSS_MOCK_API subscribe(
 ///     useful for cases of flaky middlewares or slow discovery. Even if the
 ///     server responds multiple times, only the first response will be
 ///     available to the std::shared_future.
-std::shared_future<soss::Message> SOSS_MOCK_API request(
+std::shared_future<const xtypes::DynamicData*> SOSS_MOCK_API request(
     const std::string& topic,
-    const soss::Message& request_msg,
+    const xtypes::DynamicData* request_msg,
     std::chrono::nanoseconds retry = std::chrono::seconds(0));
 
 
-using MockServiceCallback = std::function<soss::Message(const soss::Message& request)>;
+using MockServiceCallback = std::function<const xtypes::DynamicData*(const xtypes::DynamicData* request)>;
 
 void SOSS_MOCK_API serve(
     const std::string& topic,
