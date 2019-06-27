@@ -85,7 +85,7 @@ public:
     // Do nothing
   }
 
-  bool publish(const Message& message) override
+  bool publish(const xtypes::DynamicData* message) override
   {
     // Test that we have advertised this topic
     const auto pub_it = impl().publishers.find(_topic);
@@ -127,7 +127,7 @@ public:
   }
 
   void call_service(
-      const soss::Message& request,
+      const xtypes::DynamicData* request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle) override
   {
@@ -139,8 +139,8 @@ public:
             + _service);
     }
 
-    soss::Message response = it->second(request);
-    client.receive_response(call_handle, std::move(response));
+    const xtypes::DynamicData* response = it->second(request);
+    client.receive_response(call_handle, response);
   }
 
   const std::string _service;
@@ -153,7 +153,8 @@ public:
 
   bool configure(
       const RequiredTypes&,
-      const YAML::Node&) override
+      const YAML::Node&,
+      std::map<std::string, xtypes::DynamicType*>&) override
   {
     // Nothing to configure
     return true;
@@ -217,11 +218,11 @@ public:
 //==============================================================================
 bool publish_message(
     const std::string& topic,
-    const soss::Message& msg)
+    const xtypes::DynamicData* msg)
 {
   const auto it = impl().subscriptions.find(topic);
   if(it == impl().subscriptions.end() ||
-     it->second.find(msg.type) == it->second.end())
+     it->second.find(msg->get_type().get_name()) == it->second.end())
   {
     return false;
   }
@@ -264,9 +265,9 @@ public:
     // Do nothing
   }
 
-  std::shared_future<soss::Message> request(
+  std::shared_future<const xtypes::DynamicData*> request(
       const std::string& topic,
-      const soss::Message& request_msg,
+      const xtypes::DynamicData* request_msg,
       std::chrono::nanoseconds retry)
   {
     const auto it = impl().soss_request_callbacks.find(topic);
@@ -302,7 +303,7 @@ public:
 
   void receive_response(
       std::shared_ptr<void> call_handle,
-      const soss::Message& response) override
+      const xtypes::DynamicData* response) override
   {
     std::unique_lock<std::mutex> lock(this->mutex);
     if(response_received)
@@ -314,7 +315,7 @@ public:
     (void)call_handle;
   }
 
-  std::promise<soss::Message> promise;
+  std::promise<const xtypes::DynamicData*> promise;
   std::thread retry_thread;
   bool response_received;
   std::atomic_bool quit;
@@ -329,9 +330,9 @@ public:
 };
 
 //==============================================================================
-std::shared_future<Message> request(
+std::shared_future<const xtypes::DynamicData*> request(
     const std::string& topic,
-    const soss::Message& request_msg,
+    const xtypes::DynamicData* request_msg,
     std::chrono::nanoseconds retry)
 {
   const auto it = impl().clients.find(topic);
