@@ -1,0 +1,9 @@
+systems:
+    xtypes1: { type: xtypes-sample }
+    xtypes2: { type: xtypes-sample }
+
+routes:
+    1_to_2: { from: xtypes1, to: xtypes2 }
+
+topics:
+    hello_ros2: { type: "String", route: 1_to_2 }
