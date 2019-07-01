@@ -4,6 +4,7 @@
 #define LIB__XTYPES_HPP
 
 #include<string>
+#include<map>
 
 namespace xtypes
 {
@@ -12,10 +13,14 @@ namespace xtypes
 class DynamicType
 {
 public:
+    enum class Type { INT, STRING };
+
     DynamicType(const std::string& name)
-        :name(name)
+        :name_(name)
     {
     }
+
+    ~DynamicType() = default;
 
     bool is_subset_of(const DynamicType& /*other*/) const
     {
@@ -24,29 +29,52 @@ public:
 
     const std::string& get_name() const
     {
-        return name;
+        return name_;
+    }
+
+    Type& operator [] (const std::string field)
+    {
+        return types_[field];
     }
 
 private:
-    std::string name;
+    std::string name_;
+    std::map<std::string, Type> types_;
 };
+
 
 
 class DynamicData
 {
 public:
+    class Iterator { };
+
     DynamicData(const DynamicType& type)
-        : type(type)
+        : type_(type)
     {
     }
+
+    ~DynamicData() = default;
 
     const DynamicType& get_type() const
     {
-        return type;
+        return type_;
+    }
+
+    std::string& operator [] (const std::string field)
+    {
+        return values_[field];
+    }
+
+    DynamicData::Iterator get_iterator() const
+    {
+        //TODO
+        return Iterator();
     }
 
 private:
-    const DynamicType& type;
+    const DynamicType& type_;
+    std::map<std::string, std::string> values_;
 };
 
 
