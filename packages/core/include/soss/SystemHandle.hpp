@@ -84,7 +84,7 @@ public:
   virtual bool configure(
       const RequiredTypes& types,
       const YAML::Node& configuration,
-      std::map<std::string, xtypes::DynamicType*>& xtypes) = 0;
+      std::vector<xtypes::DynamicType*>& xtypes) = 0;
 
   /// Is the system handle still working
   virtual bool okay() const = 0;
