@@ -413,11 +413,9 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
   }
 
   const YAML::Node& idls = config_node["idls"];
-  if(!idls || !idls.IsSequence())
+  if(idls && !idls.IsSequence())
   {
-    std::cerr << "The config-file [" << file << "] is missing a "
-              << "list for [idls]! You must specify at least one "
-              << "idl in your config-file." << std::endl;
+    std::cerr << "The config-file [" << file << "] must be a list." << std::endl;
     return false;
   }
 
@@ -496,6 +494,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
         return false;
       }
 
+      /* // Problems with this check, because configure can give the topics
       auto it = m_types.find(config.message_type);
       if (it == m_types.end())
       {
@@ -503,6 +502,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
                   << entry.first << "]" << std::endl;
         return false;
       }
+      */
 
       m_required_types[mw].messages.insert(config.message_type);
     }
@@ -595,22 +595,22 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map)
     if(!info)
       return false;
 
-    std::map<std::string, xtypes::DynamicType*> local_types_map;
+    std::vector<xtypes::DynamicType*> local_types;
     bool configured = true;
     const auto requirements = m_required_types.find(mw_name);
     if(requirements != m_required_types.end())
       configured =
-          info.handle->configure(requirements->second, mw_config.config_node, local_types_map);
+          info.handle->configure(requirements->second, mw_config.config_node, local_types);
 
     if(configured)
     {
-      for(auto&& dynamic: local_types_map)
+      for(auto&& type: local_types)
       {
-        if(m_types.find(dynamic.first) != m_types.end())
+        if(m_types.find(type->get_name()) == m_types.end())
         {
-          m_types.insert(dynamic);
+          m_types[type->get_name()] = type;
         }
-        m_types[mw_name + "::" + dynamic.first] = dynamic.second;
+        m_types[mw_name + "::" + type->get_name()] = type;
       }
 
       info_map.insert(std::make_pair(mw_name, std::move(info)));
