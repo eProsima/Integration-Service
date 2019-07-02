@@ -1,9 +1,9 @@
 systems:
-    xtypes1: { type: xtypes-sample }
-    xtypes2: { type: xtypes-sample }
+    xtypes1: { type: xtypes-example }
+    xtypes2: { type: xtypes-example }
 
 routes:
     1_to_2: { from: xtypes1, to: xtypes2 }
 
 topics:
-    hello_ros2: { type: "String", route: 1_to_2 }
+    hello_xtypes: { type: "Coordinate2D", route: 1_to_2 }
