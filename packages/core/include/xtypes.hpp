@@ -34,12 +34,17 @@ public:
 
     Type& operator [] (const std::string field)
     {
-        return types_[field];
+        return members_[field];
+    }
+
+    const std::map<std::string, Type>& get_members() const
+    {
+        return members_;
     }
 
 private:
     std::string name_;
-    std::map<std::string, Type> types_;
+    std::map<std::string, Type> members_;
 };
 
 
@@ -64,6 +69,16 @@ public:
     std::string& operator [] (const std::string field)
     {
         return values_[field];
+    }
+
+    const std::string& operator [] (const std::string field) const
+    {
+        return values_.at(field);
+    }
+
+    const std::map<std::string, std::string>& get_values() const
+    {
+        return values_;
     }
 
     DynamicData::Iterator get_iterator() const

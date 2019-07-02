@@ -26,10 +26,10 @@ class Subscriber
 public:
     Subscriber(
             const std::string& topic_name,
-            const std::string& message_type,
+            const std::shared_ptr<xtypes::DynamicType>& type,
             soss::TopicSubscriberSystem::SubscriptionCallback soss_callback)
         : topic_name_(topic_name)
-        , message_type_(message_type)
+        , type_(type)
         , soss_callback_(soss_callback)
     {
     }
@@ -40,16 +40,25 @@ public:
     Subscriber(Subscriber&& rhs) = delete;
     Subscriber& operator = (Subscriber&& rhs) = delete;
 
-    void receive(const std::string& /* system_message */)
+    void receive(const std::map<std::string, int>& system_message)
     {
+        xtypes::DynamicData message(*type_);
+
+        // Conversion
+        for(auto&& member: type_->get_members())
+        {
+            message[member.first] = std::to_string(system_message.at(member.first));
+        }
+
+        soss_callback_(&message);
     }
 
     const std::string& get_topic_name() const { return topic_name_; }
-    const std::string& get_message_type() const { return message_type_; }
+    const std::shared_ptr<xtypes::DynamicType>& get_type() const { return type_; }
 
 private:
     const std::string topic_name_;
-    const std::string message_type_;
+    const std::shared_ptr<xtypes::DynamicType> type_;
 
     soss::TopicSubscriberSystem::SubscriptionCallback soss_callback_;
 };
@@ -61,30 +70,45 @@ class Publisher : public virtual soss::TopicPublisher
 public:
     Publisher(
             const std::string& topic_name,
-            const std::string& message_type)
+            const std::shared_ptr<xtypes::DynamicType>& type)
         : topic_name_(topic_name)
-        , message_type_(message_type)
+        , type_(type)
     {
     }
 
-    virtual ~Publisher() override;
+    virtual ~Publisher() override = default;
     Publisher(const Publisher& rhs) = delete;
     Publisher& operator = (const Publisher& rhs) = delete;
     Publisher(Publisher&& rhs) = delete;
     Publisher& operator = (Publisher&& rhs) = delete;
 
-    bool publish(
-            const xtypes::DynamicData* /* message */) override
+    bool publish(const xtypes::DynamicData* message) override
     {
+        std::map<std::string, int> system_message;
+
+        // Conversion
+        for(auto&& member: type_->get_members())
+        {
+            system_message[member.first] = std::stoi((*message)[member.first]);
+        }
+
+        // Print number
+        for(auto&& member: message->get_values())
+        {
+            std::cout << member.first << ": " << member.second << ", ";
+        }
+
+        std::cout << std::endl;
+
         return true;
     }
 
     const std::string& get_topic_name() const { return topic_name_; }
-    const std::string& get_message_type() const { return message_type_; }
+    const std::shared_ptr<xtypes::DynamicType>& get_type() const { return type_; }
 
 private:
     const std::string topic_name_;
-    const std::string message_type_;
+    const std::shared_ptr<xtypes::DynamicType> type_;
 };
 
 
@@ -102,11 +126,11 @@ public:
     {
         // The system handle creates and manages its own types.
         // (It could come from buildes or from idl compiler)
-        auto coord_2d = std::make_unique<xtypes::DynamicType>("Coordinate2D");
+        auto coord_2d = std::make_shared<xtypes::DynamicType>("Coordinate2D");
         (*coord_2d)["x"] = xtypes::DynamicType::Type::INT;
         (*coord_2d)["y"] = xtypes::DynamicType::Type::INT;
 
-        auto coord_3d = std::make_unique<xtypes::DynamicType>("Coordinate3D");
+        auto coord_3d = std::make_shared<xtypes::DynamicType>("Coordinate3D");
         (*coord_3d)["x"] = xtypes::DynamicType::Type::INT;
         (*coord_3d)["y"] = xtypes::DynamicType::Type::INT;
         (*coord_3d)["z"] = xtypes::DynamicType::Type::INT;
@@ -130,19 +154,20 @@ public:
 
     bool spin_once() override
     {
-        //Emulating reading from the system cloud
+        // --- Emulating reading from the system cloud
         for(auto&& subscriber: subscribers_)
         {
-            if (subscriber->get_topic_name() == "Coordinate2D")
+            if (subscriber->get_type()->get_name() == "Coordinate2D")
             {
-                subscriber->receive("3,6");
+                subscriber->receive({{"x", 3} , {"y", 6 }});
             }
 
-            else if (subscriber->get_topic_name() == "Coordinate3D")
+            else if (subscriber->get_type()->get_name() == "Coordinate3D")
             {
-                subscriber->receive("3,6,9");
+                subscriber->receive({{"x", 3} , {"y", 6 }, {"z", 9}});
             }
         }
+        // ---
 
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(1s);
@@ -155,7 +180,7 @@ public:
         SubscriptionCallback callback,
         const YAML::Node& /* configuration */) override
     {
-        auto subscriber = std::make_shared<Subscriber>(topic_name, message_type, callback);
+        auto subscriber = std::make_shared<Subscriber>(topic_name, types_.at(message_type), callback);
         subscribers_.emplace_back(std::move(subscriber));
 
         std::cout << "[soss-xtypes-example]: subscriber created. "
@@ -170,7 +195,7 @@ public:
         const std::string& message_type,
         const YAML::Node& /* configuration */) override
     {
-        auto publisher = std::make_shared<Publisher>(topic_name, message_type);
+        auto publisher = std::make_shared<Publisher>(topic_name, types_.at(message_type));
         publishers_.emplace_back(std::move(publisher));
 
         std::cout << "[soss-xtypes-example]: publisher created. "
@@ -181,7 +206,7 @@ public:
     }
 
 private:
-    std::map<std::string, std::unique_ptr<xtypes::DynamicType>> types_;
+    std::map<std::string, std::shared_ptr<xtypes::DynamicType>> types_;
     std::vector<std::shared_ptr<Publisher>> publishers_;
     std::vector<std::shared_ptr<Subscriber>> subscribers_;
 };
