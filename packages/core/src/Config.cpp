@@ -248,8 +248,15 @@ bool add_topic_or_service_config(
     {
       for(YAML::const_iterator it = remap.begin(); it != remap.end(); ++it)
       {
-        config.remap[it->first.as<std::string>()] =
-            it->second.as<std::string>();
+        TopicInfo& remap = config.remap[it->first.as<std::string>()];
+        if(it->second["topic"])
+        {
+            remap.name = it->second["topic"].as<std::string>();
+        }
+        if(it->second["type"])
+        {
+            remap.type = it->second["type"].as<std::string>();
+        }
       }
     }
   }
@@ -353,15 +360,26 @@ YAML::Node config_or_empty_node(
 }
 
 //==============================================================================
-std::string remap_if_needed(
+TopicInfo remap_if_needed(
     const std::string& middleware,
-    const std::map<std::string, std::string>& remap,
-    const std::string& original)
+    const std::map<std::string, TopicInfo>& remap,
+    const TopicInfo& original)
 {
   const auto it = remap.find(middleware);
   if(it == remap.end())
+  {
     return original;
+  }
 
+  TopicInfo config = original;
+  if(!it->second.name.empty())
+  {
+    config.name = it->second.name;
+  }
+  if(!it->second.type.empty())
+  {
+    config.type = it->second.type;
+  }
   return it->second;
 }
 
@@ -494,16 +512,6 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
         return false;
       }
 
-      /* // Problems with this check, because configure can give the topics
-      auto it = m_types.find(config.message_type);
-      if (it == m_types.end())
-      {
-        std::cerr << "Unrecognized type [" << config.message_type << "] requested for topic ["
-                  << entry.first << "]" << std::endl;
-        return false;
-      }
-      */
-
       m_required_types[mw].messages.insert(config.message_type);
     }
   }
@@ -631,11 +639,6 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
     const std::string& topic_name = entry.first;
     const TopicConfig& config = entry.second;
 
-    //Check the QoS between the possible two types in the communication
-    // if there is remap
-    //   if m_dynamic_type[config.remap.type].is_subset_of(m_dynamic_type[config.type])
-    //     // OK!!
-
     std::vector<std::shared_ptr<TopicPublisher>> publishers;
     publishers.reserve(config.route.to.size());
     for(const std::string& to : config.route.to)
@@ -650,10 +653,20 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
         continue;
       }
 
+      TopicInfo topic_info = remap_if_needed(to, config.remap, {topic_name, config.message_type});
+      if(!m_types.at(config.message_type)->can_be_read_as(*m_types.at(topic_info.type)))
+      {
+        std::cerr << "Remapping error: type ["
+                  << config.message_type << "] can not be read as type ["
+                  << topic_info.type << "]" << std::endl;
+        valid = false;
+        continue;
+      }
+
       std::shared_ptr<TopicPublisher> publisher =
           it->second.topic_publisher->advertise(
-            remap_if_needed(to, config.remap, topic_name),
-            config.message_type,
+            topic_info.name,
+            topic_info.type,
             config_or_empty_node(to, config.middleware_configs));
 
       if(!publisher)
@@ -690,9 +703,20 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
         continue;
       }
 
+      TopicInfo topic_info = remap_if_needed(from, config.remap, {topic_name, config.message_type});
+      if(!m_types.at(topic_info.type)->can_be_read_as(*m_types.at(config.message_type)))
+      {
+        std::cerr << "Remapping error: type ["
+                  << topic_info.type << "] can not be read as type ["
+                  << config.message_type << "]" << std::endl;
+        valid = false;
+        continue;
+      }
+
       valid &= it->second.topic_subscriber->subscribe(
-            remap_if_needed(from, config.remap, topic_name),
-            config.message_type, callback,
+            topic_info.name,
+            topic_info.type,
+            callback,
             config_or_empty_node(from, config.middleware_configs));
     }
   }
@@ -720,10 +744,11 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
       continue;
     }
 
+    TopicInfo server_info = remap_if_needed(server, config.remap, {service_name, config.service_type});
     std::shared_ptr<ServiceProvider> provider =
         it->second.service_provider->create_service_proxy(
-          remap_if_needed(server, config.remap, service_name),
-          config.service_type,
+          server_info.name,
+          server_info.type,
           config_or_empty_node(server, config.middleware_configs));
 
     if(!provider)
@@ -754,9 +779,11 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
         continue;
       }
 
+      TopicInfo client_info = remap_if_needed(client, config.remap, {service_name, config.service_type});
       valid &= it->second.service_client->create_client_proxy(
-            remap_if_needed(client, config.remap, service_name),
-            config.service_type, callback,
+            client_info.name,
+            client_info.type,
+            callback,
             config_or_empty_node(client, config.middleware_configs));
     }
   }

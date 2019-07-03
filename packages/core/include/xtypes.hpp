@@ -22,9 +22,10 @@ public:
 
     ~DynamicType() = default;
 
-    bool is_subset_of(const DynamicType& /*other*/) const
+    bool can_be_read_as(const DynamicType& other) const
     {
-      return true; //Check compatibility by QoS
+        //TODO: Check compatibility by QoS
+        return members_ == other.members_;
     }
 
     const std::string& get_name() const
@@ -32,7 +33,7 @@ public:
         return name_;
     }
 
-    Type& operator [] (const std::string field)
+    Type& operator [] (const std::string& field)
     {
         return members_[field];
     }
@@ -66,12 +67,12 @@ public:
         return type_;
     }
 
-    std::string& operator [] (const std::string field)
+    std::string& operator [] (const std::string& field)
     {
         return values_[field];
     }
 
-    const std::string& operator [] (const std::string field) const
+    const std::string& operator [] (const std::string& field) const
     {
         return values_.at(field);
     }

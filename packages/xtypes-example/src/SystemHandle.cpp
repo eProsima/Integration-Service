@@ -126,11 +126,11 @@ public:
     {
         // The system handle creates and manages its own types.
         // (It could come from buildes or from idl compiler)
-        auto coord_2d = std::make_shared<xtypes::DynamicType>("Coordinate2D");
+        auto coord_2d = std::make_shared<xtypes::DynamicType>("coordinate2d");
         (*coord_2d)["x"] = xtypes::DynamicType::Type::INT;
         (*coord_2d)["y"] = xtypes::DynamicType::Type::INT;
 
-        auto coord_3d = std::make_shared<xtypes::DynamicType>("Coordinate3D");
+        auto coord_3d = std::make_shared<xtypes::DynamicType>("coordinate3d");
         (*coord_3d)["x"] = xtypes::DynamicType::Type::INT;
         (*coord_3d)["y"] = xtypes::DynamicType::Type::INT;
         (*coord_3d)["z"] = xtypes::DynamicType::Type::INT;
@@ -154,23 +154,24 @@ public:
 
     bool spin_once() override
     {
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1s);
+
         // --- Emulating reading from the system cloud
         for(auto&& subscriber: subscribers_)
         {
-            if (subscriber->get_type()->get_name() == "Coordinate2D")
+            if (subscriber->get_type()->get_name() == "coordinate2d")
             {
                 subscriber->receive({{"x", 3} , {"y", 6 }});
             }
 
-            else if (subscriber->get_type()->get_name() == "Coordinate3D")
+            else if (subscriber->get_type()->get_name() == "coordinate3d")
             {
                 subscriber->receive({{"x", 3} , {"y", 6 }, {"z", 9}});
             }
         }
         // ---
 
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1s);
         return okay();
     }
 

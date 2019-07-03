@@ -64,13 +64,20 @@ struct ServiceRoute
 };
 
 //==============================================================================
+struct TopicInfo
+{
+  std::string name;
+  std::string type;
+};
+
+//==============================================================================
 struct TopicConfig
 {
   std::string message_type;
   TopicRoute route;
 
-  /// key: middleware alias, value: that middleware's name for this topic
-  std::map<std::string, std::string> remap;
+  /// key: middleware alias
+  std::map<std::string, TopicInfo> remap;
 
   std::map<std::string, YAML::Node> middleware_configs;
 };
@@ -81,8 +88,8 @@ struct ServiceConfig
   std::string service_type;
   ServiceRoute route;
 
-  /// key: middleware alias, value: that middleware's name for this service
-  std::map<std::string, std::string> remap;
+  /// key: middleware alias
+  std::map<std::string, TopicInfo> remap;
 
   std::map<std::string, YAML::Node> middleware_configs;
 };

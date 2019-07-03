@@ -6,4 +6,4 @@ routes:
     1_to_2: { from: xtypes1, to: xtypes2 }
 
 topics:
-    hello_xtypes: { type: "Coordinate2D", route: 1_to_2 }
+    position2: { type: coordinate3d, route: 1_to_2, remap: {xtypes1: { topic: position3, type: coordinate3d } } }
