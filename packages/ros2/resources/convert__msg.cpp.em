@@ -52,10 +52,17 @@ public:
   {
     _message = initialize();
 
+#ifndef RCLCPP__QOS_HPP_
     _subscription = node.create_subscription<Ros2_Msg>(
           topic_name,
           [=](Ros2_Msg::UniquePtr msg) { this->subscription_callback(*msg); },
           qos_profile);
+#else
+    _subscription = node.create_subscription<Ros2_Msg>(
+          topic_name,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos_profile)),
+          [=](Ros2_Msg::UniquePtr msg) { this->subscription_callback(*msg); });
+#endif
   }
 
 private:
@@ -104,7 +111,15 @@ public:
       const std::string& topic_name,
       const rmw_qos_profile_t& qos_profile)
   {
+#ifndef RCLCPP__QOS_HPP_
+    // If the rclcpp/qos.hpp header does not exist, then we assume that we
+    // are in crystal
     _publisher = node.create_publisher<Ros2_Msg>(topic_name, qos_profile);
+#else
+    _publisher = node.create_publisher<Ros2_Msg>(
+          topic_name,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos_profile)));
+#endif
   }
 
   bool publish(const soss::Message& message) override

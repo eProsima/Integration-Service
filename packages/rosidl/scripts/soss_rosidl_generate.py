@@ -9,11 +9,11 @@ import os
 import sys
 
 try:
-    from rosidl_parser import parse_message_file
-    from rosidl_parser import parse_service_file
+    from rosidl_adapter.parser import parse_message_file
+    from rosidl_adapter.parser import parse_service_file
     from rosidl_cmake import convert_camel_case_to_lower_case_underscore
 except ImportError:
-    print('Unable to import rosidl_parser. Please source a ROS2 installation first.', end='', file=sys.stderr)
+    print('Unable to import rosidl_adapter. Please source a ROS2 installation first.', end='', file=sys.stderr)
     sys.exit(1)
 
 

@@ -173,8 +173,14 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
 
   SECTION("Publish a pose and get it echoed back")
   {
+#ifndef RCLCPP__QOS_HPP_
     const auto publisher =
         ros2->create_publisher<geometry_msgs::msg::Pose>("transmit_pose");
+#else
+    const auto publisher =
+        ros2->create_publisher<geometry_msgs::msg::Pose>(
+          "transmit_pose", rclcpp::SystemDefaultsQoS());
+#endif // RCLCPP__QOS_HPP_
     REQUIRE(publisher);
 
     std::promise<soss::Message> msg_promise;
@@ -253,8 +259,13 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
       pose_promise.set_value(*msg);
     };
 
+#ifndef RCLCPP__QOS_HPP_
     const auto subscriber = ros2->create_subscription<geometry_msgs::msg::Pose>(
           "echo_pose", echo_sub);
+#else
+    const auto subscriber = ros2->create_subscription<geometry_msgs::msg::Pose>(
+          "echo_pose", rclcpp::SystemDefaultsQoS(), echo_sub);
+#endif // RCLCPP__QOS_HPP_
 
     // Keep spinning and publishing while we wait for the promise to be
     // delivered. Try to cycle this for no more than a few seconds. If it's not
