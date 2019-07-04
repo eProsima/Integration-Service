@@ -6,10 +6,10 @@ import os
 import sys
 
 try:
-    from rosidl_parser import parse_message_file
-    from rosidl_parser import parse_service_file
+    from rosidl_adapter.parser import parse_message_file
+    from rosidl_adapter.parser import parse_service_file
 except ImportError:
-    print('Unable to import rosidl_parser. Please source a ROS2 installation first.', end='', file=sys.stderr)
+    print('Unable to import rosidl_adapter. Please source a ROS2 installation first.', end='', file=sys.stderr)
     sys.exit(1)
 
 from ament_index_python.packages import get_package_share_directory
