@@ -179,7 +179,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
 #else
     const auto publisher =
         ros2->create_publisher<geometry_msgs::msg::Pose>(
-          "transmit_pose", rclcpp::SystemDefaultQoS());
+          "transmit_pose", rclcpp::SystemDefaultsQoS());
 #endif // RCLCPP__QOS_HPP_
     REQUIRE(publisher);
 
@@ -264,7 +264,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
           "echo_pose", echo_sub);
 #else
     const auto subscriber = ros2->create_subscription<geometry_msgs::msg::Pose>(
-          "echo_pose", rclcpp::SystemDefaultQoS(), echo_sub);
+          "echo_pose", rclcpp::SystemDefaultsQoS(), echo_sub);
 #endif // RCLCPP__QOS_HPP_
 
     // Keep spinning and publishing while we wait for the promise to be
