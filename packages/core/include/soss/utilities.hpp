@@ -157,7 +157,7 @@ struct Convert
   static constexpr bool type_is_primitive =
          std::is_arithmetic<Type>::value
       || std::is_same<std::string, Type>::value
-      || std::is_same<std::wstring, Type>::value;
+      || std::is_same<std::basic_string<char16_t>, Type>::value;
 
   /// \brief Create an instance of the generic soss version of this type
   ///
@@ -248,7 +248,7 @@ struct LowPrecisionConvert
   static constexpr bool type_is_primitive =
          std::is_arithmetic<HighPrecision>::value
       || std::is_same<std::string, HighPrecision>::value
-      || std::is_same<std::wstring, HighPrecision>::value;
+      || std::is_same<std::basic_string<char16_t>, HighPrecision>::value;
 
   // Documentation inherited from Convert
   template<typename... Args>
