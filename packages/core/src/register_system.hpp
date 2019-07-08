@@ -43,7 +43,8 @@ struct SystemHandleInfo
       topic_publisher(std::move(other.topic_publisher)),
       topic_subscriber(std::move(other.topic_subscriber)),
       service_client(std::move(other.service_client)),
-      service_provider(std::move(other.service_provider))
+      service_provider(std::move(other.service_provider)),
+      types(std::move(other.types))
   {
     // Do nothing
   }

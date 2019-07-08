@@ -50,7 +50,7 @@ public:
             message[member.first] = std::to_string(system_message.at(member.first));
         }
 
-        soss_callback_(&message);
+        soss_callback_(message);
     }
 
     const std::string& get_topic_name() const { return topic_name_; }
@@ -82,23 +82,25 @@ public:
     Publisher(Publisher&& rhs) = delete;
     Publisher& operator = (Publisher&& rhs) = delete;
 
-    bool publish(const soss::MessageData* message) override
+    bool publish(const soss::MessageData& message) override
     {
         std::map<std::string, int> system_message;
 
         // Conversion
         for(auto&& member: type_->get_members())
         {
-            system_message[member.first] = std::stoi((*message)[member.first]);
+            system_message[member.first] = std::stoi(message[member.first]);
         }
 
         // Print number
-        for(auto&& member: message->get_values())
+        std::stringstream ss; //Used to avoid mix differents couts
+        for(auto&& member: message.get_values())
         {
-            std::cout << member.first << ": " << member.second << ", ";
+            ss << member.first << ": " << member.second << ", ";
         }
+        ss << std::endl;
 
-        std::cout << std::endl;
+        std::cout << ss.str();
 
         return true;
     }

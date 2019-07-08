@@ -113,7 +113,7 @@ class TopicSubscriberSystem : public virtual SystemHandle
 {
 public:
 
-  using SubscriptionCallback = std::function<void(const MessageData* message)>;
+  using SubscriptionCallback = std::function<void(const MessageData& message)>;
 
   /// \brief Have this node subscribe to a topic
   ///
@@ -153,7 +153,7 @@ public:
   ///
   /// \param[in] message
   ///   MessageData that's being published
-  virtual bool publish(const MessageData* message) = 0;
+  virtual bool publish(const MessageData& message) = 0;
 
   virtual ~TopicPublisher() = default;
 };
@@ -216,7 +216,7 @@ public:
   ///
   virtual void receive_response(
       std::shared_ptr<void> call_handle,
-      const MessageData* response) = 0;
+      const MessageData& response) = 0;
 
   virtual ~ServiceClient() = default;
 };
@@ -230,7 +230,7 @@ public:
   /// request.
   using RequestCallback =
     std::function<void(
-      const MessageData* request,
+      const MessageData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle)>;
 
@@ -282,7 +282,7 @@ public:
   ///   to the ServiceClientNode later when receive_response(~) is called.
   ///
   virtual void call_service(
-      const MessageData* request,
+      const MessageData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle) = 0;
 

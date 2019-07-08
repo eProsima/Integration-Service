@@ -85,7 +85,7 @@ public:
     // Do nothing
   }
 
-  bool publish(const soss::MessageData* message) override
+  bool publish(const soss::MessageData& message) override
   {
     // Test that we have advertised this topic
     const auto pub_it = impl().publishers.find(_topic);
@@ -127,7 +127,7 @@ public:
   }
 
   void call_service(
-      const soss::MessageData* request,
+      const soss::MessageData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle) override
   {
@@ -139,7 +139,7 @@ public:
             + _service);
     }
 
-    const soss::MessageData* response = it->second(request);
+    const soss::MessageData& response = it->second(request);
     client.receive_response(call_handle, response);
   }
 
@@ -218,11 +218,11 @@ public:
 //==============================================================================
 bool publish_message(
     const std::string& topic,
-    const soss::MessageData* msg)
+    const soss::MessageData& msg)
 {
   const auto it = impl().subscriptions.find(topic);
   if(it == impl().subscriptions.end() ||
-     it->second.find(msg->get_type().get_name()) == it->second.end())
+     it->second.find(msg.get_type().get_name()) == it->second.end())
   {
     return false;
   }
@@ -265,9 +265,9 @@ public:
     // Do nothing
   }
 
-  std::shared_future<const soss::MessageData*> request(
+  std::shared_future<const soss::MessageData&> request(
       const std::string& topic,
-      const soss::MessageData* request_msg,
+      const soss::MessageData& request_msg,
       std::chrono::nanoseconds retry)
   {
     const auto it = impl().soss_request_callbacks.find(topic);
@@ -303,7 +303,7 @@ public:
 
   void receive_response(
       std::shared_ptr<void> call_handle,
-      const soss::MessageData* response) override
+      const soss::MessageData& response) override
   {
     std::unique_lock<std::mutex> lock(this->mutex);
     if(response_received)
@@ -315,7 +315,7 @@ public:
     (void)call_handle;
   }
 
-  std::promise<const soss::MessageData*> promise;
+  std::promise<const soss::MessageData&> promise;
   std::thread retry_thread;
   bool response_received;
   std::atomic_bool quit;
@@ -330,9 +330,9 @@ public:
 };
 
 //==============================================================================
-std::shared_future<const soss::MessageData*> request(
+std::shared_future<const soss::MessageData&> request(
     const std::string& topic,
-    const soss::MessageData* request_msg,
+    const soss::MessageData& request_msg,
     std::chrono::nanoseconds retry)
 {
   const auto it = impl().clients.find(topic);
