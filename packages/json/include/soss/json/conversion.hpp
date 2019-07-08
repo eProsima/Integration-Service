@@ -42,7 +42,7 @@ soss::Message SYSTEM_HANDLE_EXPORT convert(const std::string& type, const Json& 
 /// * number_integer
 /// * number_unsigned
 /// * number_float
-std::string to_string(const Json& input);
+SYSTEM_HANDLE_EXPORT std::string to_string(const Json& input);
 
 } // namespace json
 } // namespace soss
