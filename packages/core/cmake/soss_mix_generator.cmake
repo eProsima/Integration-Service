@@ -131,6 +131,7 @@ function(soss_mix_generator)
         OUTPUT_SRV_FILE  _${requested_pkg}_srv_files
         OUTPUT_FILE_DEP  _${requested_pkg}_file_dependencies
       )
+
       foreach(dependency ${_${requested_pkg}_recursive_dependencies})
         list(APPEND _recursive_dependencies ${dependency})
         list(APPEND _dependents_of_${dependency} ${requested_pkg})
@@ -651,6 +652,7 @@ function(_soss_mix_find_package_info)
     OUTPUT_VARIABLE script_output
     ERROR_VARIABLE  script_error
   )
+  
   if(script_error)
     message(FATAL_ERROR
       "Critical failure when trying to parse the package information of "

@@ -124,7 +124,7 @@ Search::Implementation::Implementation(const std::string& middleware)
   // Environment variables could change between different instantiations of the
   // Search object, so we re-check these each time a Search instance is created.
 
-  // Add LD_LIBRARY_PATH values first because they are the lowest priority
+  // Add external libraries values first because they are the lowest priority
   const std::vector<std::string> ld_library_paths =
     get_environment_variable_path_list(ENV_LIB_PATH);
 
