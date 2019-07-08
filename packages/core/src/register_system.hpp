@@ -58,7 +58,8 @@ struct SystemHandleInfo
   TopicSubscriberSystem*        topic_subscriber;
   ServiceClientSystem*          service_client;
   ServiceProviderSystem*        service_provider;
-  std::map<std::string, xtypes::DynamicType*> types;
+
+  std::map<std::string, MessageType*> types;
 };
 
 //==============================================================================

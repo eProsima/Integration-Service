@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__MESSAGE_HPP
 #define SOSS__MESSAGE_HPP
@@ -27,111 +27,136 @@
 
 namespace soss {
 
-//==============================================================================
-class SOSS_CORE_API Field
+// ================================ xtypes lib ==================================
+
+#ifndef LIB__XTYPES_HPP
+#define LIB__XTYPES_HPP
+
+#include <string>
+#include <map>
+
+/// \brief Cast this field to the requested type.
+/// If this field does not contain the requested type, this will be a nullptr.
+template<typename T>
+T* cast(
+        std::enable_if_t<std::is_integral<T>::value>* = 0);
+
+/// \brief Cast this field to the requested type.
+/// If this field does not contain the requested type, this will be a nullptr.
+template<typename T>
+T* cast(
+        std::enable_if_t<!std::is_integral<T>::value>* = 0);
+
+/// \brief Cast this field to the requested type with const-qualifications.
+/// If this field does not contain the requested type, this will be a nullptr.
+template <typename T>
+const T* cast(
+        std::enable_if_t<std::is_integral<T>::value>* = 0) const;
+
+/// \brief Cast this field to the requested type.
+/// If this field does not contain the requested type, this will be a nullptr.
+template <typename T>
+const T* cast(
+        std::enable_if_t<!std::is_integral<T>::value>* = 0) const;
+
+class MessageType
 {
 public:
 
-  /// \brief Construct an empty field
-  Field();
-  Field(const Field& other);
-  Field(Field&& other);
-  Field& operator=(const Field& other);
-  Field& operator=(Field&& other);
+    enum class Type
+    {
+        INT, STRING
+    };
 
-  /// \brief Set this field to type T. Any previous data in this field will be
-  /// lost.
-  /// \param[in] data
-  ///   The data to set this field to.
-  template<typename T>
-  void set(T&& data);
+    MessageType(
+            const std::string& name)
+        : name_(name)
+    {
+    }
 
-  /// \brief Cast this field to the requested type.
-  /// If this field does not contain the requested type, this will be a nullptr.
-  template<typename T>
-  T* cast(std::enable_if_t<std::is_integral<T>::value>* = 0);
+    ~MessageType() = default;
 
-  /// \brief Cast this field to the requested type.
-  /// If this field does not contain the requested type, this will be a nullptr.
-  template<typename T>
-  T* cast(std::enable_if_t<!std::is_integral<T>::value>* = 0);
+    bool can_be_read_as(
+            const MessageType& other) const
+    {
+        //TODO: Check compatibility by QoS
+        return members_ == other.members_;
+    }
 
-  /// \brief Cast this field to the requested type with const-qualifications.
-  /// If this field does not contain the requested type, this will be a nullptr.
-  template <typename T>
-  const T* cast(std::enable_if_t<std::is_integral<T>::value>* = 0) const;
+    const std::string& get_name() const
+    {
+        return name_;
+    }
 
-  /// \brief Cast this field to the requested type.
-  /// If this field does not contain the requested type, this will be a nullptr.
-  template <typename T>
-  const T* cast(std::enable_if_t<!std::is_integral<T>::value>* = 0) const;
+    Type& operator [] (
+            const std::string& field)
+    {
+        return members_[field];
+    }
 
-  /// \brief Get the type of this field
-  std::string type() const;
-
-  /// \brief Destructor
-  ~Field();
+    const std::map<std::string, Type>& get_members() const
+    {
+        return members_;
+    }
 
 private:
 
-  /// \brief Implementation of Field::set() function
-  void _set(const std::type_info& type, void* data,
-            std::function<void*(const void*)> &&copier,
-            std::function<void(void*)>&& deleter);
-
-  /// \brief Implementation of Field::cast() function
-  void* _cast(const std::type_info& type);
-
-  /// \brief Implementation of Field::cast() const function.
-  const void* _cast(const std::type_info& type) const;
-
-  class Implementation;
-  std::unique_ptr<Implementation> _pimpl;
-
-  /// \brief
-  template<typename T, typename InnerT>
-  const T* _integral_cast() const;
+    std::string name_;
+    std::map<std::string, Type> members_;
 };
 
-//==============================================================================
-/// Because of C++ language limitations, you cannot explicitly specify template
-/// parameters when using a constructor template to instantiate a class.
-/// We provide this convenience function to overcome that limition.
-template<typename T, typename... Args>
-Field make_field(Args&&... data)
-{
-  Field field;
-  field.set(T(std::forward<Args>(data)...));
-  return field;
-}
 
-//==============================================================================
-class Message
+class MessageData
 {
 public:
 
-  // TODO(MXG): This implementation is a first draft proof-of-concept. After we
-  // are satisfied with the first proof-of-concept, we should consider a better
-  // encapsulation design that doesn't expose so much implementation detail.
-  // E.g. we should use a PIMPL design pattern to ensure that we can maintain a
-  // stable ABI
+    class Iterator
+    {
+    };
 
-  /// The string that uniquely defines this message type
-  std::string type;
+    MessageData(
+            const MessageType& type)
+        : type_(type)
+    {
+    }
 
-  using FieldMap = std::map<std::string, Field>;
-  using iterator = FieldMap::iterator;
-  using const_iterator = FieldMap::const_iterator;
+    ~MessageData() = default;
 
-  /// The data that this message contains. This will point to a middleware
-  /// neutral type defined in a soss library. Each middleware will have its own
-  /// functions for converting to/from this type.
-  FieldMap data;
+    const MessageType& get_type() const
+    {
+        return type_;
+    }
 
+    std::string& operator [] (
+            const std::string& field)
+    {
+        return values_[field];
+    }
+
+    const std::string& operator [] (
+            const std::string& field) const
+    {
+        return values_.at(field);
+    }
+
+    const std::map<std::string, std::string>& get_values() const
+    {
+        return values_;
+    }
+
+    MessageData::Iterator get_iterator() const
+    {
+        //TODO
+        return Iterator();
+    }
+
+private:
+
+    const MessageType& type_;
+    std::map<std::string, std::string> values_;
 };
 
-} // namespace soss
 
-#include <soss/detail/Message-impl.hpp>
+} //soss
 
-#endif // SOSS__MESSAGE_HPP
+#endif //LIB__XTYPES_HPP
