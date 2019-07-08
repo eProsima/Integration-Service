@@ -122,10 +122,10 @@ public:
     bool configure(
         const soss::RequiredTypes& /* types */,
         const YAML::Node& /* configuration */,
-        std::vector<xtypes::DynamicType*>& xtypes) override
+        std::map<std::string, xtypes::DynamicType*>& xtypes) override
     {
         // The system handle creates and manages its own types.
-        // (It could come from buildes or from idl compiler)
+        // (It could come from buildes or from an idl compiler)
         auto coord_2d = std::make_shared<xtypes::DynamicType>("coordinate2d");
         (*coord_2d)["x"] = xtypes::DynamicType::Type::INT;
         (*coord_2d)["y"] = xtypes::DynamicType::Type::INT;
@@ -141,7 +141,7 @@ public:
         // Notify all the types to soss
         for (auto&& it: types_)
         {
-            xtypes.push_back(it.second.get());
+            xtypes.insert(std::make_pair(it.first, it.second.get()));
         }
 
         return true;
