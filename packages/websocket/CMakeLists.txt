@@ -8,7 +8,8 @@ endif()
 
 find_package(soss-core REQUIRED)
 find_package(soss-json REQUIRED)
-find_package(yaml-cpp)find_package(websocketpp REQUIRED)
+find_package(yaml-cpp)
+find_package(websocketpp REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system date_time regex random)
 
 if(NOT CMAKE_CXX_STANDARD)
