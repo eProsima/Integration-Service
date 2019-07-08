@@ -56,7 +56,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
     rclcpp::init(argc, argv);
   }
 
-  REQUIRE( rclcpp::ok() );
+  REQUIRE(rclcpp::ok());
 
   // Change domain to 5 and create node.
   SETENV("ROS_DOMAIN_ID", "5", true);
