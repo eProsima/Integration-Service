@@ -52,8 +52,8 @@ struct TopicRoute
 //==============================================================================
 struct ServiceRoute
 {
-  std::string server;
   std::set<std::string> clients;
+  std::string server;
 
   std::set<std::string> all() const
   {
@@ -110,14 +110,21 @@ public:
   bool okay() const { return _okay; }
   operator bool() const { return okay(); }
 
-  bool load_middlewares(SystemHandleInfoMap& info_map);
+  bool load_middlewares(SystemHandleInfoMap& info_map) const;
 
   bool configure_topics(const SystemHandleInfoMap& info_map) const;
 
   bool configure_services(const SystemHandleInfoMap& info_map) const;
 
+  bool check_topic_compatibility(const SystemHandleInfoMap& info_map,
+                                 const std::string& topic_name,
+                                 const TopicConfig& config) const;
+
+  bool check_service_compatibility(const SystemHandleInfoMap& info_map,
+                                   const std::string& service_name,
+                                   const ServiceConfig& config) const;
+
   std::map<std::string, MiddlewareConfig> m_middlewares;
-  std::map<std::string, xtypes::DynamicType*> m_types;
   std::map<std::string, TopicRoute> m_topic_routes;
   std::map<std::string, ServiceRoute> m_service_routes;
   std::map<std::string, TopicConfig> m_topic_configs;

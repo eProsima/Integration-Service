@@ -18,8 +18,6 @@
 #include "Search-impl.hpp"
 #include "Config.hpp"
 
-#include <idl4.hpp>
-
 #include <soss/MiddlewareInterfaceExtension.hpp>
 
 #include <iostream>
@@ -425,25 +423,9 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
   if(!config_node.IsMap())
   {
     std::cerr << "The config-file [" << file << "] needs to be a map "
-              << "containing [systems] and [idls], and possibly [routes], [topics], "
+              << "containing [systems], and possibly [routes], [topics], "
               << "and/or [services]!" << std::endl;
     return false;
-  }
-
-  const YAML::Node& idls = config_node["idls"];
-  if(idls && !idls.IsSequence())
-  {
-    std::cerr << "The config-file [" << file << "] must be a list." << std::endl;
-    return false;
-  }
-
-  for(YAML::const_iterator it = idls.begin(); it != idls.end(); ++it)
-  {
-    const std::string& file_path = (*it).as<std::string>();
-    for (auto&& dynamic_type: idl4::compile(file_path))
-    {
-      m_types.insert(dynamic_type);
-    }
   }
 
   const YAML::Node& systems = config_node["systems"];
@@ -563,7 +545,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
 }
 
 //==============================================================================
-bool Config::load_middlewares(SystemHandleInfoMap& info_map)
+bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
 {
   for(const auto& mw_entry : m_middlewares)
   {
@@ -608,19 +590,10 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map)
     const auto requirements = m_required_types.find(mw_name);
     if(requirements != m_required_types.end())
       configured =
-          info.handle->configure(requirements->second, mw_config.config_node, local_types);
+          info.handle->configure(requirements->second, mw_config.config_node, info.types);
 
     if(configured)
     {
-      for(auto&& type: local_types)
-      {
-        if(m_types.find(type->get_name()) == m_types.end())
-        {
-          m_types[type->get_name()] = type;
-        }
-        m_types[mw_name + "::" + type->get_name()] = type;
-      }
-
       info_map.insert(std::make_pair(mw_name, std::move(info)));
     }
     else
@@ -639,12 +612,18 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
     const std::string& topic_name = entry.first;
     const TopicConfig& config = entry.second;
 
+    if(check_topic_compatibility(info_map, topic_name, config))
+    {
+      valid = false;
+      continue;
+    }
+
     std::vector<std::shared_ptr<TopicPublisher>> publishers;
     publishers.reserve(config.route.to.size());
     for(const std::string& to : config.route.to)
     {
-      const auto it = info_map.find(to);
-      if(it == info_map.end() || !it->second.topic_publisher)
+      const auto it_to = info_map.find(to);
+      if(it_to == info_map.end() || !it_to->second.topic_publisher)
       {
         std::cerr << "Could not find topic publishing capabilities for system "
                   << "named [" << to << "], requested for topic ["
@@ -654,17 +633,8 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       }
 
       TopicInfo topic_info = remap_if_needed(to, config.remap, {topic_name, config.message_type});
-      if(!m_types.at(config.message_type)->can_be_read_as(*m_types.at(topic_info.type)))
-      {
-        std::cerr << "Remapping error: type ["
-                  << config.message_type << "] can not be read as type ["
-                  << topic_info.type << "]" << std::endl;
-        valid = false;
-        continue;
-      }
-
       std::shared_ptr<TopicPublisher> publisher =
-          it->second.topic_publisher->advertise(
+          it_to->second.topic_publisher->advertise(
             topic_info.name,
             topic_info.type,
             config_or_empty_node(to, config.middleware_configs));
@@ -693,8 +663,8 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
 
     for(const std::string& from : config.route.from)
     {
-      const auto it = info_map.find(from);
-      if(it == info_map.end() || !it->second.topic_subscriber)
+      const auto it_from = info_map.find(from);
+      if(it_from == info_map.end() || !it_from->second.topic_subscriber)
       {
         std::cerr << "Could not find topic subscribing capabilities for system "
                   << "named [" << from << "], requested for topic ["
@@ -704,16 +674,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       }
 
       TopicInfo topic_info = remap_if_needed(from, config.remap, {topic_name, config.message_type});
-      if(!m_types.at(topic_info.type)->can_be_read_as(*m_types.at(config.message_type)))
-      {
-        std::cerr << "Remapping error: type ["
-                  << topic_info.type << "] can not be read as type ["
-                  << config.message_type << "]" << std::endl;
-        valid = false;
-        continue;
-      }
-
-      valid &= it->second.topic_subscriber->subscribe(
+      valid &= it_from->second.topic_subscriber->subscribe(
             topic_info.name,
             topic_info.type,
             callback,
@@ -732,6 +693,12 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
   {
     const std::string& service_name = entry.first;
     const ServiceConfig& config = entry.second;
+
+    if(check_service_compatibility(info_map, service_name, config))
+    {
+      valid = false;
+      continue;
+    }
 
     const std::string& server = config.route.server;
     const auto it = info_map.find(server);
@@ -790,6 +757,68 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
 
   return valid;
 }
+
+//==============================================================================
+bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
+                                       const std::string& topic_name,
+                                       const TopicConfig& config) const
+{
+  bool valid = true;
+  for(const std::string& from : config.route.from)
+  {
+    const auto it_from = info_map.find(from);
+    TopicInfo topic_info_from = remap_if_needed(from, config.remap, {topic_name, config.message_type});
+    const xtypes::DynamicType* from_type = it_from->second.types.at(topic_info_from.type);
+
+    for(const std::string& to : config.route.to)
+    {
+      const auto it_to = info_map.find(to);
+      TopicInfo topic_info_to = remap_if_needed(to, config.remap, {topic_name, config.message_type});
+      const xtypes::DynamicType* to_type = it_to->second.types.at(topic_info_to.type);
+
+      if(!from_type->can_be_read_as(*to_type))
+      {
+        std::cerr << "Remapping error: message type ["
+                  << topic_info_from.type << "] from [" + it_from->first + "] can not be read as type ["
+                  << topic_info_to.type << "] in [" + it_to->first + "]" << std::endl;
+        valid = false;
+        continue;
+      }
+    }
+  }
+
+  return valid;
+}
+
+//==============================================================================
+bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
+                                         const std::string& service_name,
+                                         const ServiceConfig& config) const
+{
+  bool valid = true;
+  for(const std::string& client : config.route.clients)
+  {
+    const auto it_client = info_map.find(client);
+    TopicInfo topic_info_client = remap_if_needed(client, config.remap, {service_name, config.service_type});
+    const xtypes::DynamicType* client_type = it_client->second.types.at(topic_info_client.type);
+
+    const auto it_server = info_map.find(config.route.server);
+    TopicInfo topic_info_server = remap_if_needed(config.route.server, config.remap, {service_name, config.service_type});
+    const xtypes::DynamicType* server_type = it_server->second.types.at(topic_info_server.type);
+
+    if(!client_type->can_be_read_as(*server_type)) //CHECK: must be checked in two directions?
+    {
+      std::cerr << "Remapping error: service type ["
+                << topic_info_client.type << "] from [" + it_client->first + "] can not be read as type ["
+                << topic_info_server.type << "] in [" + it_server->first + "]" << std::endl;
+      valid = false;
+      continue;
+    }
+  }
+
+  return valid;
+}
+
 
 } // namespace internal
 } // namespace soss
