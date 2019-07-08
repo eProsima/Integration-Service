@@ -612,7 +612,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
     const std::string& topic_name = entry.first;
     const TopicConfig& config = entry.second;
 
-    if(check_topic_compatibility(info_map, topic_name, config))
+    if(!check_topic_compatibility(info_map, topic_name, config))
     {
       valid = false;
       continue;
@@ -694,7 +694,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     const std::string& service_name = entry.first;
     const ServiceConfig& config = entry.second;
 
-    if(check_service_compatibility(info_map, service_name, config))
+    if(!check_service_compatibility(info_map, service_name, config))
     {
       valid = false;
       continue;
