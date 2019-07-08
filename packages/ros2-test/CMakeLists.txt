@@ -55,9 +55,15 @@ target_include_directories(soss-ros2-test
     ${test_msgs_INCLUDE_DIRS}
 )
 
+if($ENV{ROS_DISTRO} STREQUAL dashing)
+  set(test_msgs_config_file "ros2__test_msgs_dashing.yaml")
+else()
+  set(test_msgs_config_file "ros2__test_msgs_crystal.yaml")
+endif()
+
 target_compile_definitions(soss-ros2-test
   PRIVATE
     "ROS2__GEOMETRY_MSGS__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/ros2__geometry_msgs.yaml\""
-    "ROS2__TEST_MSGS__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/ros2__test_msgs.yaml\""
+    "ROS2__TEST_MSGS__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/${test_msgs_config_file}\""
     "ROS2__ROSIDL__BUILD_DIR=\"${CMAKE_BINARY_DIR}/soss/rosidl/ros2/lib\""
 )
