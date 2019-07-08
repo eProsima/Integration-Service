@@ -24,6 +24,7 @@
 
 #include <functional>
 #include <memory>
+#include <soss/Soss_export.hpp>
 
 namespace soss {
 namespace ros2 {
@@ -37,7 +38,7 @@ public:
   /// plugin libraries that define subscriber/publisher/client/server code for
   /// each message and service type. These plugin libraries will register their
   /// factories with this singleton so that
-  static Factory& instance();
+  SYSTEM_HANDLE_EXPORT static Factory& instance();
 
 
   /// \brief Signature for subscription factories
@@ -49,13 +50,13 @@ public:
           const rmw_qos_profile_t& qos_profile)>;
 
   /// \brief Register a subscription factory
-  void register_subscription_factory(
+  SYSTEM_HANDLE_EXPORT void register_subscription_factory(
       const std::string& message_type,
       SubscriptionFactory subscriber_factory);
 
   /// \brief Create a subscription using the factory for the relevant message
   /// type
-  std::shared_ptr<void> create_subscription(
+  SYSTEM_HANDLE_EXPORT std::shared_ptr<void> create_subscription(
       const std::string& message_type,
       rclcpp::Node& node,
       const std::string& topic_name,
@@ -71,12 +72,12 @@ public:
           const rmw_qos_profile_t& qos_profile)>;
 
   /// \brief Register a publisher factory
-  void register_publisher_factory(
+  SYSTEM_HANDLE_EXPORT void register_publisher_factory(
       const std::string& message_type,
       PublisherFactory publisher_factory);
 
   /// \brief Create a publisher using the factory for the relevant message type
-  std::shared_ptr<TopicPublisher> create_publisher(
+  SYSTEM_HANDLE_EXPORT std::shared_ptr<TopicPublisher> create_publisher(
       const std::string& message_type,
       rclcpp::Node& node,
       const std::string& topic_name,
@@ -92,13 +93,13 @@ public:
           const rmw_qos_profile_t& qos_profile)>;
 
   /// \brief Register a client proxy factory
-  void register_client_proxy_factory(
+  SYSTEM_HANDLE_EXPORT void register_client_proxy_factory(
       const std::string& service_type,
       ServiceClientFactory client_proxy_factory);
 
   /// \brief Create a client proxy using the factory for the relevant service
   /// type
-  std::shared_ptr<ServiceClient> create_client_proxy(
+  SYSTEM_HANDLE_EXPORT std::shared_ptr<ServiceClient> create_client_proxy(
       const std::string& service_type,
       rclcpp::Node& node,
       const std::string& service_name,
@@ -114,13 +115,13 @@ public:
           const rmw_qos_profile_t& qos_profile)>;
 
   /// \brief Register a server proxy factory
-  void register_server_proxy_factory(
+  SYSTEM_HANDLE_EXPORT void register_server_proxy_factory(
       const std::string& service_type,
       ServiceProviderFactory server_proxy_factory);
 
   /// \brief Create a server proxy using the factory for the relevant service
   /// type
-  std::shared_ptr<ServiceProvider> create_server_proxy(
+  SYSTEM_HANDLE_EXPORT std::shared_ptr<ServiceProvider> create_server_proxy(
       const std::string& service_type,
       rclcpp::Node& node,
       const std::string& service_name,

@@ -22,6 +22,7 @@
 
 #include <map>
 #include <list>
+#include <soss/Soss_export.hpp>
 
 namespace soss {
 
@@ -33,7 +34,7 @@ std::vector<std::string> get_environment_variable_path_list(
     const std::string& env_var);
 
 //==============================================================================
-class Search::Implementation
+class SOSS_EXPORT Search::Implementation
 {
 public:
 

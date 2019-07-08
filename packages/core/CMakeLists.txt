@@ -43,8 +43,8 @@ target_link_libraries(soss-core
     yaml-cpp
   PRIVATE
     Boost::program_options
-    dl
-    stdc++fs
+    $<$<PLATFORM_ID:Linux>:dl>
+    $<$<PLATFORM_ID:Linux>:stdc++fs>
 )
 
 target_include_directories(soss-core
@@ -100,10 +100,18 @@ install(
   COMPONENT soss-core
 )
 
+if (WIN32)
+install(
+  FILES "${CMAKE_CURRENT_LIST_DIR}/windows/local_setup_windows.bat"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/../"
+  COMPONENT soss-core
+)
+endif()
+
 ###############################
 # Install soss program
 install(
-  TARGETS soss
+  TARGETS soss soss-core
   DESTINATION "${CMAKE_INSTALL_BINDIR}"
   COMPONENT soss-core
 )

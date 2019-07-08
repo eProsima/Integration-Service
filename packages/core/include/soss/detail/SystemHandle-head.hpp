@@ -18,6 +18,7 @@
 #ifndef SOSS__DETAIL__SYSTEMHANDLE_HEAD_HPP
 #define SOSS__DETAIL__SYSTEMHANDLE_HEAD_HPP
 
+#include "soss/Soss_export.hpp"
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -33,7 +34,7 @@ namespace detail {
 using SystemHandleFactory = std::function<std::unique_ptr<SystemHandle>()>;
 
 //==============================================================================
-void register_system_handle_factory(
+void SOSS_EXPORT register_system_handle_factory(
     const std::string& middleware,
     SystemHandleFactory handle);
 

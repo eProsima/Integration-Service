@@ -70,7 +70,7 @@ function(soss_rosidl_mix)
   soss_mix_generator(
     IDL_TYPE rosidl
     SCRIPT
-      INTERPRETER python3
+      INTERPRETER ${PYTHON_EXECUTABLE}
       FIND ${SOSS_ROSIDL_FIND_PACKAGE_INFO_SCRIPT}
       GENERATE ${SOSS_ROSIDL_GENERATE_SCRIPT}
     PACKAGES ${_ARG_PACKAGES}

@@ -7,18 +7,19 @@
 #include <functional>
 #include <future>
 #include <string>
+#include <soss/Soss_export.hpp>
 
 namespace soss {
 namespace mock {
 
-bool publish_message(
+bool SOSS_EXPORT publish_message(
     const std::string& topic,
     const soss::Message& msg);
 
 
 using MockSubscriptionCallback = std::function<void(const soss::Message&)>;
 
-bool subscribe(
+bool SOSS_EXPORT subscribe(
     const std::string& topic,
     MockSubscriptionCallback callback);
 
@@ -29,7 +30,7 @@ bool subscribe(
 ///     useful for cases of flaky middlewares or slow discovery. Even if the
 ///     server responds multiple times, only the first response will be
 ///     available to the std::shared_future.
-std::shared_future<soss::Message> request(
+std::shared_future<soss::Message> SOSS_EXPORT request(
     const std::string& topic,
     const soss::Message& request_msg,
     std::chrono::nanoseconds retry = std::chrono::seconds(0));
@@ -37,7 +38,7 @@ std::shared_future<soss::Message> request(
 
 using MockServiceCallback = std::function<soss::Message(const soss::Message& request)>;
 
-void serve(
+void SOSS_EXPORT serve(
     const std::string& topic,
     MockServiceCallback callback);
 

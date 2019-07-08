@@ -20,7 +20,24 @@
 #include <experimental/filesystem>
 #include <iostream>
 
+#ifdef WIN32
+// WINDOWS includes
+#include <Windows.h>
+#include <assert.h>
+#else
 #include <dlfcn.h>
+#endif
+
+#ifdef WIN32
+#define OPEN_LIB(libname) LoadLibraryW(libname)
+#define GET_LAST_ERROR() GetLastError()
+#define LIB_EXTENSION "dll"
+#else
+#define OPEN_LIB(libname) dlopen(libname, RTLD_NOW)
+#define GET_LAST_ERROR dlerror
+#define LIB_EXTENSION "dl"
+#endif
+
 
 namespace soss {
 
@@ -40,9 +57,9 @@ bool load_if_exists(
 
   if(filesystem::exists(path))
   {
-    void* handle = dlopen(path.c_str(), RTLD_NOW);
+    void* handle = OPEN_LIB(path.c_str());
 
-    const char* loading_error = dlerror();
+    auto loading_error = GET_LAST_ERROR();
     if(loading_error)
     {
       std::cerr << "Error while loading the library [" << path << "]: "
@@ -93,7 +110,7 @@ public:
   bool load_dl() const
   {
     bool result = true;
-    const YAML::Node& dl = _root["dl"];
+    const YAML::Node& dl = _root[LIB_EXTENSION];
     if(dl.IsSequence())
     {
       for(YAML::const_iterator it = dl.begin(); it != dl.end(); ++it)
@@ -133,8 +150,8 @@ Mix::MiddlewareInterfaceExtension(MiddlewareInterfaceExtension&& other)
 //==============================================================================
 Mix Mix::from_file(const std::string& filename)
 {
-  return Mix(YAML::LoadFile(filename),
-             filesystem::path(filename).parent_path());
+  auto parentpath = filesystem::path(filename).parent_path();
+  return Mix(YAML::LoadFile(filename), parentpath.string());
 }
 
 //==============================================================================

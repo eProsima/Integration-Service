@@ -21,6 +21,8 @@
 
 #include <iostream>
 
+#include <soss/Soss_export.hpp>
+
 namespace soss {
 namespace mock {
 
@@ -147,7 +149,7 @@ public:
 };
 
 //==============================================================================
-class SystemHandle : public virtual soss::FullSystem
+class SYSTEM_HANDLE_EXPORT SystemHandle : public virtual soss::FullSystem
 {
 public:
 

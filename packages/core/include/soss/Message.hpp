@@ -18,6 +18,8 @@
 #ifndef SOSS__MESSAGE_HPP
 #define SOSS__MESSAGE_HPP
 
+
+#include "soss/Soss_export.hpp"
 #include <functional>
 #include <map>
 #include <memory>
@@ -26,7 +28,7 @@
 namespace soss {
 
 //==============================================================================
-class Field
+class SOSS_EXPORT Field
 {
 public:
 
@@ -85,7 +87,7 @@ template<typename T, typename... Args>
 Field make_field(Args&&... data)
 {
   Field field;
-  field.set<T>(T(std::forward<Args>(data)...));
+  field.set(T(std::forward<Args>(data)...));
   return field;
 }
 

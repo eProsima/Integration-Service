@@ -85,6 +85,8 @@ function(soss_install_middleware_plugin)
     LIBRARY_OUTPUT_DIRECTORY ${mix_build_dir}
   )
 
+  set(plugin_library_extension $<IF:$<PLATFORM_ID:Windows>,"dll","dl">)
+
   foreach(type ${system_types})
     set(plugin_library_mix_template "${mix_build_dir}/soss/${type}/${type}.mix.gen")
     set(plugin_library_directory "../..")

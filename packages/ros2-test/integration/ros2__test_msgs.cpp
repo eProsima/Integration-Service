@@ -286,14 +286,18 @@ test_msgs::msg::Primitives generate_random_primitives(const std::size_t seed)
   rng.seed(64+seed);
 
   Primitives primitives;
-  primitives.bool_value = std::uniform_int_distribution<int8_t>(0, 2)(rng);
-  primitives.byte_value = std::uniform_int_distribution<Primitives::_byte_value_type>()(rng);
-  primitives.char_value = std::uniform_int_distribution<Primitives::_char_value_type>()(rng);
-  primitives.int8_value = std::uniform_int_distribution<Primitives::_int8_value_type>()(rng);
+
+  // uniform_int_distribution is only compatible with short, int, long, long long, 
+  // unsigned short, unsigned int, unsigned long, or unsigned long long. So for smaller
+  // values use int16_t (short)
+  primitives.bool_value = std::uniform_int_distribution<int16_t>(0, 2)(rng);
+  primitives.byte_value = std::uniform_int_distribution<uint16_t>()(rng);
+  primitives.char_value = std::uniform_int_distribution<uint16_t>()(rng);
+  primitives.int8_value = std::uniform_int_distribution<Primitives::_int16_value_type>()(rng);
   primitives.int16_value = std::uniform_int_distribution<Primitives::_int16_value_type>()(rng);
   primitives.int32_value = std::uniform_int_distribution<Primitives::_int32_value_type>()(rng);
   primitives.int64_value = std::uniform_int_distribution<Primitives::_int64_value_type>()(rng);
-  primitives.uint8_value = std::uniform_int_distribution<Primitives::_uint8_value_type>()(rng);
+  primitives.uint8_value = std::uniform_int_distribution<Primitives::_uint16_value_type>()(rng);
   primitives.uint16_value = std::uniform_int_distribution<Primitives::_uint16_value_type>()(rng);
   primitives.uint32_value = std::uniform_int_distribution<Primitives::_uint32_value_type>()(rng);
   primitives.uint64_value = std::uniform_int_distribution<Primitives::_uint64_value_type>()(rng);

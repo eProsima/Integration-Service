@@ -16,6 +16,7 @@
 */
 
 #include "Endpoint.hpp"
+#include <soss/Soss_export.hpp>
 
 #include <soss/StringTemplate.hpp>
 
@@ -23,7 +24,7 @@ namespace soss {
 namespace websocket {
 
 //==============================================================================
-class TopicPublisher : public soss::TopicPublisher
+class SYSTEM_HANDLE_EXPORT TopicPublisher : public soss::TopicPublisher
 {
 public:
 

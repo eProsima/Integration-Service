@@ -34,12 +34,15 @@ conversion_dependency = 'soss/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
 // Include the Node API so we can subscribe and advertise
 #include <rclcpp/node.hpp>
 
+// Include export macros in order to export symbols in windows
+#include <soss/Soss_export.hpp>
+
 namespace soss {
 namespace ros2 {
 namespace @(namespace_variable) {
 
 //==============================================================================
-class Subscription final
+class SYSTEM_HANDLE_EXPORT Subscription final
 {
 public:
 
@@ -87,7 +90,7 @@ private:
 };
 
 //==============================================================================
-std::shared_ptr<void> subscribe(
+SYSTEM_HANDLE_EXPORT std::shared_ptr<void> subscribe(
     rclcpp::Node& node,
     const std::string& topic_name,
     TopicSubscriberSystem::SubscriptionCallback callback,
@@ -102,7 +105,7 @@ SubscriptionFactoryRegistrar register_subscriber(g_msg_name, &subscribe);
 } // anonymous namespace
 
 //==============================================================================
-class Publisher final : public virtual soss::TopicPublisher
+class SYSTEM_HANDLE_EXPORT Publisher final : public virtual soss::TopicPublisher
 {
 public:
 
@@ -138,7 +141,7 @@ private:
 };
 
 //==============================================================================
-std::shared_ptr<soss::TopicPublisher> make_publisher(
+SYSTEM_HANDLE_EXPORT std::shared_ptr<soss::TopicPublisher> make_publisher(
     rclcpp::Node& node,
     const std::string& topic_name,
     const rmw_qos_profile_t& qos_profile)

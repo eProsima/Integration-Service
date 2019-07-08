@@ -21,6 +21,8 @@
 #include <soss/json/json.hpp>
 #include <soss/Message.hpp>
 
+#include <soss/Soss_export.hpp>
+
 namespace soss {
 namespace json {
 
@@ -28,10 +30,10 @@ using Json = nlohmann::json;
 
 //==============================================================================
 /// Convert from a soss message to a JSON message
-Json convert(const soss::Message& input);
+Json SYSTEM_HANDLE_EXPORT convert(const soss::Message& input);
 
 /// Convert from a JSON message to a soss message
-soss::Message convert(const std::string& type, const Json& input);
+soss::Message SYSTEM_HANDLE_EXPORT convert(const std::string& type, const Json& input);
 
 //==============================================================================
 /// Convert from a Json object to a string. The following types are supported:

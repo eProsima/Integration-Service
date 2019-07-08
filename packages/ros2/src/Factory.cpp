@@ -23,7 +23,7 @@ namespace soss {
 namespace ros2 {
 
 //==============================================================================
-class Factory::Implementation
+class SYSTEM_HANDLE_EXPORT Factory::Implementation
 {
 public:
 

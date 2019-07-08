@@ -19,7 +19,7 @@
 #define SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
 
 #include <functional>
-
+#include <soss/Soss_export.hpp>
 #include <jwt/jwt.hpp>
 
 namespace soss {
@@ -35,7 +35,7 @@ typedef std::function<
     bool(const json_t& header, const json_t& payload,
     VerificationStrategy& vs)> VerificationPolicy;
 
-class JwtValidator
+class SYSTEM_HANDLE_EXPORT JwtValidator
 {
 public:
   bool verify(const std::string& token);
@@ -56,7 +56,7 @@ private:
   std::vector<VerificationPolicy> _verification_policies;
 };
 
-class VerificationPolicies
+class SYSTEM_HANDLE_EXPORT VerificationPolicies
 {
 public:
   typedef std::pair<std::string, std::string> Rule;

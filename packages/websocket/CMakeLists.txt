@@ -8,9 +8,8 @@ endif()
 
 find_package(soss-core REQUIRED)
 find_package(soss-json REQUIRED)
-find_package(websocketpp REQUIRED)
-find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(yaml-cpp)find_package(websocketpp REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system date_time regex random)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -23,7 +22,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 include(GNUInstallDirs)
-
 message(STATUS "Configuring [soss-websocket]")
 
 add_library(soss-websocket SHARED
@@ -38,18 +36,23 @@ add_library(soss-websocket SHARED
 )
 
 target_link_libraries(soss-websocket
-  PRIVATE
+  PUBLIC
     soss::core
+  PRIVATE
     soss::json
     OpenSSL::SSL
     Boost::system
+    Boost::date_time
+    Boost::regex
+    Boost::random
+    yaml-cpp
 )
 
 target_include_directories(soss-websocket
   PRIVATE
-    ${WEBSOCKETPP_INCLUDE_DIR}
     OpenSSL::SSL
   PUBLIC
+    ${WEBSOCKETPP_INCLUDE_DIR}
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cpp-jwt-v1.1.1/include>
   INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>

@@ -26,12 +26,13 @@
 #include <rclcpp/executors/single_threaded_executor.hpp>
 
 #include <vector>
+#include <soss/Soss_export.hpp>
 
 namespace soss {
 namespace ros2 {
 
 //==============================================================================
-class SystemHandle : public virtual FullSystem
+class SYSTEM_HANDLE_EXPORT SystemHandle : public virtual FullSystem
 {
 public:
 

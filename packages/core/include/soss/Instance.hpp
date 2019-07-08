@@ -25,11 +25,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "soss/Soss_export.hpp"
 
 namespace soss {
 
 //==============================================================================
-class InstanceHandle
+class SOSS_EXPORT InstanceHandle
 {
 public:
 
@@ -83,7 +84,7 @@ using MiddlewarePrefixPathMap =
     std::unordered_map<std::string, std::vector<std::string>>;
 
 //==============================================================================
-class Instance
+class SOSS_EXPORT Instance
 {
 public:
 
@@ -133,11 +134,11 @@ private:
 
 //==============================================================================
 /// Create a soss instance and run it in its own thread
-InstanceHandle run_instance(int argc, char* argv[]);
+SOSS_EXPORT InstanceHandle run_instance(int argc, char* argv[]);
 
 //==============================================================================
 /// Create a soss instance for the specified YAML and run it in its own thread
-InstanceHandle run_instance(
+SOSS_EXPORT InstanceHandle run_instance(
     const YAML::Node& config_node,
     const std::vector<std::string>& soss_prefixes = {},
     const MiddlewarePrefixPathMap& middleware_prefixes = {});
@@ -145,7 +146,7 @@ InstanceHandle run_instance(
 //==============================================================================
 /// Create a soss instance for the specified config file and run it in its own
 /// thread
-InstanceHandle run_instance(
+SOSS_EXPORT InstanceHandle run_instance(
     const std::string& config_file_path,
     const std::vector<std::string>& soss_prefixes = {},
     const MiddlewarePrefixPathMap& middleware_prefixes = {});

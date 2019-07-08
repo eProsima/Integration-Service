@@ -19,6 +19,7 @@
 #define SOSS__FIELDTOSTRING_HPP
 
 #include <soss/Message.hpp>
+#include <stdexcept>
 
 namespace soss {
 

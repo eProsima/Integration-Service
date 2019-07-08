@@ -131,7 +131,6 @@ function(soss_mix_generator)
         OUTPUT_SRV_FILE  _${requested_pkg}_srv_files
         OUTPUT_FILE_DEP  _${requested_pkg}_file_dependencies
       )
-
       foreach(dependency ${_${requested_pkg}_recursive_dependencies})
         list(APPEND _recursive_dependencies ${dependency})
         list(APPEND _dependents_of_${dependency} ${requested_pkg})
@@ -251,13 +250,11 @@ function(soss_mix_generator)
       OUTPUT_FILE_DEP  _${dependency}_file_dependencies
     )
   endforeach()
-
   #########################
   # Generate files and configure targets for every required package that didn't
   # already have a mix made and installed.
   foreach(middleware ${_found_middleware_mixes})
     foreach(package ${_queued_${middleware}_packages})
-
       _soss_configure_mix_package(
         IDL_TYPE      ${_ARG_IDL_TYPE}
         SCRIPT
@@ -447,6 +444,8 @@ function(_soss_configure_mix_package)
       )
     endif()
   endif()
+
+  set(plugin_library_extension $<IF:$<PLATFORM_ID:Windows>,"dll","dl">)
 
   set(plugin_library_target ${mix_target})
   set(plugin_library_directory ../../../..)
@@ -652,7 +651,6 @@ function(_soss_mix_find_package_info)
     OUTPUT_VARIABLE script_output
     ERROR_VARIABLE  script_error
   )
-
   if(script_error)
     message(FATAL_ERROR
       "Critical failure when trying to parse the package information of "
@@ -681,7 +679,7 @@ function(_soss_mix_find_package_info)
     # list(GET ...). Now we convert each of those colon-separated lists into
     # semicolon-separated lists so that cmake can recognize them correctly as
     # lists.
-    string(REPLACE ":" ";" ${output_var} "${${output_var}}")
+    string(REPLACE "#" ";" ${output_var} "${${output_var}}")
 
     # We pass the result up to the parent scope
     set(${_ARG_${output_var}} ${${output_var}} PARENT_SCOPE)

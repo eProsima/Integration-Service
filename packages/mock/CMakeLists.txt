@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5.0)
 project(soss-mock)
 
 find_package(soss-core REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -25,6 +26,7 @@ add_library(soss-mock SHARED
 target_link_libraries(soss-mock
   PUBLIC
     soss::core
+    yaml-cpp
 )
 
 target_include_directories(soss-mock
