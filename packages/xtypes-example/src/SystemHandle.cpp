@@ -26,7 +26,7 @@ class Subscriber
 public:
     Subscriber(
             const std::string& topic_name,
-            const std::shared_ptr<xtypes::DynamicType>& type,
+            const std::shared_ptr<soss::MessageType>& type,
             soss::TopicSubscriberSystem::SubscriptionCallback soss_callback)
         : topic_name_(topic_name)
         , type_(type)
@@ -42,7 +42,7 @@ public:
 
     void receive(const std::map<std::string, int>& system_message)
     {
-        xtypes::DynamicData message(*type_);
+        soss::MessageData message(*type_);
 
         // Conversion
         for(auto&& member: type_->get_members())
@@ -54,11 +54,11 @@ public:
     }
 
     const std::string& get_topic_name() const { return topic_name_; }
-    const std::shared_ptr<xtypes::DynamicType>& get_type() const { return type_; }
+    const std::shared_ptr<soss::MessageType>& get_type() const { return type_; }
 
 private:
     const std::string topic_name_;
-    const std::shared_ptr<xtypes::DynamicType> type_;
+    const std::shared_ptr<soss::MessageType> type_;
 
     soss::TopicSubscriberSystem::SubscriptionCallback soss_callback_;
 };
@@ -70,7 +70,7 @@ class Publisher : public virtual soss::TopicPublisher
 public:
     Publisher(
             const std::string& topic_name,
-            const std::shared_ptr<xtypes::DynamicType>& type)
+            const std::shared_ptr<soss::MessageType>& type)
         : topic_name_(topic_name)
         , type_(type)
     {
@@ -82,7 +82,7 @@ public:
     Publisher(Publisher&& rhs) = delete;
     Publisher& operator = (Publisher&& rhs) = delete;
 
-    bool publish(const xtypes::DynamicData* message) override
+    bool publish(const soss::MessageData* message) override
     {
         std::map<std::string, int> system_message;
 
@@ -104,11 +104,11 @@ public:
     }
 
     const std::string& get_topic_name() const { return topic_name_; }
-    const std::shared_ptr<xtypes::DynamicType>& get_type() const { return type_; }
+    const std::shared_ptr<soss::MessageType>& get_type() const { return type_; }
 
 private:
     const std::string topic_name_;
-    const std::shared_ptr<xtypes::DynamicType> type_;
+    const std::shared_ptr<soss::MessageType> type_;
 };
 
 
@@ -122,18 +122,18 @@ public:
     bool configure(
         const soss::RequiredTypes& /* types */,
         const YAML::Node& /* configuration */,
-        std::map<std::string, xtypes::DynamicType*>& xtypes) override
+        std::map<std::string, soss::MessageType*>& type_register) override
     {
         // The system handle creates and manages its own types.
         // (It could come from buildes or from an idl compiler)
-        auto coord_2d = std::make_shared<xtypes::DynamicType>("coordinate2d");
-        (*coord_2d)["x"] = xtypes::DynamicType::Type::INT;
-        (*coord_2d)["y"] = xtypes::DynamicType::Type::INT;
+        auto coord_2d = std::make_shared<soss::MessageType>("coordinate2d");
+        (*coord_2d)["x"] = soss::MessageType::Type::INT;
+        (*coord_2d)["y"] = soss::MessageType::Type::INT;
 
-        auto coord_3d = std::make_shared<xtypes::DynamicType>("coordinate3d");
-        (*coord_3d)["x"] = xtypes::DynamicType::Type::INT;
-        (*coord_3d)["y"] = xtypes::DynamicType::Type::INT;
-        (*coord_3d)["z"] = xtypes::DynamicType::Type::INT;
+        auto coord_3d = std::make_shared<soss::MessageType>("coordinate3d");
+        (*coord_3d)["x"] = soss::MessageType::Type::INT;
+        (*coord_3d)["y"] = soss::MessageType::Type::INT;
+        (*coord_3d)["z"] = soss::MessageType::Type::INT;
 
         types_.emplace(coord_2d->get_name(), std::move(coord_2d));
         types_.emplace(coord_3d->get_name(), std::move(coord_3d));
@@ -141,7 +141,7 @@ public:
         // Notify all the types to soss
         for (auto&& it: types_)
         {
-            xtypes.insert(std::make_pair(it.first, it.second.get()));
+            type_register.insert(std::make_pair(it.first, it.second.get()));
         }
 
         return true;
@@ -207,7 +207,7 @@ public:
     }
 
 private:
-    std::map<std::string, std::shared_ptr<xtypes::DynamicType>> types_;
+    std::map<std::string, std::shared_ptr<soss::MessageType>> types_;
     std::vector<std::shared_ptr<Publisher>> publishers_;
     std::vector<std::shared_ptr<Subscriber>> subscribers_;
 };

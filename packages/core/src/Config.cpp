@@ -585,7 +585,7 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
     if(!info)
       return false;
 
-    std::vector<xtypes::DynamicType*> local_types;
+    std::vector<MessageType*> local_types;
     bool configured = true;
     const auto requirements = m_required_types.find(mw_name);
     if(requirements != m_required_types.end())
@@ -653,7 +653,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
     }
 
     TopicSubscriberSystem::SubscriptionCallback callback =
-        [=](const xtypes::DynamicData* message)
+        [=](const MessageData* message)
     {
       for(const std::shared_ptr<TopicPublisher>& publisher : publishers)
       {
@@ -727,7 +727,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     }
 
     ServiceClientSystem::RequestCallback callback =
-        [=](const xtypes::DynamicData* request,
+        [=](const MessageData* request,
             ServiceClient& client,
             const std::shared_ptr<void>& call_handle)
     {
@@ -768,13 +768,13 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
   {
     const auto it_from = info_map.find(from);
     TopicInfo topic_info_from = remap_if_needed(from, config.remap, {topic_name, config.message_type});
-    const xtypes::DynamicType* from_type = it_from->second.types.at(topic_info_from.type);
+    const MessageType* from_type = it_from->second.types.at(topic_info_from.type);
 
     for(const std::string& to : config.route.to)
     {
       const auto it_to = info_map.find(to);
       TopicInfo topic_info_to = remap_if_needed(to, config.remap, {topic_name, config.message_type});
-      const xtypes::DynamicType* to_type = it_to->second.types.at(topic_info_to.type);
+      const MessageType* to_type = it_to->second.types.at(topic_info_to.type);
 
       if(!from_type->can_be_read_as(*to_type))
       {
@@ -800,11 +800,11 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
   {
     const auto it_client = info_map.find(client);
     TopicInfo topic_info_client = remap_if_needed(client, config.remap, {service_name, config.service_type});
-    const xtypes::DynamicType* client_type = it_client->second.types.at(topic_info_client.type);
+    const MessageType* client_type = it_client->second.types.at(topic_info_client.type);
 
     const auto it_server = info_map.find(config.route.server);
     TopicInfo topic_info_server = remap_if_needed(config.route.server, config.remap, {service_name, config.service_type});
-    const xtypes::DynamicType* server_type = it_server->second.types.at(topic_info_server.type);
+    const MessageType* server_type = it_server->second.types.at(topic_info_server.type);
 
     if(!client_type->can_be_read_as(*server_type)) //CHECK: must be checked in two directions?
     {
