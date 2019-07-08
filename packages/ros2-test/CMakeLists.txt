@@ -69,3 +69,9 @@ target_compile_definitions(soss-ros2-test
     "ROS2__TEST_MSGS__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/${test_msgs_config_file}\""
     "ROS2__ROSIDL__BUILD_DIR=\"${CMAKE_BINARY_DIR}/soss/rosidl/ros2/lib\""
 )
+
+# Windows dll dependencies installation
+if(WIN32)
+    find_file(MOCKDLL NAMES "soss-mock.dll" PATHS "${soss-mock_DIR}" PATH_SUFFIXES "lib" )
+    install (FILES ${MOCKDLL} DESTINATION "${CMAKE_INSTALL_PREFIX}/../bin")
+endif()
