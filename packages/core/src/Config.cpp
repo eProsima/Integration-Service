@@ -585,12 +585,12 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
     if(!info)
       return false;
 
-    std::vector<MessageType*> local_types;
     bool configured = true;
     const auto requirements = m_required_types.find(mw_name);
     if(requirements != m_required_types.end())
-      configured =
-          info.handle->configure(requirements->second, mw_config.config_node, info.types);
+    {
+      configured = info.handle->configure(requirements->second, mw_config.config_node, info.types);
+    }
 
     if(configured)
     {
@@ -653,7 +653,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
     }
 
     TopicSubscriberSystem::SubscriptionCallback callback =
-        [=](const MessageData* message)
+        [=](const MessageData& message)
     {
       for(const std::shared_ptr<TopicPublisher>& publisher : publishers)
       {
@@ -727,7 +727,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     }
 
     ServiceClientSystem::RequestCallback callback =
-        [=](const MessageData* request,
+        [=](const MessageData& request,
             ServiceClient& client,
             const std::shared_ptr<void>& call_handle)
     {
