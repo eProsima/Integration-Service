@@ -42,7 +42,7 @@ test_msgs::msg::BasicTypes generate_random_basic_types(const std::size_t seed)
 
   std::mt19937 rng;
   // Use consistent seeds for deterministic test results
-  rng.seed(64+seed);
+  rng.seed(64 + seed);
 
   BasicTypes basic_types;
 
