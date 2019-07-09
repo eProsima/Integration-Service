@@ -24,8 +24,6 @@
 
 #include <nav_msgs/srv/get_plan.hpp>
 #include <geometry_msgs/msg/pose.hpp>
-#include <test_msgs/msg/basic_types.hpp>
-#include <test_msgs/msg/arrays.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -36,6 +34,10 @@
 using Catch::Matchers::WithinAbs;
 
 #ifdef RCLCPP__QOS_HPP_
+
+#include <test_msgs/msg/basic_types.hpp>
+#include <test_msgs/msg/arrays.hpp>
+
 test_msgs::msg::BasicTypes generate_random_basic_types(const std::size_t seed)
 {
   using test_msgs::msg::BasicTypes;
