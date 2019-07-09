@@ -210,7 +210,7 @@ TEST_CASE("Transmit and receive all test messages", "[ros2]")
     data->resize(M);
     // Add entries beyond the limits of the bounded vector so that we can make
     // sure the message conversion is robust to overflow.
-    for(std::size_t i=N; i < M; ++i)
+    for(std::size_t i = N; i < M; ++i)
       (*data)[i] = generate_random_basic_types_msg(445+i);
 
     bool promise_sent = false;
