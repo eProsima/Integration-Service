@@ -768,15 +768,29 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
   {
     const auto it_from = info_map.find(from);
     TopicInfo topic_info_from = remap_if_needed(from, config.remap, {topic_name, config.message_type});
-    const MessageType* from_type = it_from->second.types.at(topic_info_from.type);
+    const auto from_type = it_from->second.types.find(topic_info_from.type);
+    if(from_type == it_from->second.types.end())
+    {
+      std::cerr << "Type [" << topic_info_from.type << "] not defined in middleware ["
+                  << it_from->first << "]" << std::endl;
+      valid = false;
+      continue;
+    }
 
     for(const std::string& to : config.route.to)
     {
       const auto it_to = info_map.find(to);
       TopicInfo topic_info_to = remap_if_needed(to, config.remap, {topic_name, config.message_type});
-      const MessageType* to_type = it_to->second.types.at(topic_info_to.type);
+      const auto to_type = it_to->second.types.find(topic_info_to.type);
+      if(to_type == it_to->second.types.end())
+      {
+        std::cerr << "Type [" << topic_info_to.type << "] not defined in middleware ["
+                  << it_to->first << "]" << std::endl;
+        valid = false;
+        continue;
+      }
 
-      if(!from_type->can_be_read_as(*to_type))
+      if(!from_type->second->can_be_read_as(*to_type->second))
       {
         std::cerr << "Remapping error: message type ["
                   << topic_info_from.type << "] from [" + it_from->first + "] can not be read as type ["
@@ -800,13 +814,27 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
   {
     const auto it_client = info_map.find(client);
     TopicInfo topic_info_client = remap_if_needed(client, config.remap, {service_name, config.service_type});
-    const MessageType* client_type = it_client->second.types.at(topic_info_client.type);
+    const auto client_type = it_client->second.types.find(topic_info_client.type);
+    if(client_type == it_client->second.types.end())
+    {
+      std::cerr << "Type [" << topic_info_client.type << "] not defined in middleware ["
+                << it_client->first << "]" << std::endl;
+      valid = false;
+      continue;
+    }
 
     const auto it_server = info_map.find(config.route.server);
     TopicInfo topic_info_server = remap_if_needed(config.route.server, config.remap, {service_name, config.service_type});
-    const MessageType* server_type = it_server->second.types.at(topic_info_server.type);
+    const auto server_type = it_server->second.types.find(topic_info_server.type);
+    if(server_type == it_server->second.types.end())
+    {
+      std::cerr << "Type [" << topic_info_server.type << "] not defined in middleware ["
+                << it_server->first << "]" << std::endl;
+      valid = false;
+      continue;
+    }
 
-    if(!client_type->can_be_read_as(*server_type)) //CHECK: must be checked in two directions?
+    if(!client_type->second->can_be_read_as(*server_type->second))
     {
       std::cerr << "Remapping error: service type ["
                 << topic_info_client.type << "] from [" + it_client->first + "] can not be read as type ["

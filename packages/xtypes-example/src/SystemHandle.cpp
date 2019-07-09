@@ -21,6 +21,23 @@
 #include <thread>
 #include <iostream>
 
+namespace {
+
+void print_system_message(const std::string& prefix, const std::map<std::string, int>& system_message)
+{
+    std::stringstream ss; //Used to avoid mixing differents outs
+    ss << prefix;
+    for(auto&& member: system_message)
+    {
+        ss << member.first << ": " << member.second << ", ";
+    }
+    ss << std::endl;
+
+    std::cout << ss.str();
+}
+
+}
+
 class Subscriber
 {
 public:
@@ -50,6 +67,8 @@ public:
             message[member.first] = std::to_string(system_message.at(member.first));
         }
 
+        print_system_message("[system -> soss]: ", system_message);
+
         soss_callback_(message);
     }
 
@@ -59,7 +78,6 @@ public:
 private:
     const std::string topic_name_;
     const std::shared_ptr<soss::MessageType> type_;
-
     soss::TopicSubscriberSystem::SubscriptionCallback soss_callback_;
 };
 
@@ -70,9 +88,13 @@ class Publisher : public virtual soss::TopicPublisher
 public:
     Publisher(
             const std::string& topic_name,
-            const std::shared_ptr<soss::MessageType>& type)
+            const std::shared_ptr<soss::MessageType>& type,
+            bool roundtrip,
+            std::vector<std::shared_ptr<Subscriber>> subscribers)
         : topic_name_(topic_name)
         , type_(type)
+        , roundtrip_(roundtrip)
+        , subscribers_(subscribers)
     {
     }
 
@@ -92,15 +114,18 @@ public:
             system_message[member.first] = std::stoi(message[member.first]);
         }
 
-        // Print number
-        std::stringstream ss; //Used to avoid mix differents couts
-        for(auto&& member: message.get_values())
-        {
-            ss << member.first << ": " << member.second << ", ";
-        }
-        ss << std::endl;
+        print_system_message("[soss -> system]: ", system_message);
 
-        std::cout << ss.str();
+        if(roundtrip_)
+        {
+            for(auto&& subscriber: subscribers_)
+            {
+                if(subscriber->get_topic_name() == topic_name_ && subscriber->get_type() == type_)
+                {
+                    subscriber->receive(system_message);
+                }
+            }
+        }
 
         return true;
     }
@@ -111,6 +136,8 @@ public:
 private:
     const std::string topic_name_;
     const std::shared_ptr<soss::MessageType> type_;
+    bool roundtrip_;
+    std::vector<std::shared_ptr<Subscriber>>& subscribers_;
 };
 
 
@@ -123,9 +150,12 @@ public:
 
     bool configure(
         const soss::RequiredTypes& /* types */,
-        const YAML::Node& /* configuration */,
+        const YAML::Node& configuration,
         std::map<std::string, soss::MessageType*>& type_register) override
     {
+        autogenerate_ = configuration["autogenerate"] ? configuration["autogenerate"].as<bool>() : false;
+        roundtrip_ = configuration["roundtrip"] ? configuration["roundtrip"].as<bool>() : false;
+
         // The system handle creates and manages its own types.
         // (It could come from buildes or from an idl compiler)
         auto coord_2d = std::make_shared<soss::MessageType>("coordinate2d");
@@ -157,22 +187,26 @@ public:
     bool spin_once() override
     {
         using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1s);
 
-        // --- Emulating reading from the system cloud
-        for(auto&& subscriber: subscribers_)
+        // --- Emulating reading from the world
+        if(autogenerate_)
         {
-            if (subscriber->get_type()->get_name() == "coordinate2d")
+            for(auto&& subscriber: subscribers_)
             {
-                subscriber->receive({{"x", 3} , {"y", 6 }});
-            }
+                if(subscriber->get_type()->get_name() == "coordinate2d")
+                {
+                    subscriber->receive({{"x", 3} , {"y", 6 }});
+                }
 
-            else if (subscriber->get_type()->get_name() == "coordinate3d")
-            {
-                subscriber->receive({{"x", 3} , {"y", 6 }, {"z", 9}});
+                else if(subscriber->get_type()->get_name() == "coordinate3d")
+                {
+                    subscriber->receive({{"x", 3} , {"y", 6 }, {"z", 9}});
+                }
             }
         }
         // ---
+
+        std::this_thread::sleep_for(1s);
 
         return okay();
     }
@@ -198,7 +232,7 @@ public:
         const std::string& message_type,
         const YAML::Node& /* configuration */) override
     {
-        auto publisher = std::make_shared<Publisher>(topic_name, types_.at(message_type));
+        auto publisher = std::make_shared<Publisher>(topic_name, types_.at(message_type), roundtrip_, subscribers_);
         publishers_.emplace_back(std::move(publisher));
 
         std::cout << "[soss-xtypes-example]: publisher created. "
@@ -212,6 +246,8 @@ private:
     std::map<std::string, std::shared_ptr<soss::MessageType>> types_;
     std::vector<std::shared_ptr<Publisher>> publishers_;
     std::vector<std::shared_ptr<Subscriber>> subscribers_;
+    bool autogenerate_;
+    bool roundtrip_;
 };
 
 
