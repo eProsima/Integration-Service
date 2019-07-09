@@ -126,7 +126,7 @@ Search::Implementation::Implementation(const std::string& middleware)
 
   // Add external libraries values first because they are the lowest priority
   const std::vector<std::string> ld_library_paths =
-    get_environment_variable_path_list(ENV_LIB_PATH);
+      get_environment_variable_path_list(ENV_LIB_PATH);
 
   for(auto it = ld_library_paths.rbegin(); it != ld_library_paths.rend(); ++it)
     _env_soss_prefixes.add_path(*it);

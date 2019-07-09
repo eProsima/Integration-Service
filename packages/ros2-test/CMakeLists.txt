@@ -72,6 +72,6 @@ target_compile_definitions(soss-ros2-test
 
 # Windows dll dependencies installation
 if(WIN32)
-    find_file(MOCKDLL NAMES "soss-mock.dll" PATHS "${soss-mock_DIR}" PATH_SUFFIXES "lib" )
-    install (FILES ${MOCKDLL} DESTINATION "${CMAKE_INSTALL_PREFIX}/../bin")
+  find_file(MOCKDLL NAMES "soss-mock.dll" PATHS "${soss-mock_DIR}" PATH_SUFFIXES "lib" )
+  install (FILES ${MOCKDLL} DESTINATION "${CMAKE_INSTALL_PREFIX}/../bin")
 endif()

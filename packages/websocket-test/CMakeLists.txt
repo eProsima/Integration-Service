@@ -54,6 +54,6 @@ endforeach()
 
 # Windows dll dependencies installation
 if(WIN32)
-    find_file(JSONDLL NAMES "soss-json.dll" PATHS "${soss-json_DIR}" PATH_SUFFIXES "lib" )
-    install (FILES ${JSONDLL} DESTINATION "${CMAKE_INSTALL_PREFIX}/../bin")
+  find_file(JSONDLL NAMES "soss-json.dll" PATHS "${soss-json_DIR}" PATH_SUFFIXES "lib" )
+  install (FILES ${JSONDLL} DESTINATION "${CMAKE_INSTALL_PREFIX}/../bin")
 endif()
