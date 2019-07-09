@@ -32,6 +32,7 @@ namespace internal {
 struct MiddlewareConfig
 {
   std::string type;
+  bool type_matching;
   YAML::Node config_node;
 };
 

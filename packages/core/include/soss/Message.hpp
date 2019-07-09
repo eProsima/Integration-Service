@@ -76,16 +76,21 @@ public:
 
     ~MessageType() = default;
 
-    bool can_be_read_as(
-            const MessageType& other) const
-    {
-        //TODO: Check compatibility by QoS
-        return members_ == other.members_;
-    }
-
     const std::string& get_name() const
     {
         return name_;
+    }
+
+    bool operator == (
+            const MessageType& other) const
+    {
+        return name_ == other.name_ && members_ == other.members_;
+    }
+
+    bool operator != (
+            const MessageType& other) const
+    {
+        return !(*this == other);
     }
 
     Type& operator [] (
@@ -97,6 +102,13 @@ public:
     const std::map<std::string, Type>& get_members() const
     {
         return members_;
+    }
+
+    bool can_be_read_as(
+            const MessageType& other) const
+    {
+        //TODO: Check matching by QoS
+        return members_ == other.members_;
     }
 
 private:
@@ -127,32 +139,49 @@ public:
         return type_;
     }
 
-    std::string& operator [] (
+        << << << < HEAD
+        std::string& operator [] (
             const std::string& field)
-    {
-        return values_[field];
-    }
+        == == == =
+        bool operator == (
+        const MessageData& other) const
+            {
+            return type_ == other.type_ && values_ == other.values_;
+        }
 
-    const std::string& operator [] (
+        bool operator != (
+            const MessageData& other) const
+            {
+            return !(*this == other);
+        }
+
+        std::string& operator [] (
+            const std::string& field)
+        >> >> >> > d9039a7 ... publish tests working.
+            {
+            return values_[field];
+        }
+
+        const std::string& operator [] (
             const std::string& field) const
-    {
-        return values_.at(field);
-    }
+            {
+            return values_.at(field);
+        }
 
-    const std::map<std::string, std::string>& get_values() const
-    {
-        return values_;
-    }
+        const std::map<std::string, std::string>& get_values() const
+            {
+            return values_;
+        }
 
-    MessageData::Iterator get_iterator() const
-    {
-        //TODO
-        return Iterator();
-    }
+        MessageData::Iterator get_iterator() const
+            {
+            //TODO
+            return Iterator();
+        }
 
-private:
+        private:
 
-    const MessageType& type_;
+        const MessageType& type_;
     std::map<std::string, std::string> values_;
 };
 
