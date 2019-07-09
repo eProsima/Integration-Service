@@ -30,13 +30,13 @@ bool SOSS_MOCK_API subscribe(
 ///     useful for cases of flaky middlewares or slow discovery. Even if the
 ///     server responds multiple times, only the first response will be
 ///     available to the std::shared_future.
-std::shared_future<const MessageData&> SOSS_MOCK_API request(
+std::shared_future<MessageData> SOSS_MOCK_API request(
     const std::string& topic,
     const MessageData& request_msg,
     std::chrono::nanoseconds retry = std::chrono::seconds(0));
 
 
-using MockServiceCallback = std::function<const MessageData&(const MessageData& request)>;
+using MockServiceCallback = std::function<MessageData(const MessageData& request)>;
 
 void SOSS_MOCK_API serve(
     const std::string& topic,

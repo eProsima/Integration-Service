@@ -139,7 +139,7 @@ public:
             + _service);
     }
 
-    const soss::MessageData& response = it->second(request);
+    soss::MessageData response = it->second(request);
     client.receive_response(call_handle, response);
   }
 
@@ -265,7 +265,7 @@ public:
     // Do nothing
   }
 
-  std::shared_future<const soss::MessageData&> request(
+  std::shared_future<soss::MessageData> request(
       const std::string& topic,
       const soss::MessageData& request_msg,
       std::chrono::nanoseconds retry)
@@ -315,7 +315,7 @@ public:
     (void)call_handle;
   }
 
-  std::promise<const soss::MessageData&> promise;
+  std::promise<soss::MessageData> promise;
   std::thread retry_thread;
   bool response_received;
   std::atomic_bool quit;
@@ -330,7 +330,7 @@ public:
 };
 
 //==============================================================================
-std::shared_future<const soss::MessageData&> request(
+std::shared_future<soss::MessageData> request(
     const std::string& topic,
     const soss::MessageData& request_msg,
     std::chrono::nanoseconds retry)

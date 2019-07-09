@@ -21,6 +21,12 @@ int main()
         message_to["x"] = "2";
         message_to["y"] = "4";
 
+        std::promise<soss::MessageData> receive_msg_promise;
+        soss::mock::subscribe("from_xtypes", [&](const soss::MessageData& msg_from_xtypes)
+        {
+            receive_msg_promise.set_value(msg_from_xtypes);
+        });
+
         std::cout << "[soss-xtypes-example-test]: Sending message..." << std::endl;
         if(!soss::mock::publish_message("to_xtypes", message_to))
         {
@@ -29,12 +35,6 @@ int main()
         }
 
         std::cout << "[soss-xtypes-example-test]: Receiving message..." << std::endl;
-        std::promise<soss::MessageData> receive_msg_promise;
-        soss::mock::subscribe("from_xtypes", [&](const soss::MessageData& msg_from_xtypes)
-        {
-            receive_msg_promise.set_value(msg_from_xtypes);
-        });
-
         auto receive_msg_future = receive_msg_promise.get_future();
         if(std::future_status::ready != receive_msg_future.wait_for(2s))
         {
@@ -48,6 +48,8 @@ int main()
             std::cerr << "[soss-xtypes-example-test]: Error comparing message" << std::endl;
             return 3;
         }
+
+        std::cout << "[soss-xtypes-example-test]: Message received!" << std::endl;
 
         std::cout << "[soss-xtypes-example-test]: Exiting..." << std::endl;
         soss_handle.quit().wait_for(2s);
