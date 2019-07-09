@@ -50,9 +50,11 @@ test_msgs::msg::BasicTypes generate_random_basic_types(const std::size_t seed)
   // unsigned short, unsigned int, unsigned long, or unsigned long long. For smaller
   // values use int16_t (short).
   basic_types.bool_value = std::uniform_int_distribution<int16_t>(0, 2)(rng);
-  basic_types.byte_value = static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>()(rng));
-  basic_types.char_value = static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>()(rng));
-  basic_types.int8_value = std::uniform_int_distribution<BasicTypes::_int16_value_type>()(rng);
+  basic_types.byte_value = static_cast<BasicTypes::_byte_value_type>(std::uniform_int_distribution<uint16_t>()(rng));
+  basic_types.char_value = static_cast<BasicTypes::_char_value_type>(std::uniform_int_distribution<uint16_t>()(rng));
+  basic_types.int8_value =
+          static_cast<BasicTypes::_int8_value_type>(
+              std::uniform_int_distribution<BasicTypes::_int16_value_type>()(rng));
   basic_types.int16_value = std::uniform_int_distribution<BasicTypes::_int16_value_type>()(rng);
   basic_types.int32_value = std::uniform_int_distribution<BasicTypes::_int32_value_type>()(rng);
   basic_types.int64_value = std::uniform_int_distribution<BasicTypes::_int64_value_type>()(rng);
