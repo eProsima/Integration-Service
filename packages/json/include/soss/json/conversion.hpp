@@ -21,7 +21,7 @@
 #include <soss/json/json.hpp>
 #include <soss/Message.hpp>
 
-#include <soss/Soss_export.hpp>
+#include <soss/soss_export.hpp>
 
 namespace soss {
 namespace json {

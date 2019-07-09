@@ -4,7 +4,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "JwtValidator.hpp"
-#include <soss/Soss_export.hpp>
+#include <soss/soss_export.hpp>
 
 namespace soss {
 namespace websocket {

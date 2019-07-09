@@ -20,7 +20,7 @@
 
 #include <soss/Message.hpp>
 #include <stdexcept>
-#include <soss/Soss_export.hpp>
+#include <soss/soss_export.hpp>
 
 namespace soss {
 

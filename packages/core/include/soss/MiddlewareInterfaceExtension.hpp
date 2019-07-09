@@ -19,7 +19,7 @@
 #define SOSS__MIDDLEWAREINTERFACEEXTENSION_HPP
 
 #include <yaml-cpp/yaml.h>
-#include "soss/Soss_export.hpp"
+#include "soss/soss_export.hpp"
 
 #include <memory>
 

@@ -7,7 +7,7 @@
 #include <functional>
 #include <future>
 #include <string>
-#include <soss/Soss_export.hpp>
+#include <soss/soss_export.hpp>
 
 namespace soss {
 namespace mock {

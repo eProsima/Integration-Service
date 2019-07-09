@@ -26,7 +26,7 @@
 #include <rclcpp/executors/single_threaded_executor.hpp>
 
 #include <vector>
-#include <soss/Soss_export.hpp>
+#include <soss/soss_export.hpp>
 
 namespace soss {
 namespace ros2 {

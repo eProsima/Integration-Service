@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-#include <soss/Soss_export.hpp>
+#include <soss/soss_export.hpp>
 
 namespace soss {
 namespace mock {

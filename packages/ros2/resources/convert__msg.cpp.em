@@ -35,7 +35,7 @@ conversion_dependency = 'soss/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
 #include <rclcpp/node.hpp>
 
 // Include export macros in order to export symbols in windows
-#include <soss/Soss_export.hpp>
+#include <soss/soss_export.hpp>
 
 namespace soss {
 namespace ros2 {
