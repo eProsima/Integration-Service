@@ -206,7 +206,7 @@ TEST_CASE("Transmit and receive all test messages", "[ros2]")
       SOSS_REQUIRE_AND_COMPARE(float64_value);
     }
 
-    const std::size_t M = ros2_msg.basic_types_values.max_size()+2;
+    const std::size_t M = ros2_msg.basic_types_values.max_size() + 2;
     data->resize(M);
     // Add entries beyond the limits of the bounded vector so that we can make
     // sure the message conversion is robust to overflow.
