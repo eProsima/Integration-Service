@@ -447,9 +447,12 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
     const std::string middleware = type_node?
           type_node.as<std::string>() : middleware_alias;
 
+    const YAML::Node& type_matching_node = config["type-matching"];
+    const bool type_matching = type_matching_node ? type_matching_node.as<bool>() : true;
+
     m_middlewares.insert(
           std::make_pair(
-            middleware_alias, MiddlewareConfig{middleware, config}));
+            middleware_alias, MiddlewareConfig{middleware, type_matching, config}));
   }
 
   if(m_middlewares.size() < 2)
@@ -766,6 +769,11 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
   bool valid = true;
   for(const std::string& from : config.route.from)
   {
+    if(!m_middlewares.at(from).type_matching)
+    {
+      continue;
+    }
+
     const auto it_from = info_map.find(from);
     TopicInfo topic_info_from = remap_if_needed(from, config.remap, {topic_name, config.message_type});
     const auto from_type = it_from->second.types.find(topic_info_from.type);
@@ -779,6 +787,11 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
 
     for(const std::string& to : config.route.to)
     {
+      if(!m_middlewares.at(to).type_matching)
+      {
+        continue;
+      }
+
       const auto it_to = info_map.find(to);
       TopicInfo topic_info_to = remap_if_needed(to, config.remap, {topic_name, config.message_type});
       const auto to_type = it_to->second.types.find(topic_info_to.type);
@@ -809,9 +822,19 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
                                          const std::string& service_name,
                                          const ServiceConfig& config) const
 {
+  if(!m_middlewares.at(config.route.server).type_matching)
+  {
+      return true;
+  }
+
   bool valid = true;
   for(const std::string& client : config.route.clients)
   {
+    if(!m_middlewares.at(client).type_matching)
+    {
+      continue;
+    }
+
     const auto it_client = info_map.find(client);
     TopicInfo topic_info_client = remap_if_needed(client, config.remap, {service_name, config.service_type});
     const auto client_type = it_client->second.types.find(topic_info_client.type);

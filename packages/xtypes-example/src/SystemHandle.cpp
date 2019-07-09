@@ -90,7 +90,7 @@ public:
             const std::string& topic_name,
             const std::shared_ptr<soss::MessageType>& type,
             bool roundtrip,
-            std::vector<std::shared_ptr<Subscriber>> subscribers)
+            std::vector<std::shared_ptr<Subscriber>>& subscribers)
         : topic_name_(topic_name)
         , type_(type)
         , roundtrip_(roundtrip)
@@ -120,7 +120,8 @@ public:
         {
             for(auto&& subscriber: subscribers_)
             {
-                if(subscriber->get_topic_name() == topic_name_ && subscriber->get_type() == type_)
+                if(subscriber->get_topic_name() == topic_name_
+                        && subscriber->get_type()->get_name() == type_->get_name())
                 {
                     subscriber->receive(system_message);
                 }

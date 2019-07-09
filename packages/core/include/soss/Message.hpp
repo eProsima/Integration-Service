@@ -52,15 +52,19 @@ public:
 
     ~MessageType() = default;
 
-    bool can_be_read_as(const MessageType& other) const
-    {
-        //TODO: Check compatibility by QoS
-        return members_ == other.members_;
-    }
-
     const std::string& get_name() const
     {
         return name_;
+    }
+
+    bool operator == (const MessageType& other) const
+    {
+        return name_ == other.name_ && members_ == other.members_;
+    }
+
+    bool operator != (const MessageType& other) const
+    {
+        return !(*this == other);
     }
 
     Type& operator [] (const std::string& field)
@@ -72,6 +76,13 @@ public:
     {
         return members_;
     }
+
+    bool can_be_read_as(const MessageType& other) const
+    {
+        //TODO: Check matching by QoS
+        return members_ == other.members_;
+    }
+
 
 private:
     std::string name_;
@@ -94,6 +105,16 @@ public:
     const MessageType& get_type() const
     {
         return type_;
+    }
+
+    bool operator == (const MessageData& other) const
+    {
+        return type_ == other.type_ && values_ == other.values_;
+    }
+
+    bool operator != (const MessageData& other) const
+    {
+        return !(*this == other);
     }
 
     std::string& operator [] (const std::string& field)
