@@ -378,7 +378,7 @@ TopicInfo remap_if_needed(
   {
     config.type = it->second.type;
   }
-  return it->second;
+  return config;
 }
 
 } // anonymous namespace
