@@ -46,6 +46,30 @@ $ c:\dev\soss\install>local_setup_windows.bat
 $ c:\dev\soss\install>cd ..\
 $ c:\dev\soss\install>soss <yaml-config-file>
 ```
+## Note for UTF8 encodig problem in ROSIDL
+
+If you are linking against ROS2 Dashing Diademata you could have troubles running `soss-ros2-test`. The default encoding in Windows is not UTF8 and Python by default use Windows encoding. At the moment you can ignore this test or change function `parse_message_file` in `Lib\site-packages\rosidl_adapter\parser.py` from:
+
+```
+def parse_message_file(pkg_name, interface_filename):
+    basename = os.path.basename(interface_filename)
+    msg_name = os.path.splitext(basename)[0]
+    with open(interface_filename, 'r') as h:
+        return parse_message_string(
+            pkg_name, msg_name, h.read())
+```
+
+to 
+
+```
+def parse_message_file(pkg_name, interface_filename):
+    basename = os.path.basename(interface_filename)
+    msg_name = os.path.splitext(basename)[0]
+    with open(interface_filename, 'r', encoding='UTF8') as h:
+        return parse_message_string(
+            pkg_name, msg_name, h.read())
+```
+in order Python to read the files with UTF8 encoding.
 
 ## Note for making your own System Handle on Windows
 
