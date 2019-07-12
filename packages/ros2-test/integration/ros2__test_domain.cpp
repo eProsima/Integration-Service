@@ -116,8 +116,11 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
   soss::InstanceHandle handle = soss::run_instance(
     config_node, { ROS2__ROSIDL__BUILD_DIR });
 
+
   REQUIRE(handle);
 
+  // Wait for soss to start propperly before publishing.
+  std::this_thread::sleep_for(1s);
   publisher->publish(pub_msg);
   executor.spin_node_some(node_1);
   std::this_thread::sleep_for(rclcpp_delay);
@@ -128,5 +131,4 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
   std_msgs::msg::String received_msg = msg_future.get();
 
   REQUIRE(pub_msg == received_msg);
-
 }
