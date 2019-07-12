@@ -1,0 +1,13 @@
+systems:
+  ros2: { type: ros2 }
+  mock: { type: mock }
+
+routes:
+  mock_to_ros2: { from: mock, to: ros2 }
+  ros2_to_mock: { from: ros2, to: mock }
+  mock_srv: { server: mock, clients: ros2 }
+  ros2_srv: { server: ros2, clients: mock }
+
+topics:
+  transmit_arrays: { type: "test_msgs/Arrays", route: ros2_to_mock }
+  echo_arrays: { type: "test_msgs/Arrays", route: mock_to_ros2 }
