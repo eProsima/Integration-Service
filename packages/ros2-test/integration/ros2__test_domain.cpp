@@ -119,7 +119,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
   REQUIRE(handle);
 
-  // Wait for soss to start propperly before publishing.
+  // Wait for soss to start properly before publishing.
   std::this_thread::sleep_for(1s);
   publisher->publish(pub_msg);
   executor.spin_node_some(node_1);
