@@ -30,8 +30,8 @@ namespace soss {
 
 // ================================ xtypes lib ==================================
 
-#ifndef LIB__XTYPES_HPP
-#define LIB__XTYPES_HPP
+#ifndef SOSS__MESSAGE_HPP
+#define SOSS__MESSAGE_HPP
 
 #include<string>
 #include<map>
@@ -146,4 +146,4 @@ private:
 
 } //soss
 
-#endif //LIB__XTYPES_HPP
+#endif //SOSS__MESSAGE_HPP
