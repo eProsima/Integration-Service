@@ -89,7 +89,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
   };
 
   const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
-    "string_topic", node2_sub);
+    "string_topic", rclcpp::SystemDefaultsQoS(), node2_sub);
 
   std_msgs::msg::String pub_msg;
   pub_msg.set__data("Hello node");
