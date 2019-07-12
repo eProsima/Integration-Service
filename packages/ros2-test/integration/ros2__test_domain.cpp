@@ -74,8 +74,13 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
 
   // Create publisher in domain 5
+#ifdef RCLCPP__QOS_HPP_
   const auto publisher =
     node_1->create_publisher<std_msgs::msg::String>("string_topic", rclcpp::SystemDefaultsQoS());
+#else
+  const auto publisher =
+    node_1->create_publisher<std_msgs::msg::String>("string_topic");
+#endif
 
 
   std::promise<std_msgs::msg::String> msg_promise;
@@ -88,8 +93,13 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
   };
 
+#ifdef RCLCPP__QOS_HPP_
   const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
     "string_topic", rclcpp::SystemDefaultsQoS(), node2_sub);
+#else
+  const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
+    "string_topic", node2_sub);
+#endif
 
   std_msgs::msg::String pub_msg;
   pub_msg.set__data("Hello node");
