@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2018 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,68 +58,56 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
   REQUIRE(rclcpp::ok());
 
-  // Change domain to 5 and create node.
   SETENV("ROS_DOMAIN_ID", "5", true);
-
   std::string name_1 = "Node_1";
   std::string ns_1 = "";
   rclcpp::Node::SharedPtr node_1 = std::make_shared<rclcpp::Node>(name_1, ns_1);
 
-  // Change domain to 10 and create node
   SETENV("ROS_DOMAIN_ID", "10", true);
-
   std::string name_2 = "Node_2";
   std::string ns_2 = "";
   rclcpp::Node::SharedPtr node_2 = std::make_shared<rclcpp::Node>(name_2, ns_2);
 
+  std::string topic_name = "string_topic";
 
-  // Create publisher in domain 5
 #ifdef RCLCPP__QOS_HPP_
   const auto publisher =
-    node_1->create_publisher<std_msgs::msg::String>("string_topic", rclcpp::SystemDefaultsQoS());
+    node_1->create_publisher<std_msgs::msg::String>(topic_name, rclcpp::SystemDefaultsQoS());
 #else
   const auto publisher =
-    node_1->create_publisher<std_msgs::msg::String>("string_topic");
+    node_1->create_publisher<std_msgs::msg::String>(topic_name);
 #endif
-
 
   std::promise<std_msgs::msg::String> msg_promise;
   std::future<std_msgs::msg::String> msg_future = msg_promise.get_future();
-  //std::mutex node2_sub_mutex;
+  std::mutex node2_sub_mutex;
   auto node2_sub = [&](std_msgs::msg::String::UniquePtr msg)
   {
-    //std::unique_lock<std::mutex> lock(node2_sub_mutex);
+    std::unique_lock<std::mutex> lock(node2_sub_mutex);
     msg_promise.set_value(*msg);
-
   };
 
 #ifdef RCLCPP__QOS_HPP_
   const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
-    "string_topic", rclcpp::SystemDefaultsQoS(), node2_sub);
+    topic_name, rclcpp::SystemDefaultsQoS(), node2_sub);
 #else
   const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
-    "string_topic", node2_sub);
+    topic_name, node2_sub);
 #endif
 
   std_msgs::msg::String pub_msg;
   pub_msg.set__data("Hello node");
-
   
   rclcpp::executors::SingleThreadedExecutor executor;
   using namespace std::chrono_literals;
 
-  auto start_time = std::chrono::steady_clock::now();
-  // Three secs trying to receive msg.
-  while (std::chrono::steady_clock::now() - start_time < 3s)
-  {
-    publisher->publish(pub_msg);
-    executor.spin_node_some(node_1);
-    executor.spin_node_some(node_2);
-    // In different domains the message should not be received
-    if (msg_future.wait_for(100ms) == std::future_status::ready)
-      break;
-  }
+  auto rclcpp_delay = 500ms;
+  publisher->publish(pub_msg);
+  executor.spin_node_some(node_1);
+  std::this_thread::sleep_for(rclcpp_delay);
+  executor.spin_node_some(node_2);
 
+  // In different domains the message should not be received
   REQUIRE(msg_future.wait_for(0s) != std::future_status::ready);
 
   // Run soss in order to make the communication possible.
@@ -130,20 +118,15 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
   REQUIRE(handle);
 
-  // Three secs trying to receive msg.
-  start_time = std::chrono::steady_clock::now();
-  while (std::chrono::steady_clock::now() - start_time < 3s)
-  {
-    publisher->publish(pub_msg);
-    executor.spin_node_some(node_1);
-    executor.spin_node_some(node_2);
-    // Now with soss active the communication should work.
-    if (msg_future.wait_for(100ms) == std::future_status::ready)
-      break;
-  }
+  publisher->publish(pub_msg);
+  executor.spin_node_some(node_1);
+  std::this_thread::sleep_for(rclcpp_delay);
+  executor.spin_node_some(node_2);
 
   REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
+
   std_msgs::msg::String received_msg = msg_future.get();
-  CHECK(pub_msg == received_msg);
+
+  REQUIRE(pub_msg == received_msg);
 
 }
