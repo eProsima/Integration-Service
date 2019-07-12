@@ -75,7 +75,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
   // Create publisher in domain 5
   const auto publisher =
-    node_1->create_publisher<std_msgs::msg::String>("string_topic");
+    node_1->create_publisher<std_msgs::msg::String>("string_topic", rclcpp::SystemDefaultsQoS());
 
 
   std::promise<std_msgs::msg::String> msg_promise;
