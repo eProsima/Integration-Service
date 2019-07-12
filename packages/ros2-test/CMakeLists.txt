@@ -29,6 +29,7 @@ add_executable(soss-ros2-test
   main.cpp
   integration/ros2__geometry_msgs.cpp
   integration/ros2__test_msgs.cpp
+  integration/ros2__test_domain.cpp
 )
 
 set(thirdparty_dir "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty")
@@ -67,6 +68,7 @@ target_compile_definitions(soss-ros2-test
   PRIVATE
     "ROS2__GEOMETRY_MSGS__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/ros2__geometry_msgs.yaml\""
     "ROS2__TEST_MSGS__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/${test_msgs_config_file}\""
+    "ROS2__TEST_DOMAIN__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/ros2__domain_change.yaml\""
     "ROS2__ROSIDL__BUILD_DIR=\"${CMAKE_BINARY_DIR}/soss/rosidl/ros2/lib\""
 )
 
