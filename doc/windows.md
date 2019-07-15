@@ -6,30 +6,30 @@ To build `soss` we recommend using a [colcon workspace](https://colcon.readthedo
 The `soss` repo consists of many cmake packages which can be configured and built manually, but colcon makes the job much
 smoother.
 
-SOSS build has beem tested with Microsoft Visual Studio Community 2019.
+SOSS build has been tested with Microsoft Visual Studio Community 2019.
 
 
 ### Windows dependencies
-On windows colcon and CMake may not found dependencies if they are in path outside their workspace. To make colcon aware of these path you can use `--cmake-args` option in addition to `CMAKE_PREFIX_PATH` variable.
+On Windows, colcon and CMake might not find dependencies if they are in a directory outside their workspace. To make colcon aware of other paths, you can use `--cmake-args` option in addition to `CMAKE_PREFIX_PATH` variable.
 
 ```
 $ colcon build --packages-up-to soss-core --cmake-args -DCMAKE_PREFIX_PATH=<path-of-dependencies>
 ```
 #### Yaml-cpp
-Yaml-cpp library is part of ROS2 echosystem. If you have downloaded and built ROS2 following the [Installing ROS2 on Windows guide](https://index.ros.org/doc/ros2/Installation/Crystal/Windows-Install-Binary/) you could have troubles linking yaml-cpp with SOSS. This is because the yaml-cpp version in ROS2 is older than SOSS yaml needed version.
+Yaml-cpp library is part of the ROS2 ecosystem. If you have downloaded and built ROS2 following the [Installing ROS2 on Windows guide](https://index.ros.org/doc/ros2/Installation/Crystal/Windows-Install-Binary/) you might have trouble linking yaml-cpp with SOSS. This is because the yaml-cpp version in ROS2 is older than the version needed by SOSS.
 
-Download yaml from [their official repository](https://github.com/jbeder/yaml-cpp) and compile it with CMake and same Visual Studio configuration you are going to use in SOSS.
+Download yaml from [their official repository](https://github.com/jbeder/yaml-cpp) and compile it with CMake using the same Visual Studio configuration you are going to use in SOSS.
 
-* If you are using ROS2 workspace with local_setup script, for simplicity, you can replace files in yaml-cpp ROS2 install directory `\ros2\install\opt\yaml_cpp_vendor`
+* If you are using a ROS2 workspace with local_setup script, for simplicity, you can replace the following files in the yaml-cpp ROS2 install directory `\ros2\install\opt\yaml_cpp_vendor`
 
     You should replace `yaml-cpp.dll`, `yaml-cpp.lib` and `\include` directory.
 
     **Note that if you rebuild ROS2, yaml-cpp will be the older version again.**
 
-* If you are using SOSS without ROS2 simply add yaml lib directory to CMAKE_PREFIX_PATH like is refered in Windows dependencies section in this guide.
+* If you are using SOSS without ROS2, then simply add the yaml lib directory to CMAKE_PREFIX_PATH as mentioned in the Windows dependencies section of this guide.
 
 ## Run test
-You can use `colcon test` command tu run tests present in the workspace. You can also use the same options like colcon build in order to run specific test
+You can use the `colcon test` command to run tests present in the workspace. You can also use the same options like colcon build in order to run specific tests.
 
 ```
 $ colcon test --packages-select soss-ros2-test
@@ -46,9 +46,9 @@ $ c:\dev\soss\install>local_setup_windows.bat
 $ c:\dev\soss\install>cd ..\
 $ c:\dev\soss\install>soss <yaml-config-file>
 ```
-## Note for UTF8 encodig problem in ROSIDL
+## Note about UTF-8 encoding problem in ROSIDL
 
-If you are linking against ROS2 Dashing Diademata you could have troubles running `soss-ros2-test`. The default encoding in Windows is not UTF8 and Python by default use Windows encoding. At the moment you can ignore this test or change function `parse_message_file` in `Lib\site-packages\rosidl_adapter\parser.py` from:
+If you are linking against ROS2 Dashing Diademata you could have troubles running `soss-ros2-test`. The default encoding in Windows is not UTF-8 and Python by default uses Windows encoding. At the moment you can ignore this test or change function `parse_message_file` in `Lib\site-packages\rosidl_adapter\parser.py` from:
 
 ```
 def parse_message_file(pkg_name, interface_filename):
@@ -69,12 +69,12 @@ def parse_message_file(pkg_name, interface_filename):
         return parse_message_string(
             pkg_name, msg_name, h.read())
 ```
-in order Python to read the files with UTF8 encoding.
+in order for Python to read the files with UTF-8 encoding.
 
 ## Note for making your own System Handle on Windows
 
 If you want your system handle to run properly on Windows you must be aware of Windows dependency libraries.
 
-On Windows, SOSS has a bin directory inside install directory when all dll Windows dependencies files should be placed. Each System Handle is responsable to store their dependencies in that folder.
+On Windows, SOSS has a bin directory inside install directory where all dll Windows dependency files should be placed. Each System Handle is responsible for storing their dependencies in that folder.
 
-`local_setup_windows` script adds `install/bin` directory to the path and then SOSS application can find all System Handler's dependencies.
+`local_setup_windows` script will add the `install/bin` directory to the path, and then SOSS applications can find all the dependencies of each System Handler.
