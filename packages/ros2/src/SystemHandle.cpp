@@ -40,7 +40,7 @@ int set_platform_env(
   aux_d << variable << "=" << value;
   return _putenv(aux_d.str().c_str());
 #else
-  return setenv(variable, value, overwrite);
+  return setenv(variable.c_str(), value.c_str(), overwrite);
 #endif // WIN32
 }
 
@@ -50,7 +50,7 @@ int unset_platform_env(
 #ifdef WIN32
   return set_platform_env(variable, "", false);
 #else
-  return unsetenv(variable);
+  return unsetenv(variable.c_str());
 #endif // WIN32
 }
 
