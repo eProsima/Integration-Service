@@ -25,21 +25,34 @@
 
 #include <rclcpp/executors/single_threaded_executor.hpp>
 
-#ifdef WIN32
-#define SETENV(id,value,b,retValue) \
-	std::ostringstream _aux_d; \
-	_aux_d << id << "=" << value; \
-	retValue += _putenv(_aux_d.str().c_str());
-#define UNSETENV(id,retValue) SETENV(id, "", false, retValue)
-#else
-#define SETENV(id,value,b,retValue) retValue += setenv(id, value, b)
-#define UNSETENV(id,retValue) retValue += unsetenv(id)
-#endif
-
 namespace soss {
 namespace ros2 {
 
 namespace {
+
+int set_platform_env(
+    const std::string& variable, 
+    const std::string& value, 
+    const bool overwrite)
+{
+#ifdef WIN32
+  std::ostringstream aux_d;
+  aux_d << variable << "=" << value;
+  return _putenv(aux_d.str().c_str());
+#else
+  return setenv(variable, value, overwrite);
+#endif // WIN32
+}
+
+int unset_platform_env(
+    const std::string& variable)
+{
+#ifdef WIN32
+  return set_platform_env(variable, "", false);
+#else
+  return unsetenv(variable);
+#endif // WIN32
+}
 
 rmw_qos_profile_t parse_rmw_qos_configuration(
     const YAML::Node& /*configuration*/)
@@ -116,17 +129,17 @@ bool SystemHandle::configure(
 
     std::string domain = domain_node.as<std::string>();
 
-    SETENV("ROS_DOMAIN_ID", domain.c_str(), true, success);
+    success += set_platform_env("ROS_DOMAIN_ID", domain.c_str(), true);
 
     _node = std::make_shared<rclcpp::Node>(name, ns);
 
     if(previous_domain.empty())
     {
-       UNSETENV("ROS_DOMAIN_ID", success);
+      success += unset_platform_env("ROS_DOMAIN_ID");
     }
     else
     {
-       SETENV("ROS_DOMAIN_ID", previous_domain.c_str(), true, success);
+      success += set_platform_env("ROS_DOMAIN_ID", previous_domain.c_str(), true);
     }
   }
   else
