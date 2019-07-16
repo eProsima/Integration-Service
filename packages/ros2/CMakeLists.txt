@@ -5,7 +5,6 @@ project(soss-ros2)
 find_package(soss-core REQUIRED)
 find_package(soss-rosidl REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -30,7 +29,6 @@ add_library(soss-ros2 SHARED
 target_link_libraries(soss-ros2
   PUBLIC
     soss::core
-    yaml-cpp
     ${rclcpp_LIBRARIES}
 )
 

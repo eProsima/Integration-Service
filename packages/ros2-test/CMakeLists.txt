@@ -7,7 +7,6 @@ find_package(soss-core REQUIRED)
 find_package(soss-mock REQUIRED)
 find_package(soss-rosidl REQUIRED)
 find_package(soss-ros2 REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 # Get message dependencies
 find_package(geometry_msgs REQUIRED)
@@ -44,7 +43,6 @@ target_link_libraries(soss-ros2-test
   PRIVATE
     soss::mock
     soss::ros2
-    yaml-cpp
     ${geometry_msgs_LIBRARIES}
     ${nav_msgs_LIBRARIES}
     ${test_msgs_LIBRARIES}

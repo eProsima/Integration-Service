@@ -18,7 +18,7 @@
 #ifndef SOSS__DETAIL__SYSTEMHANDLE_HEAD_HPP
 #define SOSS__DETAIL__SYSTEMHANDLE_HEAD_HPP
 
-#include "soss/soss_export.hpp"
+#include <soss/soss_export.hpp>
 #include <functional>
 #include <memory>
 #include <type_traits>

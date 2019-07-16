@@ -28,4 +28,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/cmake/soss_install_middleware_plugin.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/soss_mix_generator.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/soss_mix_install_extension.cmake")
 
+include(CMakeFindDependencyMacro)
+find_dependency(yaml-cpp)
+
 set(soss-core_FOUND TRUE)

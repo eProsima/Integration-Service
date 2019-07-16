@@ -42,7 +42,7 @@ namespace ros2 {
 namespace @(namespace_variable) {
 
 //==============================================================================
-class SYSTEM_HANDLE_EXPORT Subscription final
+class Subscription final
 {
 public:
 
@@ -105,7 +105,7 @@ SubscriptionFactoryRegistrar register_subscriber(g_msg_name, &subscribe);
 } // anonymous namespace
 
 //==============================================================================
-class SYSTEM_HANDLE_EXPORT Publisher final : public virtual soss::TopicPublisher
+class Publisher final : public virtual soss::TopicPublisher
 {
 public:
 

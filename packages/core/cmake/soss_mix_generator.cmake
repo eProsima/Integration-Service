@@ -652,7 +652,7 @@ function(_soss_mix_find_package_info)
     OUTPUT_VARIABLE script_output
     ERROR_VARIABLE  script_error
   )
-  
+
   if(script_error)
     message(FATAL_ERROR
       "Critical failure when trying to parse the package information of "
@@ -676,9 +676,9 @@ function(_soss_mix_find_package_info)
   list(GET script_output 3 OUTPUT_FILE_DEP)
 
   foreach(output_var ${output_vars})
-    # The original output is a semicolon-separated list of four colon-separated
-    # lists. The four colon-separated lists were split apart above using
-    # list(GET ...). Now we convert each of those colon-separated lists into
+    # The original output is a semicolon-separated list of four hash-separated
+    # lists. The four hash-separated lists were split apart above using
+    # list(GET ...). Now we convert each of those hash-separated lists into
     # semicolon-separated lists so that cmake can recognize them correctly as
     # lists.
     string(REPLACE "#" ";" ${output_var} "${${output_var}}")

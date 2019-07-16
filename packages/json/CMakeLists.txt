@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.5.0)
 project(soss-json)
 
 find_package(soss-core REQUIRED)
-find_package(yaml-cpp)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -26,7 +25,6 @@ add_library(soss-json SHARED
 target_link_libraries(soss-json
   PUBLIC
     soss::core
-    $<$<PLATFORM_ID:Windows>:yaml-cpp>
 )
 
 target_include_directories(soss-json

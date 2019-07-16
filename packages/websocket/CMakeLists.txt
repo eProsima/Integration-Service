@@ -8,7 +8,6 @@ endif()
 
 find_package(soss-core REQUIRED)
 find_package(soss-json REQUIRED)
-find_package(yaml-cpp)
 find_package(OpenSSL REQUIRED)
 find_package(websocketpp REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system date_time regex random)
@@ -47,7 +46,6 @@ target_link_libraries(soss-websocket
     Boost::date_time
     Boost::regex
     Boost::random
-    yaml-cpp
 )
 
 target_include_directories(soss-websocket

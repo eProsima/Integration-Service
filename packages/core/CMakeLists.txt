@@ -101,11 +101,11 @@ install(
 )
 
 if (WIN32)
-install(
-  FILES "${CMAKE_CURRENT_LIST_DIR}/windows/local_setup_windows.bat"
-  DESTINATION "${CMAKE_INSTALL_PREFIX}/../"
-  COMPONENT soss-core
-)
+  install(
+    FILES "${CMAKE_CURRENT_LIST_DIR}/windows/local_setup_windows.bat"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/../"
+    COMPONENT soss-core
+  )
 endif()
 
 ###############################

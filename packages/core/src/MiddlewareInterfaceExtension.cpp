@@ -34,7 +34,7 @@
 #define LIB_EXTENSION "dll"
 #else
 #define OPEN_LIB(libname) dlopen(libname, RTLD_NOW)
-#define GET_LAST_ERROR dlerror
+#define GET_LAST_ERROR() dlerror()
 #define LIB_EXTENSION "dl"
 #endif
 
