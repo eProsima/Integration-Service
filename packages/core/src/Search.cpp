@@ -360,9 +360,9 @@ void Search::Implementation::PathSet::add_path(const std::string& path)
 
   if(IS_NOT_ABSOLUTE_PATH(path))
   {
-  std::cerr << "[soss error] Attempting to add a prefix path that is not an "
-            << "absolute path: " << path << std::endl;
-  return;
+    std::cerr << "[soss error] Attempting to add a prefix path that is not an "
+              << "absolute path: " << path << std::endl;
+    return;
   }
 
   // See if this path has already been added to the list
