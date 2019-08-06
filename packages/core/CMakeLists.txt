@@ -47,6 +47,7 @@ soss_generate_export_header(core)
 target_link_libraries(soss-core
   PUBLIC
     yaml-cpp
+    fastrtps
   PRIVATE
     Boost::program_options
     $<$<PLATFORM_ID:Linux>:dl>
