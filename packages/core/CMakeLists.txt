@@ -18,6 +18,8 @@ if(NOT SOSS_CONFIGURE_AS_SUBPROJECT)
 
 endif()
 
+find_package(fastrtps REQUIRED)
+
 find_package(yaml-cpp REQUIRED)
 
 find_package(Boost REQUIRED
