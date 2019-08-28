@@ -656,7 +656,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
     }
 
     TopicSubscriberSystem::SubscriptionCallback callback =
-        [=](const MessageData& message)
+        [=](const dds::core::xtypes::DynamicData& message)
     {
       for(const std::shared_ptr<TopicPublisher>& publisher : publishers)
       {
@@ -730,7 +730,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     }
 
     ServiceClientSystem::RequestCallback callback =
-        [=](const MessageData& request,
+        [=](const dds::core::xtypes::DynamicData& request,
             ServiceClient& client,
             const std::shared_ptr<void>& call_handle)
     {
@@ -803,7 +803,7 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
         continue;
       }
 
-      if(!from_type->second->can_be_read_as(*to_type->second))
+      if(from_type->second != to_type->second) //TODO: QoS here
       {
         std::cerr << "Remapping error: message type ["
                   << topic_info_from.type << "] from [" + it_from->first + "] can not be read as type ["
@@ -857,7 +857,7 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
       continue;
     }
 
-    if(!client_type->second->can_be_read_as(*server_type->second))
+    if(client_type->second != server_type->second) //TODO: QoS here
     {
       std::cerr << "Remapping error: service type ["
                 << topic_info_client.type << "] from [" + it_client->first + "] can not be read as type ["

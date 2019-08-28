@@ -20,7 +20,8 @@
 
 #include <soss/detail/SystemHandle-head.hpp>
 
-#include <soss/Message.hpp>
+#include <dds/core/xtypes/StructType.hpp>
+#include <dds/core/xtypes/DynamicData.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -85,7 +86,7 @@ public:
   virtual bool configure(
       const RequiredTypes& types,
       const YAML::Node& configuration,
-      std::map<std::string, MessageType*>& type_register) = 0;
+      std::map<std::string, dds::core::xtypes::StructType>& type_register) = 0;
 
   /// Is the system handle still working
   virtual bool okay() const = 0;
@@ -113,7 +114,7 @@ class TopicSubscriberSystem : public virtual SystemHandle
 {
 public:
 
-  using SubscriptionCallback = std::function<void(const MessageData& message)>;
+  using SubscriptionCallback = std::function<void(const dds::core::xtypes::DynamicData& message)>;
 
   /// \brief Have this node subscribe to a topic
   ///
@@ -152,8 +153,8 @@ public:
   ///   Name of the topic to publish
   ///
   /// \param[in] message
-  ///   MessageData that's being published
-  virtual bool publish(const MessageData& message) = 0;
+  ///   DynamicData that's being published
+  virtual bool publish(const dds::core::xtypes::DynamicData& message) = 0;
 
   virtual ~TopicPublisher() = default;
 };
@@ -216,7 +217,7 @@ public:
   ///
   virtual void receive_response(
       std::shared_ptr<void> call_handle,
-      const MessageData& response) = 0;
+      const dds::core::xtypes::DynamicData& response) = 0;
 
   virtual ~ServiceClient() = default;
 };
@@ -230,7 +231,7 @@ public:
   /// request.
   using RequestCallback =
     std::function<void(
-      const MessageData& request,
+      const dds::core::xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle)>;
 
@@ -282,7 +283,7 @@ public:
   ///   to the ServiceClientNode later when receive_response(~) is called.
   ///
   virtual void call_service(
-      const MessageData& request,
+      const dds::core::xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle) = 0;
 
