@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(soss-mock)
 
+
+find_package(fastrtps REQUIRED)
+
 find_package(soss-core REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
