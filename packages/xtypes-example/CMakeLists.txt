@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(soss-xtypes-example)
 
+find_package(fastrtps REQUIRED)
 find_package(soss-core REQUIRED)
 find_package(soss-mock REQUIRED)
 
@@ -13,13 +14,13 @@ add_library(${PROJECT_NAME} SHARED
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
-        CXX_STANDARD 14
+       CXX_STANDARD 14
         POSITION_INDEPENDENT_CODE ON
 )
 
 target_compile_options(${PROJECT_NAME}
     PRIVATE
-        -Werror -Wall -Wextra -Wpedantic
+       -Werror -Wall -Wextra -Wpedantic
 )
 
 target_include_directories(${PROJECT_NAME}

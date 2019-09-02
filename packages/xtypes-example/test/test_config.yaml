@@ -1,5 +1,5 @@
 systems:
-    xtypes: { type: xtypes-example, autogenerate: false, roundtrip: true }
+    xtypes: { type: xtypes-example, roundtrip: true }
     mock: { type: mock, type-matching: false }
 
 routes:

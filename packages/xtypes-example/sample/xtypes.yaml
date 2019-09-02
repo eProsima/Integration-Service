@@ -1,8 +1,8 @@
 systems:
-    xtypes1: { type: xtypes-example, autogenerate: true, roundtrip: false}
-    xtypes2: { type: xtypes-example, autogenerate: false, roundtrip: false}
-    xtypes3: { type: xtypes-example, autogenerate: true, roundtrip: false}
-    xtypes4: { type: xtypes-example, autogenerate: false, roundtrip: false}
+    xtypes1: { type: xtypes-example, initial_msg_ms: 2000, roundtrip: false}
+    xtypes2: { type: xtypes-example, initial_msg_ms: 0, roundtrip: false}
+    xtypes3: { type: xtypes-example, initial_msg_ms: 2000, roundtrip: false}
+    xtypes4: { type: xtypes-example, initial_msg_ms: 0, roundtrip: false}
 
 routes:
     1_3_to_2_4: { from: [xtypes1, xtypes3], to: [xtypes2, xtypes4] }
