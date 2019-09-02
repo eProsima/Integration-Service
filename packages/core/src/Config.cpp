@@ -639,7 +639,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       std::shared_ptr<TopicPublisher> publisher =
           it_to->second.topic_publisher->advertise(
             topic_info.name,
-            topic_info.type,
+            it_to->second.types.find(topic_info.type)->second,
             config_or_empty_node(to, config.middleware_configs));
 
       if(!publisher)
@@ -679,7 +679,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       TopicInfo topic_info = remap_if_needed(from, config.remap, {topic_name, config.message_type});
       valid &= it_from->second.topic_subscriber->subscribe(
             topic_info.name,
-            topic_info.type,
+            it_from->second.types.find(topic_info.type)->second,
             callback,
             config_or_empty_node(from, config.middleware_configs));
     }
@@ -718,7 +718,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     std::shared_ptr<ServiceProvider> provider =
         it->second.service_provider->create_service_proxy(
           server_info.name,
-          server_info.type,
+          it->second.types.find(server_info.type)->second,
           config_or_empty_node(server, config.middleware_configs));
 
     if(!provider)
@@ -752,7 +752,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
       TopicInfo client_info = remap_if_needed(client, config.remap, {service_name, config.service_type});
       valid &= it->second.service_client->create_client_proxy(
             client_info.name,
-            client_info.type,
+            it->second.types.find(client_info.type)->second,
             callback,
             config_or_empty_node(client, config.middleware_configs));
     }

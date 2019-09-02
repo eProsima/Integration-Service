@@ -122,7 +122,7 @@ public:
   ///   Name of the topic to subscribe to
   ///
   /// \param[in] message_type
-  ///   Name of the message type that this topic should expect
+  ///   Message type that this topic should expect
   ///
   /// \param[in] callback
   ///   The callback that should be triggered when a message comes in
@@ -134,7 +134,7 @@ public:
   /// \returns true if subscription was successful
   virtual bool subscribe(
       const std::string& topic_name,
-      const std::string& message_type,
+      const dds::core::xtypes::StructType& message_type,
       SubscriptionCallback callback,
       const YAML::Node& configuration) = 0;
 };
@@ -170,7 +170,7 @@ public:
   ///   Name of the topic to advertise
   ///
   /// \param[in] message_type
-  ///   Name of the message type that this node will publish
+  ///  Message type that this node will publish
   ///
   /// \param[in] configuration
   ///   A yaml node containing any middleware-specific configuration information
@@ -179,7 +179,7 @@ public:
   /// \returns true if the advertisement was successful
   virtual std::shared_ptr<TopicPublisher> advertise(
       const std::string& topic_name,
-      const std::string& message_type,
+      const dds::core::xtypes::StructType& message_type,
       const YAML::Node& configuration) = 0;
 };
 
@@ -254,7 +254,7 @@ public:
   /// \returns true if a client proxy could be made
   virtual bool create_client_proxy(
       const std::string& service_name,
-      const std::string& service_type,
+      const dds::core::xtypes::StructType& service_type,
       RequestCallback callback,
       const YAML::Node& configuration) = 0;
 };
@@ -301,7 +301,7 @@ public:
   ///   Name of the service to offer
   ///
   /// \param[in] service_type
-  ///   Name of the type of service being offered
+  ///   Type of service being offered
   ///
   /// \param[in] configuration
   ///   A yaml node containing any middleware-specific configuration information
@@ -310,7 +310,7 @@ public:
   /// \returns true if the node can offer this service
   virtual std::shared_ptr<ServiceProvider> create_service_proxy(
       const std::string& service_name,
-      const std::string& service_type,
+      const dds::core::xtypes::StructType& service_type,
       const YAML::Node& configuration) = 0;
 };
 
