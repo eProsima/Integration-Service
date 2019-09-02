@@ -25,6 +25,7 @@
 #include <chrono>
 #include <thread>
 #include <iostream>
+#include <algorithm>
 
 namespace {
 
@@ -43,22 +44,28 @@ public:
     virtual ~SystemHandle() override = default;
 
     bool configure(
-        const soss::RequiredTypes&,
+        const soss::RequiredTypes& required_types,
         const YAML::Node& configuration,
         std::map<std::string, dds::core::xtypes::StructType>& type_register) override
     {
         // The system handle creates and manages its own types.
-        // (It could come from buildes or from an idl compiler)
-        dds::core::xtypes::StructType coord_2d("coordinate2d");
-        coord_2d.add_member(dds::core::xtypes::Member("x", dds::core::xtypes::primitive_type<uint32_t>()));
-        coord_2d.add_member(dds::core::xtypes::Member("y", dds::core::xtypes::primitive_type<uint32_t>()));
-        types_.emplace(coord_2d.name(), std::move(coord_2d));
+        // (It could come from buildes or from an IDL compiler)
+        if(std::find(required_types.messages.begin(), required_types.messages.end(), "coordinate2d") != required_types.messages.end())
+        {
+            dds::core::xtypes::StructType coord_2d("coordinate2d");
+            coord_2d.add_member(dds::core::xtypes::Member("x", dds::core::xtypes::primitive_type<uint32_t>()));
+            coord_2d.add_member(dds::core::xtypes::Member("y", dds::core::xtypes::primitive_type<uint32_t>()));
+            types_.emplace(coord_2d.name(), std::move(coord_2d));
+        }
 
-        dds::core::xtypes::StructType coord_3d("coordinate3d");
-        coord_3d.add_member(dds::core::xtypes::Member("x", dds::core::xtypes::primitive_type<uint32_t>()));
-        coord_3d.add_member(dds::core::xtypes::Member("y", dds::core::xtypes::primitive_type<uint32_t>()));
-        coord_3d.add_member(dds::core::xtypes::Member("z", dds::core::xtypes::primitive_type<uint32_t>()));
-        types_.emplace(coord_3d.name(), std::move(coord_3d));
+        if(std::find(required_types.messages.begin(), required_types.messages.end(), "coordinate3d") != required_types.messages.end())
+        {
+            dds::core::xtypes::StructType coord_3d("coordinate3d");
+            coord_3d.add_member(dds::core::xtypes::Member("x", dds::core::xtypes::primitive_type<uint32_t>()));
+            coord_3d.add_member(dds::core::xtypes::Member("y", dds::core::xtypes::primitive_type<uint32_t>()));
+            coord_3d.add_member(dds::core::xtypes::Member("z", dds::core::xtypes::primitive_type<uint32_t>()));
+            types_.emplace(coord_3d.name(), std::move(coord_3d));
+        }
 
         // Notify all the types to soss
         for (auto&& it: types_)
