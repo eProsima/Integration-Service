@@ -176,41 +176,41 @@ public:
 
   bool subscribe(
       const std::string& topic_name,
-      const std::string& message_type,
+      const dds::core::xtypes::StructType& message_type,
       SubscriptionCallback callback,
       const YAML::Node& /*configuration*/) override
   {
-    impl().subscriptions[topic_name].insert(message_type);
+    impl().subscriptions[topic_name].insert(message_type.name());
     impl().soss_subscription_callbacks[topic_name] = std::move(callback);
     return true;
   }
 
   std::shared_ptr<TopicPublisher> advertise(
       const std::string& topic_name,
-      const std::string& message_type,
+      const dds::core::xtypes::StructType& message_type,
       const YAML::Node& /*configuration*/) override
   {
-    impl().publishers[topic_name].insert(message_type);
+    impl().publishers[topic_name].insert(message_type.name());
     return std::make_shared<Publisher>(topic_name);
   }
 
   bool create_client_proxy(
       const std::string& service_name,
-      const std::string& service_type,
+      const dds::core::xtypes::StructType& service_type,
       RequestCallback callback,
       const YAML::Node& /*configuration*/) override
   {
-    impl().clients[service_name].insert(service_type);
+    impl().clients[service_name].insert(service_type.name());
     impl().soss_request_callbacks[service_name] = std::move(callback);
     return true;
   }
 
   std::shared_ptr<ServiceProvider> create_service_proxy(
       const std::string& service_name,
-      const std::string& service_type,
+      const dds::core::xtypes::StructType& service_type,
       const YAML::Node& /*configuration*/) override
   {
-    impl().services[service_name].insert(service_type);
+    impl().services[service_name].insert(service_type.name());
     return std::make_shared<Server>(service_name);
   }
 };
