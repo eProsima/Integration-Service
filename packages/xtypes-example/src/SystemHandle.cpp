@@ -55,7 +55,7 @@ public:
             dds::core::xtypes::StructType coord_2d("coordinate2d");
             coord_2d.add_member(dds::core::xtypes::Member("x", dds::core::xtypes::primitive_type<uint32_t>()));
             coord_2d.add_member(dds::core::xtypes::Member("y", dds::core::xtypes::primitive_type<uint32_t>()));
-            types_.emplace(coord_2d.name(), std::move(coord_2d));
+            type_register.emplace(coord_2d.name(), std::move(coord_2d));
         }
 
         if(std::find(required_types.messages.begin(), required_types.messages.end(), "coordinate3d") != required_types.messages.end())
@@ -64,13 +64,7 @@ public:
             coord_3d.add_member(dds::core::xtypes::Member("x", dds::core::xtypes::primitive_type<uint32_t>()));
             coord_3d.add_member(dds::core::xtypes::Member("y", dds::core::xtypes::primitive_type<uint32_t>()));
             coord_3d.add_member(dds::core::xtypes::Member("z", dds::core::xtypes::primitive_type<uint32_t>()));
-            types_.emplace(coord_3d.name(), std::move(coord_3d));
-        }
-
-        // Notify all the types to soss
-        for (auto&& it: types_)
-        {
-            type_register.insert(std::make_pair(it.first, it.second));
+            type_register.emplace(coord_3d.name(), std::move(coord_3d));
         }
 
         //Mock connection
@@ -115,38 +109,37 @@ public:
 
     bool subscribe(
         const std::string& topic_name,
-        const std::string& message_type,
+        const dds::core::xtypes::StructType& message_type,
         SubscriptionCallback callback,
         const YAML::Node& ) override
     {
-        auto subscriber = std::make_shared<Subscriber>(topic_name, types_.at(message_type), callback, *connection_);
+        auto subscriber = std::make_shared<Subscriber>(topic_name, message_type, callback, *connection_);
         subscribers_.emplace_back(std::move(subscriber));
 
         std::cout << "[soss-xtypes-example]: subscriber created. "
             "topic: " << topic_name << ", "
-            "type: " << message_type << std::endl;
+            "type: " << message_type.name() << std::endl;
 
         return true;
     }
 
     std::shared_ptr<soss::TopicPublisher> advertise(
         const std::string& topic_name,
-        const std::string& message_type,
+        const dds::core::xtypes::StructType& message_type,
         const YAML::Node& ) override
     {
-        auto publisher = std::make_shared<Publisher>(topic_name, types_.at(message_type), *connection_);
+        auto publisher = std::make_shared<Publisher>(topic_name, message_type, *connection_);
         publishers_.emplace_back(std::move(publisher));
 
         std::cout << "[soss-xtypes-example]: publisher created. "
             "topic: " << topic_name << ", "
-            "type: " << message_type << std::endl;
+            "type: " << message_type.name() << std::endl;
 
         return publishers_.back();
     }
 
 private:
     std::unique_ptr<SystemConnection> connection_;
-    std::map<std::string, dds::core::xtypes::StructType> types_;
     std::vector<std::shared_ptr<Publisher>> publishers_;
     std::vector<std::shared_ptr<Subscriber>> subscribers_;
     int initial_msg_ms_;
