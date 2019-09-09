@@ -19,7 +19,7 @@
 #define SOSS__MESSAGE_HPP
 
 
-#include <soss/soss_export.hpp>
+#include <soss/core/export.hpp>
 #include <functional>
 #include <map>
 #include <memory>
@@ -28,7 +28,7 @@
 namespace soss {
 
 //==============================================================================
-class SOSS_EXPORT Field
+class SOSS_CORE_API Field
 {
 public:
 

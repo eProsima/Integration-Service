@@ -24,6 +24,7 @@ set(SOSS_IDL_MIDDLEWARE_MIX_CONFIG_TEMPLATE "${SOSS_TEMPLATE_DIR}/soss-idl-middl
 set(SOSS_IDL_PKG_MIX_CONFIG_TEMPLATE "${SOSS_TEMPLATE_DIR}/soss-idl-pkg-mix-config.cmake.in")
 set(SOSS_IDL_MIDDLEWARE_MIX_EXTENSION_TEMPLATE "${SOSS_TEMPLATE_DIR}/soss-idl-middleware-mix-extension.cmake.in")
 
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/soss_generate_export_header.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/soss_install_middleware_plugin.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/soss_mix_generator.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/soss_mix_install_extension.cmake")

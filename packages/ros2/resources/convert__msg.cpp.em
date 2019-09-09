@@ -1,4 +1,4 @@
-// generated from soss/cpp/ros2/resource/soss__ros2__message.cpp.em
+// generated from soss/packages/ros2/resource/soss__ros2__message.cpp.em
 // generated code does not contain a copyright notice
 
 @#######################################################################
@@ -33,9 +33,6 @@ conversion_dependency = 'soss/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
 
 // Include the Node API so we can subscribe and advertise
 #include <rclcpp/node.hpp>
-
-// Include export macros in order to export symbols in windows
-#include <soss/soss_export.hpp>
 
 namespace soss {
 namespace ros2 {
@@ -90,7 +87,7 @@ private:
 };
 
 //==============================================================================
-SYSTEM_HANDLE_EXPORT std::shared_ptr<void> subscribe(
+std::shared_ptr<void> subscribe(
     rclcpp::Node& node,
     const std::string& topic_name,
     TopicSubscriberSystem::SubscriptionCallback callback,
@@ -141,7 +138,7 @@ private:
 };
 
 //==============================================================================
-SYSTEM_HANDLE_EXPORT std::shared_ptr<soss::TopicPublisher> make_publisher(
+std::shared_ptr<soss::TopicPublisher> make_publisher(
     rclcpp::Node& node,
     const std::string& topic_name,
     const rmw_qos_profile_t& qos_profile)

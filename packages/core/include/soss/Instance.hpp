@@ -25,12 +25,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <soss/soss_export.hpp>
+#include <soss/core/export.hpp>
 
 namespace soss {
 
 //==============================================================================
-class SOSS_EXPORT InstanceHandle
+class SOSS_CORE_API InstanceHandle
 {
 public:
 
@@ -84,7 +84,7 @@ using MiddlewarePrefixPathMap =
     std::unordered_map<std::string, std::vector<std::string>>;
 
 //==============================================================================
-class SOSS_EXPORT Instance
+class SOSS_CORE_API Instance
 {
 public:
 
@@ -134,11 +134,11 @@ private:
 
 //==============================================================================
 /// Create a soss instance and run it in its own thread
-SOSS_EXPORT InstanceHandle run_instance(int argc, char* argv[]);
+SOSS_CORE_API InstanceHandle run_instance(int argc, char* argv[]);
 
 //==============================================================================
 /// Create a soss instance for the specified YAML and run it in its own thread
-SOSS_EXPORT InstanceHandle run_instance(
+SOSS_CORE_API InstanceHandle run_instance(
     const YAML::Node& config_node,
     const std::vector<std::string>& soss_prefixes = {},
     const MiddlewarePrefixPathMap& middleware_prefixes = {});
@@ -146,7 +146,7 @@ SOSS_EXPORT InstanceHandle run_instance(
 //==============================================================================
 /// Create a soss instance for the specified config file and run it in its own
 /// thread
-SOSS_EXPORT InstanceHandle run_instance(
+SOSS_CORE_API InstanceHandle run_instance(
     const std::string& config_file_path,
     const std::vector<std::string>& soss_prefixes = {},
     const MiddlewarePrefixPathMap& middleware_prefixes = {});

@@ -4,12 +4,11 @@
 #include <yaml-cpp/yaml.h>
 
 #include "JwtValidator.hpp"
-#include <soss/soss_export.hpp>
 
 namespace soss {
 namespace websocket {
 
-class SYSTEM_HANDLE_EXPORT ServerConfig
+class ServerConfig
 {
 public:
   static bool load_auth_policy(JwtValidator& jwt_validator, const YAML::Node& auth_node);

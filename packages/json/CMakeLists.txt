@@ -22,6 +22,8 @@ add_library(soss-json SHARED
   src/conversion.cpp
 )
 
+soss_generate_export_header(json)
+
 target_link_libraries(soss-json
   PUBLIC
     soss::core

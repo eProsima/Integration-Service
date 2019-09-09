@@ -19,13 +19,13 @@
 #define SOSS__MIDDLEWAREINTERFACEEXTENSION_HPP
 
 #include <yaml-cpp/yaml.h>
-#include <soss/soss_export.hpp>
+#include <soss/core/export.hpp>
 
 #include <memory>
 
 namespace soss {
 
-class SOSS_EXPORT MiddlewareInterfaceExtension
+class SOSS_CORE_API MiddlewareInterfaceExtension
 {
 public:
 
