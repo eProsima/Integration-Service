@@ -644,7 +644,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       std::shared_ptr<TopicPublisher> publisher =
           it_to->second.topic_publisher->advertise(
             topic_info.name,
-            it_to->second.types.find(topic_info.type)->second,
+            *it_to->second.types.find(topic_info.type)->second,
             config_or_empty_node(to, config.middleware_configs));
 
       if(!publisher)
@@ -661,7 +661,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
     }
 
     TopicSubscriberSystem::SubscriptionCallback callback =
-        [=](const dds::core::xtypes::DynamicData& message)
+        [=](const xtypes::DynamicData& message)
     {
       for(const std::shared_ptr<TopicPublisher>& publisher : publishers)
       {
@@ -684,7 +684,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       TopicInfo topic_info = remap_if_needed(from, config.remap, {topic_name, config.message_type});
       valid &= it_from->second.topic_subscriber->subscribe(
             topic_info.name,
-            it_from->second.types.find(topic_info.type)->second,
+            *it_from->second.types.find(topic_info.type)->second,
             callback,
             config_or_empty_node(from, config.middleware_configs));
     }
@@ -723,7 +723,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     std::shared_ptr<ServiceProvider> provider =
         it->second.service_provider->create_service_proxy(
           server_info.name,
-          it->second.types.find(server_info.type)->second,
+          *it->second.types.find(server_info.type)->second,
           config_or_empty_node(server, config.middleware_configs));
 
     if(!provider)
@@ -735,7 +735,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     }
 
     ServiceClientSystem::RequestCallback callback =
-        [=](const dds::core::xtypes::DynamicData& request,
+        [=](const xtypes::DynamicData& request,
             ServiceClient& client,
             const std::shared_ptr<void>& call_handle)
     {
@@ -757,7 +757,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
       TopicInfo client_info = remap_if_needed(client, config.remap, {service_name, config.service_type});
       valid &= it->second.service_client->create_client_proxy(
             client_info.name,
-            it->second.types.find(client_info.type)->second,
+            *it->second.types.find(client_info.type)->second,
             callback,
             config_or_empty_node(client, config.middleware_configs));
     }
@@ -808,7 +808,7 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
         continue;
       }
 
-      if(from_type->second != to_type->second) //TODO: QoS here
+      if(from_type->second->is_subset_of(*to_type->second))
       {
         std::cerr << "Remapping error: message type ["
                   << topic_info_from.type << "] from [" + it_from->first + "] can not be read as type ["
@@ -862,7 +862,7 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
       continue;
     }
 
-    if(client_type->second != server_type->second) //TODO: QoS here
+    if(client_type->second->is_subset_of(*server_type->second)) //EPROSIMA: CHECK.
     {
       std::cerr << "Remapping error: service type ["
                 << topic_info_client.type << "] from [" + it_client->first + "] can not be read as type ["

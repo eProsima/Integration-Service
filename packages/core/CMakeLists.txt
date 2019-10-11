@@ -33,7 +33,6 @@ add_library(soss-core SHARED
   src/Config.cpp
   #src/FieldToString.cpp
   src/Instance.cpp
-  #src/Message.cpp
   src/MiddlewareInterfaceExtension.cpp
   src/register_system.cpp
   src/Search.cpp

@@ -20,8 +20,7 @@
 
 #include <soss/detail/SystemHandle-head.hpp>
 
-#include <dds/core/xtypes/StructType.hpp>
-#include <dds/core/xtypes/DynamicData.hpp>
+#include <dds/core/xtypes/xtypes.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -65,6 +64,10 @@ struct RequiredTypes
 /// - TopicPublisherSystem
 /// - ServiceClientSystem
 /// - ServiceProviderSystem
+
+//Shorthand for DynamicTypes management
+namespace xtypes = dds::core::xtypes;
+
 class SystemHandle
 {
 public:
@@ -86,7 +89,7 @@ public:
   virtual bool configure(
       const RequiredTypes& types,
       const YAML::Node& configuration,
-      std::map<std::string, dds::core::xtypes::StructType>& type_register) = 0;
+      std::map<std::string, xtypes::DynamicType::Ptr>& type_register) = 0;
 
   /// Is the system handle still working
   virtual bool okay() const = 0;
@@ -114,7 +117,7 @@ class TopicSubscriberSystem : public virtual SystemHandle
 {
 public:
 
-  using SubscriptionCallback = std::function<void(const dds::core::xtypes::DynamicData& message)>;
+  using SubscriptionCallback = std::function<void(const xtypes::DynamicData& message)>;
 
   /// \brief Have this node subscribe to a topic
   ///
@@ -134,7 +137,7 @@ public:
   /// \returns true if subscription was successful
   virtual bool subscribe(
       const std::string& topic_name,
-      const dds::core::xtypes::StructType& message_type,
+      const xtypes::DynamicType& message_type,
       SubscriptionCallback callback,
       const YAML::Node& configuration) = 0;
 };
@@ -154,7 +157,7 @@ public:
   ///
   /// \param[in] message
   ///   DynamicData that's being published
-  virtual bool publish(const dds::core::xtypes::DynamicData& message) = 0;
+  virtual bool publish(const xtypes::DynamicData& message) = 0;
 
   virtual ~TopicPublisher() = default;
 };
@@ -179,7 +182,7 @@ public:
   /// \returns true if the advertisement was successful
   virtual std::shared_ptr<TopicPublisher> advertise(
       const std::string& topic_name,
-      const dds::core::xtypes::StructType& message_type,
+      const xtypes::DynamicType& message_type,
       const YAML::Node& configuration) = 0;
 };
 
@@ -217,7 +220,7 @@ public:
   ///
   virtual void receive_response(
       std::shared_ptr<void> call_handle,
-      const dds::core::xtypes::DynamicData& response) = 0;
+      const xtypes::DynamicData& response) = 0;
 
   virtual ~ServiceClient() = default;
 };
@@ -231,7 +234,7 @@ public:
   /// request.
   using RequestCallback =
     std::function<void(
-      const dds::core::xtypes::DynamicData& request,
+      const xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle)>;
 
@@ -254,7 +257,7 @@ public:
   /// \returns true if a client proxy could be made
   virtual bool create_client_proxy(
       const std::string& service_name,
-      const dds::core::xtypes::StructType& service_type,
+      const xtypes::DynamicType& service_type,
       RequestCallback callback,
       const YAML::Node& configuration) = 0;
 };
@@ -283,7 +286,7 @@ public:
   ///   to the ServiceClientNode later when receive_response(~) is called.
   ///
   virtual void call_service(
-      const dds::core::xtypes::DynamicData& request,
+      const xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle) = 0;
 
@@ -310,7 +313,7 @@ public:
   /// \returns true if the node can offer this service
   virtual std::shared_ptr<ServiceProvider> create_service_proxy(
       const std::string& service_name,
-      const dds::core::xtypes::StructType& service_type,
+      const xtypes::DynamicType& service_type,
       const YAML::Node& configuration) = 0;
 };
 
