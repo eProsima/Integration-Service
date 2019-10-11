@@ -15,12 +15,11 @@
  *
 */
 
-#include "System.hpp"
+#include "SystemConnection.hpp"
 #include "Subscriber.hpp"
 #include "Publisher.hpp"
 
 #include <soss/SystemHandle.hpp>
-#include <dds/core/xtypes/PrimitiveTypes.hpp>
 
 #include <chrono>
 #include <thread>
@@ -35,35 +34,38 @@ int64_t timeStamp()
   return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
-} //global
+} //namespace
 
 class SystemHandle : public virtual soss::TopicSystem
 {
 public:
     SystemHandle() : initial_time_stamp_ms_(timeStamp()) {}
-    virtual ~SystemHandle() override = default;
+    virtual ~SystemHandle() override
+    {
+        connection_->stop();
+    };
 
     bool configure(
         const soss::RequiredTypes& required_types,
         const YAML::Node& configuration,
-        std::map<std::string, dds::core::xtypes::StructType>& type_register) override
+        std::map<std::string, soss::xtypes::DynamicType::Ptr>& type_register) override
     {
         // The system handle creates and manages its own types.
         // (It could come from buildes or from an IDL compiler)
-        if(std::find(required_types.messages.begin(), required_types.messages.end(), "coordinate2d") != required_types.messages.end())
+        if(required_types.messages.count("coordinate2d"))
         {
-            dds::core::xtypes::StructType coord_2d("coordinate2d");
-            coord_2d.add_member(dds::core::xtypes::Member("x", dds::core::xtypes::primitive_type<uint32_t>()));
-            coord_2d.add_member(dds::core::xtypes::Member("y", dds::core::xtypes::primitive_type<uint32_t>()));
+            soss::xtypes::StructType coord_2d("coordinate2d");
+            coord_2d.add_member(soss::xtypes::Member("x", soss::xtypes::primitive_type<uint32_t>()));
+            coord_2d.add_member(soss::xtypes::Member("y", soss::xtypes::primitive_type<uint32_t>()));
             type_register.emplace(coord_2d.name(), std::move(coord_2d));
         }
 
-        if(std::find(required_types.messages.begin(), required_types.messages.end(), "coordinate3d") != required_types.messages.end())
+        if(required_types.messages.count("coordinate3d"))
         {
-            dds::core::xtypes::StructType coord_3d("coordinate3d");
-            coord_3d.add_member(dds::core::xtypes::Member("x", dds::core::xtypes::primitive_type<uint32_t>()));
-            coord_3d.add_member(dds::core::xtypes::Member("y", dds::core::xtypes::primitive_type<uint32_t>()));
-            coord_3d.add_member(dds::core::xtypes::Member("z", dds::core::xtypes::primitive_type<uint32_t>()));
+            soss::xtypes::StructType coord_3d("coordinate3d");
+            coord_3d.add_member(soss::xtypes::Member("x", soss::xtypes::primitive_type<uint32_t>()));
+            coord_3d.add_member(soss::xtypes::Member("y", soss::xtypes::primitive_type<uint32_t>()));
+            coord_3d.add_member(soss::xtypes::Member("z", soss::xtypes::primitive_type<uint32_t>()));
             type_register.emplace(coord_3d.name(), std::move(coord_3d));
         }
 
@@ -72,6 +74,7 @@ public:
         initial_msg_ms_ = configuration["initial_msg_ms"] ? configuration["initial_msg_ms"].as<int>() : 0;
 
         connection_.reset(new SystemConnection(roundtrip));
+        connection_->run();
 
         return true;
     }
@@ -109,7 +112,7 @@ public:
 
     bool subscribe(
         const std::string& topic_name,
-        const dds::core::xtypes::StructType& message_type,
+        const soss::xtypes::DynamicType& message_type,
         SubscriptionCallback callback,
         const YAML::Node& ) override
     {
@@ -125,7 +128,7 @@ public:
 
     std::shared_ptr<soss::TopicPublisher> advertise(
         const std::string& topic_name,
-        const dds::core::xtypes::StructType& message_type,
+        const soss::xtypes::DynamicType& message_type,
         const YAML::Node& ) override
     {
         auto publisher = std::make_shared<Publisher>(topic_name, message_type, *connection_);

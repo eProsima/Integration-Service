@@ -808,7 +808,7 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
         continue;
       }
 
-      if(from_type->second->is_subset_of(*to_type->second))
+      if(!from_type->second->is_subset_of(*to_type->second))
       {
         std::cerr << "Remapping error: message type ["
                   << topic_info_from.type << "] from [" + it_from->first + "] can not be read as type ["
@@ -862,7 +862,7 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
       continue;
     }
 
-    if(client_type->second->is_subset_of(*server_type->second)) //EPROSIMA: CHECK.
+    if(!client_type->second->is_subset_of(*server_type->second)) //EPROSIMA: CHECK.
     {
       std::cerr << "Remapping error: service type ["
                 << topic_info_client.type << "] from [" + it_client->first + "] can not be read as type ["

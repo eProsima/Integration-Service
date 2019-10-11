@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2019 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,174 +18,12 @@
 #ifndef SOSS__MESSAGE_HPP
 #define SOSS__MESSAGE_HPP
 
-
-#include <soss/core/export.hpp>
-#include <functional>
-#include <map>
-#include <memory>
-#include <string>
+#include <dds/core/xtypes/xtypes.hpp>
 
 namespace soss {
 
-// ================================ xtypes lib ==================================
+namespace xtypes = dds::core::xtypes;
 
-#ifndef SOSS__MESSAGE_HPP
-#define SOSS__MESSAGE_HPP
+} // namespace soss
 
-#include <string>
-#include <map>
-
-/// \brief Cast this field to the requested type.
-/// If this field does not contain the requested type, this will be a nullptr.
-template<typename T>
-T* cast(
-        std::enable_if_t<std::is_integral<T>::value>* = 0);
-
-/// \brief Cast this field to the requested type.
-/// If this field does not contain the requested type, this will be a nullptr.
-template<typename T>
-T* cast(
-        std::enable_if_t<!std::is_integral<T>::value>* = 0);
-
-/// \brief Cast this field to the requested type with const-qualifications.
-/// If this field does not contain the requested type, this will be a nullptr.
-template <typename T>
-const T* cast(
-        std::enable_if_t<std::is_integral<T>::value>* = 0) const;
-
-/// \brief Cast this field to the requested type.
-/// If this field does not contain the requested type, this will be a nullptr.
-template <typename T>
-const T* cast(
-        std::enable_if_t<!std::is_integral<T>::value>* = 0) const;
-
-class MessageType
-{
-public:
-
-    enum class Type
-    {
-        INT, STRING
-    };
-
-    MessageType(
-            const std::string& name)
-        : name_(name)
-    {
-    }
-
-    ~MessageType() = default;
-
-    const std::string& get_name() const
-    {
-        return name_;
-    }
-
-    bool operator == (
-            const MessageType& other) const
-    {
-        return name_ == other.name_ && members_ == other.members_;
-    }
-
-    bool operator != (
-            const MessageType& other) const
-    {
-        return !(*this == other);
-    }
-
-    Type& operator [] (
-            const std::string& field)
-    {
-        return members_[field];
-    }
-
-    const std::map<std::string, Type>& get_members() const
-    {
-        return members_;
-    }
-
-    bool can_be_read_as(
-            const MessageType& other) const
-    {
-        //TODO: Check matching by QoS
-        return members_ == other.members_;
-    }
-
-private:
-
-    std::string name_;
-    std::map<std::string, Type> members_;
-};
-
-
-class MessageData
-{
-public:
-
-    class Iterator
-    {
-    };
-
-    MessageData(
-            const MessageType& type)
-        : type_(type)
-    {
-    }
-
-    ~MessageData() = default;
-
-    const MessageType& get_type() const
-    {
-        return type_;
-    }
-
-        << << << < HEAD
-        std::string& operator [] (
-            const std::string& field)
-        == == == =
-        bool operator == (
-        const MessageData& other) const
-            {
-            return type_ == other.type_ && values_ == other.values_;
-        }
-
-        bool operator != (
-            const MessageData& other) const
-            {
-            return !(*this == other);
-        }
-
-        std::string& operator [] (
-            const std::string& field)
-        >> >> >> > d9039a7 ... publish tests working.
-            {
-            return values_[field];
-        }
-
-        const std::string& operator [] (
-            const std::string& field) const
-            {
-            return values_.at(field);
-        }
-
-        const std::map<std::string, std::string>& get_values() const
-            {
-            return values_;
-        }
-
-        MessageData::Iterator get_iterator() const
-            {
-            //TODO
-            return Iterator();
-        }
-
-        private:
-
-        const MessageType& type_;
-    std::map<std::string, std::string> values_;
-};
-
-
-} //soss
-
-#endif //SOSS__MESSAGE_HPP
+#endif // SOSS__FIELDTOSTRING_HPP

@@ -1,6 +1,6 @@
 systems:
     xtypes: { type: xtypes-example, roundtrip: true }
-    mock: { type: mock, type-matching: false }
+    mock: { type: mock, type-matching: true }
 
 routes:
     mock_to_xtypes: { from: mock, to: xtypes }

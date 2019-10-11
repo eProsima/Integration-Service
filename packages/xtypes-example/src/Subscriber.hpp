@@ -1,7 +1,7 @@
 #ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
 #define SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
 
-#include "System.hpp"
+#include "SystemConnection.hpp"
 
 #include <soss/SystemHandle.hpp>
 
@@ -10,7 +10,7 @@ class Subscriber
 public:
     Subscriber(
             const std::string& topic,
-            const dds::core::xtypes::StructType& type,
+            const soss::xtypes::DynamicType& type,
             soss::TopicSubscriberSystem::SubscriptionCallback soss_callback,
             SystemConnection& connection)
         : topic_(topic)
@@ -28,11 +28,11 @@ public:
 
     void receive(const SystemMessage& system_message)
     {
-        dds::core::xtypes::DynamicData message(type_);
+        soss::xtypes::DynamicData message(type_);
 
         // Conversion
-        message.value("x", system_message.at("x"));
-        message.value("y", system_message.at("y"));
+        message["x"].value(system_message.at("x"));
+        message["y"].value(system_message.at("y"));
 
         std::cout << "[system -> soss]: conversion to xtype:" << std::endl;
 
@@ -40,11 +40,11 @@ public:
     }
 
     const std::string& topic() const { return topic_; }
-    const dds::core::xtypes::StructType& type() const { return type_; }
+    const soss::xtypes::DynamicType& type() const { return type_; }
 
 private:
     const std::string topic_;
-    const dds::core::xtypes::StructType type_;
+    const soss::xtypes::DynamicType& type_;
     soss::TopicSubscriberSystem::SubscriptionCallback soss_callback_;
 
 };
