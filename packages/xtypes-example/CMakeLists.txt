@@ -23,11 +23,6 @@ target_compile_options(${PROJECT_NAME}
        -Werror -Wall -Wextra -Wpedantic
 )
 
-target_include_directories(${PROJECT_NAME}
-    PRIVATE
-        include
-)
-
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         soss::core

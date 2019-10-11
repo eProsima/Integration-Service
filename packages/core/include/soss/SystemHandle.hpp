@@ -20,7 +20,7 @@
 
 #include <soss/detail/SystemHandle-head.hpp>
 
-#include <dds/core/xtypes/xtypes.hpp>
+#include <soss/Message.hpp>
 
 #include <yaml-cpp/yaml.h>
 
