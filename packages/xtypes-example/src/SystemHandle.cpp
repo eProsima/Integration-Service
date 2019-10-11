@@ -55,17 +55,17 @@ public:
         if(required_types.messages.count("coordinate2d"))
         {
             soss::xtypes::StructType coord_2d("coordinate2d");
-            coord_2d.add_member(soss::xtypes::Member("x", soss::xtypes::primitive_type<uint32_t>()));
-            coord_2d.add_member(soss::xtypes::Member("y", soss::xtypes::primitive_type<uint32_t>()));
+            coord_2d.add_member("x", soss::xtypes::primitive_type<uint32_t>());
+            coord_2d.add_member("y", soss::xtypes::primitive_type<uint32_t>());
             type_register.emplace(coord_2d.name(), std::move(coord_2d));
         }
 
         if(required_types.messages.count("coordinate3d"))
         {
             soss::xtypes::StructType coord_3d("coordinate3d");
-            coord_3d.add_member(soss::xtypes::Member("x", soss::xtypes::primitive_type<uint32_t>()));
-            coord_3d.add_member(soss::xtypes::Member("y", soss::xtypes::primitive_type<uint32_t>()));
-            coord_3d.add_member(soss::xtypes::Member("z", soss::xtypes::primitive_type<uint32_t>()));
+            coord_3d.add_member("x", soss::xtypes::primitive_type<uint32_t>());
+            coord_3d.add_member("y", soss::xtypes::primitive_type<uint32_t>());
+            coord_3d.add_member("z", soss::xtypes::primitive_type<uint32_t>());
             type_register.emplace(coord_3d.name(), std::move(coord_3d));
         }
 
