@@ -85,7 +85,7 @@ public:
     // Do nothing
   }
 
-  bool publish(const dds::core::xtypes::DynamicData& message) override
+  bool publish(const xtypes::DynamicData& message) override
   {
     // Test that we have advertised this topic
     const auto pub_it = impl().publishers.find(_topic);
@@ -127,7 +127,7 @@ public:
   }
 
   void call_service(
-      const dds::core::xtypes::DynamicData& request,
+      const xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle) override
   {
@@ -139,7 +139,7 @@ public:
             + _service);
     }
 
-    dds::core::xtypes::DynamicData response = it->second(request);
+    xtypes::DynamicData response = it->second(request);
     client.receive_response(call_handle, response);
   }
 
@@ -154,7 +154,7 @@ public:
   bool configure(
       const RequiredTypes&,
       const YAML::Node&,
-      std::map<std::string, dds::core::xtypes::StructType>&) override
+      std::map<std::string, xtypes::DynamicType::Ptr>&) override
   {
     // Nothing to configure
     return true;
@@ -176,7 +176,7 @@ public:
 
   bool subscribe(
       const std::string& topic_name,
-      const dds::core::xtypes::StructType& message_type,
+      const xtypes::DynamicType& message_type,
       SubscriptionCallback callback,
       const YAML::Node& /*configuration*/) override
   {
@@ -187,7 +187,7 @@ public:
 
   std::shared_ptr<TopicPublisher> advertise(
       const std::string& topic_name,
-      const dds::core::xtypes::StructType& message_type,
+      const xtypes::DynamicType& message_type,
       const YAML::Node& /*configuration*/) override
   {
     impl().publishers[topic_name].insert(message_type.name());
@@ -196,7 +196,7 @@ public:
 
   bool create_client_proxy(
       const std::string& service_name,
-      const dds::core::xtypes::StructType& service_type,
+      const xtypes::DynamicType& service_type,
       RequestCallback callback,
       const YAML::Node& /*configuration*/) override
   {
@@ -207,7 +207,7 @@ public:
 
   std::shared_ptr<ServiceProvider> create_service_proxy(
       const std::string& service_name,
-      const dds::core::xtypes::StructType& service_type,
+      const xtypes::DynamicType& service_type,
       const YAML::Node& /*configuration*/) override
   {
     impl().services[service_name].insert(service_type.name());
@@ -218,7 +218,7 @@ public:
 //==============================================================================
 bool publish_message(
     const std::string& topic,
-    const dds::core::xtypes::DynamicData& msg)
+    const xtypes::DynamicData& msg)
 {
   const auto it = impl().subscriptions.find(topic);
   if(it == impl().subscriptions.end() ||
@@ -265,9 +265,9 @@ public:
     // Do nothing
   }
 
-  std::shared_future<dds::core::xtypes::DynamicData> request(
+  std::shared_future<xtypes::DynamicData> request(
       const std::string& topic,
-      const dds::core::xtypes::DynamicData& request_msg,
+      const xtypes::DynamicData& request_msg,
       std::chrono::nanoseconds retry)
   {
     const auto it = impl().soss_request_callbacks.find(topic);
@@ -303,7 +303,7 @@ public:
 
   void receive_response(
       std::shared_ptr<void> call_handle,
-      const dds::core::xtypes::DynamicData& response) override
+      const xtypes::DynamicData& response) override
   {
     std::unique_lock<std::mutex> lock(this->mutex);
     if(response_received)
@@ -315,7 +315,7 @@ public:
     (void)call_handle;
   }
 
-  std::promise<dds::core::xtypes::DynamicData> promise;
+  std::promise<xtypes::DynamicData> promise;
   std::thread retry_thread;
   bool response_received;
   std::atomic_bool quit;
@@ -330,9 +330,9 @@ public:
 };
 
 //==============================================================================
-std::shared_future<dds::core::xtypes::DynamicData> request(
+std::shared_future<xtypes::DynamicData> request(
     const std::string& topic,
-    const dds::core::xtypes::DynamicData& request_msg,
+    const xtypes::DynamicData& request_msg,
     std::chrono::nanoseconds retry)
 {
   const auto it = impl().clients.find(topic);
