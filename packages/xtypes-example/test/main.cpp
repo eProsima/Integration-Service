@@ -8,9 +8,7 @@
 
 int main()
 {
-    std::cout << "asdasd" << std::endl;
     soss::InstanceHandle soss_handle = soss::run_instance("install/soss-xtypes-example/bin/test_config.yaml");
-    std::cout << "asdasd" << std::endl;
     if(soss_handle)
     {
         std::cout << LOG_PREFIX "Initializing test..." << std::endl;
@@ -19,8 +17,8 @@ int main()
         std::this_thread::sleep_for(100ms);
 
         soss::xtypes::StructType coord_2d("coordinate2d");
-        coord_2d.add_member(soss::xtypes::Member("x", soss::xtypes::primitive_type<uint32_t>()));
-        coord_2d.add_member(soss::xtypes::Member("y", soss::xtypes::primitive_type<uint32_t>()));
+        coord_2d.add_member("x", soss::xtypes::primitive_type<uint32_t>());
+        coord_2d.add_member("y", soss::xtypes::primitive_type<uint32_t>());
 
         soss::xtypes::DynamicData message_to(coord_2d);
         message_to["x"].value(2);
@@ -48,7 +46,7 @@ int main()
         }
 
         soss::xtypes::DynamicData message_from = receive_msg_future.get();
-        if(message_to == message_from)
+        if(message_to != message_from)
         {
             std::cerr << LOG_PREFIX "Error comparing message" << std::endl;
             return 3;
