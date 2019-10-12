@@ -74,22 +74,26 @@ public:
 
   SystemHandle() = default;
 
+  using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
+
   /// \brief Configure the soss handle for this system
   ///
   /// \param[in] types
   ///   The set of types (messages and services) that this middleware needs to
-  ///   support. The system handle should load any additional plugin libraries
-  ///   needed by this
+  ///   support. The system handle must register this types to the TypeRegistry.
   ///
   /// \param[in] configuration
   ///   The configuration specific to this system handle, as described in the
   ///   user-provided yaml input file.
   ///
+  /// \param[in] type_register
+  ///      The set of type definitions that this middleware is able to support.
+  ///
   /// \return true if configuration was successful, otherwise false
   virtual bool configure(
       const RequiredTypes& types,
       const YAML::Node& configuration,
-      std::map<std::string, xtypes::DynamicType::Ptr>& type_register) = 0;
+      TypeRegistry& type_registry) = 0;
 
   /// Is the system handle still working
   virtual bool okay() const = 0;
