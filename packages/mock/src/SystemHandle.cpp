@@ -154,7 +154,7 @@ public:
   bool configure(
       const RequiredTypes&,
       const YAML::Node&,
-      std::map<std::string, xtypes::DynamicType::Ptr>&) override
+      TypeRegistry&) override
   {
     // Nothing to configure
     return true;

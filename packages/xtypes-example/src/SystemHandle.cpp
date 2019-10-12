@@ -48,7 +48,7 @@ public:
     bool configure(
         const soss::RequiredTypes& required_types,
         const YAML::Node& configuration,
-        std::map<std::string, soss::xtypes::DynamicType::Ptr>& type_register) override
+        TypeRegistry& type_registry) override
     {
         // The system handle creates and manages its own types.
         // (It could come from buildes or from an IDL compiler)
@@ -57,7 +57,7 @@ public:
             soss::xtypes::StructType coord_2d("coordinate2d");
             coord_2d.add_member("x", soss::xtypes::primitive_type<uint32_t>());
             coord_2d.add_member("y", soss::xtypes::primitive_type<uint32_t>());
-            type_register.emplace(coord_2d.name(), std::move(coord_2d));
+            type_registry.emplace(coord_2d.name(), std::move(coord_2d));
         }
 
         if(required_types.messages.count("coordinate3d"))
@@ -66,7 +66,7 @@ public:
             coord_3d.add_member("x", soss::xtypes::primitive_type<uint32_t>());
             coord_3d.add_member("y", soss::xtypes::primitive_type<uint32_t>());
             coord_3d.add_member("z", soss::xtypes::primitive_type<uint32_t>());
-            type_register.emplace(coord_3d.name(), std::move(coord_3d));
+            type_registry.emplace(coord_3d.name(), std::move(coord_3d));
         }
 
         //Mock connection
