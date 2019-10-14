@@ -8,7 +8,7 @@
 
 int main()
 {
-    soss::InstanceHandle soss_handle = soss::run_instance("install/soss-xtypes-example/bin/test_config.yaml");
+    soss::InstanceHandle soss_handle = soss::run_instance("install/soss-local-example/bin/test_config.yaml");
     if(soss_handle)
     {
         std::cout << LOG_PREFIX "Initializing test..." << std::endl;
@@ -23,13 +23,13 @@ int main()
         message_to["y"].value(4);
 
         std::promise<soss::xtypes::DynamicData> receive_msg_promise;
-        soss::mock::subscribe("from_xtypes", [&](const soss::xtypes::DynamicData& msg_from_xtypes)
+        soss::mock::subscribe("from_local", [&](const soss::xtypes::DynamicData& msg_from_local)
         {
-            receive_msg_promise.set_value(msg_from_xtypes);
+            receive_msg_promise.set_value(msg_from_local);
         });
 
         std::cout << LOG_PREFIX "Sending message..." << std::endl;
-        if(!soss::mock::publish_message("to_xtypes", message_to))
+        if(!soss::mock::publish_message("to_local", message_to))
         {
             std::cerr << LOG_PREFIX "Error sending message" << std::endl;
             return 1;

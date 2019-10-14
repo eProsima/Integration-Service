@@ -1,7 +1,7 @@
 #ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__PUBLISHER_HPP
 #define SOSS__XTYPES_EXAMPLE__INTERNAL__PUBLISHER_HPP
 
-#include "SystemConnection.hpp"
+#include "MiddlewareConnection.hpp"
 
 #include <soss/SystemHandle.hpp>
 
@@ -11,7 +11,7 @@ public:
     Publisher(
             const std::string& topic,
             const soss::xtypes::DynamicType& type,
-            SystemConnection& connection)
+            MiddlewareConnection& connection)
         : topic_(topic)
         , type_(type)
         , connection_(connection)
@@ -26,15 +26,15 @@ public:
 
     bool publish(const soss::xtypes::DynamicData& message) override
     {
-        SystemMessage system_message;
+        MiddlewareMessage middleware_message;
 
         // Conversion
-        system_message.emplace("x", message["x"].value<uint32_t>());
-        system_message.emplace("y", message["y"].value<uint32_t>());
+        middleware_message.emplace("x", message["x"].value<uint32_t>());
+        middleware_message.emplace("y", message["y"].value<uint32_t>());
 
-        std::cout << "[soss -> system]: conversion to system:" << std::endl;
+        std::cout << "[soss -> middleware]: converted to middleware type" << std::endl;
 
-        connection_.publish(topic_, system_message);
+        connection_.publish(topic_, middleware_message);
 
         return true;
     }
@@ -45,7 +45,7 @@ public:
 private:
     const std::string topic_;
     const soss::xtypes::DynamicType& type_;
-    SystemConnection& connection_;
+    MiddlewareConnection& connection_;
 };
 
 

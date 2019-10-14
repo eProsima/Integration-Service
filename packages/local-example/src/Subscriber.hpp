@@ -1,7 +1,7 @@
 #ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
 #define SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
 
-#include "SystemConnection.hpp"
+#include "MiddlewareConnection.hpp"
 
 #include <soss/SystemHandle.hpp>
 
@@ -12,7 +12,7 @@ public:
             const std::string& topic,
             const soss::xtypes::DynamicType& type,
             soss::TopicSubscriberSystem::SubscriptionCallback soss_callback,
-            SystemConnection& connection)
+            MiddlewareConnection& connection)
         : topic_(topic)
         , type_(type)
         , soss_callback_(soss_callback)
@@ -26,15 +26,15 @@ public:
     Subscriber(Subscriber&& rhs) = delete;
     Subscriber& operator = (Subscriber&& rhs) = delete;
 
-    void receive(const SystemMessage& system_message)
+    void receive(const MiddlewareMessage& middleware_message)
     {
         soss::xtypes::DynamicData message(type_);
 
         // Conversion
-        message["x"].value(system_message.at("x"));
-        message["y"].value(system_message.at("y"));
+        message["x"].value(middleware_message.at("x"));
+        message["y"].value(middleware_message.at("y"));
 
-        std::cout << "[system -> soss]: conversion to xtype:" << std::endl;
+        std::cout << "[middleware -> soss]: converted to xtypes:" << std::endl;
 
         soss_callback_(message);
     }

@@ -15,7 +15,7 @@
  *
 */
 
-#include "SystemConnection.hpp"
+#include "MiddlewareConnection.hpp"
 #include "Subscriber.hpp"
 #include "Publisher.hpp"
 
@@ -72,7 +72,7 @@ public:
         bool roundtrip = configuration["roundtrip"] ? configuration["roundtrip"].as<bool>() : false;
         initial_msg_ms_ = configuration["initial_msg_ms"] ? configuration["initial_msg_ms"].as<int>() : 0;
 
-        connection_.reset(new SystemConnection(roundtrip));
+        connection_.reset(new MiddlewareConnection(roundtrip));
         connection_->run();
 
         return true;
@@ -118,7 +118,7 @@ public:
         auto subscriber = std::make_shared<Subscriber>(topic_name, message_type, callback, *connection_);
         subscribers_.emplace_back(std::move(subscriber));
 
-        std::cout << "[soss-xtypes-example]: subscriber created. "
+        std::cout << "[soss-local-example]: subscriber created. "
             "topic: " << topic_name << ", "
             "type: " << message_type.name() << std::endl;
 
@@ -133,7 +133,7 @@ public:
         auto publisher = std::make_shared<Publisher>(topic_name, message_type, *connection_);
         publishers_.emplace_back(std::move(publisher));
 
-        std::cout << "[soss-xtypes-example]: publisher created. "
+        std::cout << "[soss-local-example]: publisher created. "
             "topic: " << topic_name << ", "
             "type: " << message_type.name() << std::endl;
 
@@ -141,11 +141,11 @@ public:
     }
 
 private:
-    std::unique_ptr<SystemConnection> connection_;
+    std::unique_ptr<MiddlewareConnection> connection_;
     std::vector<std::shared_ptr<Publisher>> publishers_;
     std::vector<std::shared_ptr<Subscriber>> subscribers_;
     int initial_msg_ms_;
     int64_t initial_time_stamp_ms_;
 };
 
-SOSS_REGISTER_SYSTEM("xtypes-example", SystemHandle)
+SOSS_REGISTER_SYSTEM("local-example", SystemHandle)

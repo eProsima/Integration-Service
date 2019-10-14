@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(soss-xtypes-example)
+project(soss-local-example)
 
 find_package(fastrtps REQUIRED)
 find_package(soss-core REQUIRED)
@@ -54,7 +54,7 @@ target_link_libraries(${TEST_NAME}
 ########################################################################
 # Installation
 soss_install_middleware_plugin(
-    MIDDLEWARE xtypes-example
+    MIDDLEWARE local-example
     TARGET ${PROJECT_NAME}
 )
 

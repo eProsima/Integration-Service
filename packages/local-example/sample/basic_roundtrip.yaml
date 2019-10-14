@@ -1,0 +1,12 @@
+systems:
+    s1: { type: local-example, initial_msg_ms: 1000, roundtrip: false}
+    s2: { type: local-example, initial_msg_ms: 0, roundtrip: true}
+
+routes:
+    1_to_2: { from: s1, to: s2 }
+    2_to_1: { from: s2, to: s1 }
+
+topics:
+    position_from_1_to_2: { type: coordinate2d, route: 1_to_2 }
+    position_from_2_to_1: { type: coordinate2d, route: 2_to_1, remap: { s2: { topic: position_from_1_to_2 } } }
+
