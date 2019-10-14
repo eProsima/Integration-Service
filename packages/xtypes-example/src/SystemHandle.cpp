@@ -48,7 +48,7 @@ public:
     bool configure(
         const soss::RequiredTypes& required_types,
         const YAML::Node& configuration,
-        TypeRegistry& type_registry) override
+        soss::TypeRegistry& type_registry) override
     {
         // The system handle creates and manages its own types.
         // (It could come from buildes or from an IDL compiler)
@@ -69,7 +69,6 @@ public:
             type_registry.emplace(coord_3d.name(), std::move(coord_3d));
         }
 
-        //Mock connection
         bool roundtrip = configuration["roundtrip"] ? configuration["roundtrip"].as<bool>() : false;
         initial_msg_ms_ = configuration["initial_msg_ms"] ? configuration["initial_msg_ms"].as<int>() : 0;
 

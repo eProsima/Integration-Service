@@ -20,6 +20,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <soss/SystemHandle.hpp>
+
 #include <chrono>
 #include <memory>
 #include <string>
@@ -74,6 +76,12 @@ public:
   /// run_instance() to get an InstanceHandle.
   InstanceHandle(std::shared_ptr<Implementation> impl);
   InstanceHandle(InstanceHandle&&);
+
+  /// \brief Request the TypeRegitry for a middleware
+  ///
+  /// \returns a pointer to the TypeRegistry or nullptr if the middleware does
+  /// not exits.
+  const TypeRegistry* type_registry(const std::string& middleware_name);
 
 private:
   std::shared_ptr<Implementation> _pimpl;

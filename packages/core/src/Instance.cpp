@@ -149,7 +149,7 @@ public:
           {
             _quit = true;
             _return_code = 1;
-            std::cout << "Runtime Error: middleware named [" << entry.first
+            std::cerr << "Runtime Error: middleware named [" << entry.first
                       << "] has experienced a failure! We will now quit!"
                       << std::endl;
           }
@@ -183,6 +183,19 @@ public:
     }
 
     return _return_code;
+  }
+
+  const TypeRegistry* type_registry(const std::string& middleware_name)
+  {
+    auto it = _info_map.find(middleware_name);
+    if(it == _info_map.end())
+    {
+        std::cerr << "Runtime Error: middleware named [" << middleware_name
+                  << "] does not exists!"
+                  << std::endl;
+        throw nullptr;
+    }
+    return &_info_map.at(middleware_name).types;
   }
 
   std::condition_variable m_finished;
@@ -517,6 +530,12 @@ InstanceHandle::InstanceHandle(InstanceHandle&& other)
   : _pimpl(std::move(other._pimpl))
 {
   // Do nothing
+}
+
+//==============================================================================
+const TypeRegistry* InstanceHandle::type_registry(const std::string& middleware_name)
+{
+    _pimpl->type_registry(middleware_name);
 }
 
 //==============================================================================
