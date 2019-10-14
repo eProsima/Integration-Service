@@ -68,13 +68,13 @@ struct RequiredTypes
 //Shorthand for DynamicTypes management
 namespace xtypes = dds::core::xtypes;
 
+using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
+
 class SystemHandle
 {
 public:
 
   SystemHandle() = default;
-
-  using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
 
   /// \brief Configure the soss handle for this system
   ///

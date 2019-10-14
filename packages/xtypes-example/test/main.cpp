@@ -16,11 +16,9 @@ int main()
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(100ms);
 
-        soss::xtypes::StructType coord_2d("coordinate2d");
-        coord_2d.add_member("x", soss::xtypes::primitive_type<uint32_t>());
-        coord_2d.add_member("y", soss::xtypes::primitive_type<uint32_t>());
+        const soss::TypeRegistry& mock_types = *soss_handle.type_registry("mock");
 
-        soss::xtypes::DynamicData message_to(coord_2d);
+        soss::xtypes::DynamicData message_to(mock_types.at("coordinate2d"));
         message_to["x"].value(2);
         message_to["y"].value(4);
 

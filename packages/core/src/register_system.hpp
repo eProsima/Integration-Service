@@ -60,7 +60,7 @@ struct SystemHandleInfo
   ServiceClientSystem*          service_client;
   ServiceProviderSystem*        service_provider;
 
-  std::map<std::string, xtypes::DynamicType::Ptr> types;
+  TypeRegistry types;
 };
 
 //==============================================================================
