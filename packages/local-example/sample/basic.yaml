@@ -1,0 +1,10 @@
+systems:
+    s1: { type: local-example, initial_msg_ms: 1000 }
+    s2: { type: local-example }
+
+routes:
+    1_to_2: { from: s1, to: s2 }
+
+topics:
+    position_from_1_to_2: { type: coordinate2d, route: 1_to_2 }
+

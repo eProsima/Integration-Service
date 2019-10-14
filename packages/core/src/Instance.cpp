@@ -535,7 +535,7 @@ InstanceHandle::InstanceHandle(InstanceHandle&& other)
 //==============================================================================
 const TypeRegistry* InstanceHandle::type_registry(const std::string& middleware_name)
 {
-    _pimpl->type_registry(middleware_name);
+    return _pimpl->type_registry(middleware_name);
 }
 
 //==============================================================================

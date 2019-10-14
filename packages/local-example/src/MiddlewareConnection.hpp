@@ -1,5 +1,5 @@
-#ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__SYSTEM_CONNECTION_HPP
-#define SOSS__XTYPES_EXAMPLE__INTERNAL__SYSTEM_CONNECTION_HPP
+#ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP
+#define SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP
 
 #include <map>
 #include <queue>
@@ -10,28 +10,28 @@
 #include <mutex>
 #include <condition_variable>
 
-// Class used for emulate a remote connection.
 
-typedef std::map<std::string, uint32_t> SystemMessage;
+typedef std::map<std::string, uint32_t> MiddlewareMessage;
 
-class SystemConnection
+// Class used for emulate the remote connection with the middleware.
+class MiddlewareConnection
 {
-    struct SystemMessageQueued
+    struct MiddlewareMessageQueued
     {
         std::string topic;
-        SystemMessage message;
+        MiddlewareMessage message;
     };
 
 public:
-    SystemConnection(bool roundtrip)
+    MiddlewareConnection(bool roundtrip)
         : roundtrip_(roundtrip)
     {}
 
     void publish(
             const std::string& topic,
-            const SystemMessage& message)
+            const MiddlewareMessage& message)
     {
-        debug_print("[system]: send to system: ", message);
+        debug_print("[middleware]: send to middleware: ", message);
         if(roundtrip_)
         {
             receive(topic, message);
@@ -40,7 +40,7 @@ public:
 
     void subscribe(
             const std::string& topic,
-            const std::function<void(const SystemMessage& message)>& callback)
+            const std::function<void(const MiddlewareMessage& message)>& callback)
     {
         auto it = topic_callbacks_.find(topic);
         if(it != topic_callbacks_.end())
@@ -55,10 +55,10 @@ public:
 
     void receive(
             const std::string& topic,
-            const SystemMessage& message)
+            const MiddlewareMessage& message)
     {
         std::unique_lock<std::mutex> push_lock(income_mutex_);
-        income_.push(SystemMessageQueued{topic, message});
+        income_.push(MiddlewareMessageQueued{topic, message});
         push_lock.unlock();
         pop_condition_.notify_one();
     }
@@ -66,7 +66,7 @@ public:
     void run()
     {
         running_ = true;
-        listen_thread = std::thread(std::bind(&SystemConnection::listen, this));
+        listen_thread = std::thread(std::bind(&MiddlewareConnection::listen, this));
     }
 
     void stop()
@@ -87,13 +87,13 @@ private:
             }
 
             std::string topic = income_.front().topic;
-            SystemMessage& message = income_.front().message;
+            MiddlewareMessage& message = income_.front().message;
 
             income_.pop();
 
             pop_lock.unlock();
 
-            debug_print("[system]: receive from system: ", message);
+            debug_print("[middleware]: receive from middleware: ", message);
 
             auto it = topic_callbacks_.find(topic);
             if(it != topic_callbacks_.end())
@@ -105,20 +105,20 @@ private:
             }
             else
             {
-                std::cerr << "[system]: No exists callback for topic '" << topic << "'" << std::endl;
+                std::cerr << "[middleware]: No exists callback for topic '" << topic << "'" << std::endl;
             }
         }
     }
 
-    std::queue<SystemMessageQueued> income_;
+    std::queue<MiddlewareMessageQueued> income_;
     std::mutex income_mutex_;
     std::condition_variable pop_condition_;
     std::thread listen_thread;
     bool running_;
-    std::map<std::string, std::vector<std::function<void(const SystemMessage& message)>>> topic_callbacks_;
+    std::map<std::string, std::vector<std::function<void(const MiddlewareMessage& message)>>> topic_callbacks_;
     bool roundtrip_;
 
-    static void debug_print(const std::string& prefix, const SystemMessage& message)
+    static void debug_print(const std::string& prefix, const MiddlewareMessage& message)
     {
         std::stringstream ss; //Used to avoid mixing differents outs
         ss << prefix;
@@ -132,4 +132,4 @@ private:
     }
 };
 
-#endif //SOSS__XTYPES_EXAMPLE__INTERNAL__SYSTEM_CONNECTION_HPP
+#endif //SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP
