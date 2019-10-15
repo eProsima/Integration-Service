@@ -2,11 +2,11 @@
 
 
 
-## Overview
-- XTypes API
-- System Handle interface changes
-- YAML changes
-- Future module
+## Introduction
+1. XTypes API
+1. System Handle interface changes
+1. YAML changes
+1. Future work
 
 
 
@@ -93,10 +93,10 @@ data.for_each([&](const DynamicData::ReadableNode& node)
         default:
     }
 
-    node.data // for a view of the data
-    node.type // related type
-    node.deep // nested deep
-    node.parent // parent node int the data tree
+    node.data() // for a view of the data
+    node.type() // related type
+    node.deep() // nested deep
+    node.parent() // parent node int the data tree
     node.access().index() // access from parent as index
     node.access().member() // access from parent as member
 });
@@ -111,9 +111,10 @@ inner2.add_member("a", ArrayType(primitive_type<double>()));
 StructType inner("Inner");
 inner.add_member("b", ArrayType(inner2));
 inner.add_member("c", primitive_type<float>());
+inner.add_member("d", inner2);
 
 StructType outter("Outter");
-outter.add_member("d", ArrayType(inner));
+outter.add_member("e", ArrayType(inner));
 
 DynamicData data(outter); // <- allocation here
 ```
@@ -226,11 +227,11 @@ topics:
 
 
 ## Future work
-- Qos (affect the behaviour of `is_subset_of` and _)
+- Qos (affect the behaviour of `is_subset_of`)
     - Finish optional implementation (working now).
     - Ignore members.
     - Ignore member names.
     - Type widening.
 - Unions and enums.
 - Good documentation with examples.
-- Move DDS and FIWARE System Handles to use xtypes (DDS will works natively).
+- Update DDS and FIWARE System Handles to use with xtypes (DDS will works natively).
