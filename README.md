@@ -18,7 +18,7 @@
  *soss v3.0*
 
  * *Not started* - Asynchronous `SystemHandle` API
- * *Not started* - Replace `soss::Message` with xtypes
+ * *In progress* - Replace `soss::Message` with xtypes
  * *In progress* - `soss-rest client` -- REST API client extension for soss
 
  ## Usage

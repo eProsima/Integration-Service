@@ -96,7 +96,7 @@ data.for_each([&](const DynamicData::ReadableNode& node)
     node.data() // for a view of the data
     node.type() // related type
     node.deep() // nested deep
-    node.parent() // parent node int the data tree
+    node.parent() // parent node in the data tree
     node.access().index() // access from parent as index
     node.access().member() // access from parent as member
 });
