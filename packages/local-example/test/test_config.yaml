@@ -7,6 +7,6 @@ routes:
     middleware_to_mock: { from: middleware, to: mock }
 
 topics:
-    to_middleware: { type: coordinate2d, route: mock_to_middleware, remap: { middleware: { topic: position2, type: coordinate2d } } }
-    from_middleware: { type: coordinate2d, route: middleware_to_mock, remap: { middleware: { topic: position2, type: coordinate2d } } }
+    to_middleware: { type: coordinate2d, route: mock_to_middleware, remap: { middleware: { topic: position3, type: coordinate3d } } }
+    from_middleware: { type: coordinate2d, route: middleware_to_mock, remap: { middleware: { topic: position3, type: coordinate3d } } }
 
