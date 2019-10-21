@@ -511,8 +511,18 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
 
       m_required_types[mw].messages.insert(config.message_type);
     }
-  }
 
+    for (auto&& it_remap: config.remap)
+    {
+      if(m_middlewares.find(it_remap.first) == m_middlewares.end())
+      {
+        std::cerr << "Unrecognized system [" << it_remap.first << "] requested for mapping topic "
+                  << "[" << entry.first << "]" << std::endl;
+        return false;
+      }
+      m_required_types[it_remap.first].messages.insert(it_remap.second.type);
+    }
+  }
 
   for(const auto& entry : m_service_configs)
   {
@@ -527,6 +537,17 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
         return false;
       }
       m_required_types[mw].services.insert(config.service_type);
+    }
+
+    for (auto&& it_remap: config.remap)
+    {
+      if(m_middlewares.find(it_remap.first) == m_middlewares.end())
+      {
+        std::cerr << "Unrecognized system [" << it_remap.first << "] requested for mapping service "
+                  << "[" << entry.first << "]" << std::endl;
+        return false;
+      }
+      m_required_types[it_remap.first].messages.insert(it_remap.second.type);
     }
   }
 

@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#define LOG_PREFIX "[soss-example-test]: "
+#define LOG_PREFIX "[soss-local-example-test]: "
 
 int main()
 {

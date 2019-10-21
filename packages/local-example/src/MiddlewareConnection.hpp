@@ -31,7 +31,7 @@ public:
             const std::string& topic,
             const MiddlewareMessage& message)
     {
-        debug_print("[middleware]: send to middleware: ", message);
+        debug_print("[soss-local-example-middleware]: send to middleware: ", message);
         if(roundtrip_)
         {
             receive(topic, message);
@@ -93,7 +93,7 @@ private:
 
             pop_lock.unlock();
 
-            debug_print("[middleware]: receive from middleware: ", message);
+            debug_print("[soss-local-example-middleware]: receive from middleware: ", message);
 
             auto it = topic_callbacks_.find(topic);
             if(it != topic_callbacks_.end())
@@ -105,7 +105,7 @@ private:
             }
             else
             {
-                std::cerr << "[middleware]: No exists callback for topic '" << topic << "'" << std::endl;
+                std::cerr << "[soss-local-example-middleware]: No exists callback for topic '" << topic << "'" << std::endl;
             }
         }
     }
