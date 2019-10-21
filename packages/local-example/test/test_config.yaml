@@ -1,12 +1,12 @@
 systems:
-    local: { type: local-example, roundtrip: true }
-    mock: { type: mock, types-from: local }
+    middleware: { type: local-example, roundtrip: true }
+    mock: { type: mock, types-from: middleware }
 
 routes:
-    mock_to_local: { from: mock, to: local }
-    local_to_mock: { from: local, to: mock }
+    mock_to_middleware: { from: mock, to: middleware }
+    middleware_to_mock: { from: middleware, to: mock }
 
 topics:
-    to_local: { type: coordinate2d, route: mock_to_local, remap: { local: { topic: position2, type: coordinate2d } } }
-    from_local: { type: coordinate2d, route: local_to_mock, remap: { local: { topic: position2, type: coordinate2d } } }
+    to_middleware: { type: coordinate2d, route: mock_to_middleware, remap: { middleware: { topic: position2, type: coordinate2d } } }
+    from_middleware: { type: coordinate2d, route: middleware_to_mock, remap: { middleware: { topic: position2, type: coordinate2d } } }
 

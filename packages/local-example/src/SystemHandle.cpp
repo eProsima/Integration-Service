@@ -54,18 +54,18 @@ public:
         // (It could come from buildes or from an IDL compiler)
         if(required_types.messages.count("coordinate2d"))
         {
-            soss::xtypes::StructType coord_2d("coordinate2d");
-            coord_2d.add_member("x", soss::xtypes::primitive_type<uint32_t>());
-            coord_2d.add_member("y", soss::xtypes::primitive_type<uint32_t>());
+            xtypes::StructType coord_2d("coordinate2d");
+            coord_2d.add_member("x", xtypes::primitive_type<uint32_t>());
+            coord_2d.add_member("y", xtypes::primitive_type<uint32_t>());
             type_registry.emplace(coord_2d.name(), std::move(coord_2d));
         }
 
         if(required_types.messages.count("coordinate3d"))
         {
-            soss::xtypes::StructType coord_3d("coordinate3d");
-            coord_3d.add_member("x", soss::xtypes::primitive_type<uint32_t>());
-            coord_3d.add_member("y", soss::xtypes::primitive_type<uint32_t>());
-            coord_3d.add_member("z", soss::xtypes::primitive_type<uint32_t>());
+            xtypes::StructType coord_3d("coordinate3d");
+            coord_3d.add_member("x", xtypes::primitive_type<uint32_t>());
+            coord_3d.add_member("y", xtypes::primitive_type<uint32_t>());
+            coord_3d.add_member("z", xtypes::primitive_type<uint32_t>());
             type_registry.emplace(coord_3d.name(), std::move(coord_3d));
         }
 
@@ -111,7 +111,7 @@ public:
 
     bool subscribe(
         const std::string& topic_name,
-        const soss::xtypes::DynamicType& message_type,
+        const xtypes::DynamicType& message_type,
         SubscriptionCallback callback,
         const YAML::Node& ) override
     {
@@ -127,7 +127,7 @@ public:
 
     std::shared_ptr<soss::TopicPublisher> advertise(
         const std::string& topic_name,
-        const soss::xtypes::DynamicType& message_type,
+        const xtypes::DynamicType& message_type,
         const YAML::Node& ) override
     {
         auto publisher = std::make_shared<Publisher>(topic_name, message_type, *connection_);

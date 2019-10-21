@@ -18,18 +18,18 @@ int main()
 
         const soss::TypeRegistry& mock_types = *soss_handle.type_registry("mock");
 
-        soss::xtypes::DynamicData message_to(mock_types.at("coordinate2d"));
-        message_to["x"].value(2);
-        message_to["y"].value(4);
+        soss::xtypes::DynamicData message_to(*mock_types.at("coordinate2d"));
+        message_to["x"].value(2u);
+        message_to["y"].value(4u);
 
         std::promise<soss::xtypes::DynamicData> receive_msg_promise;
-        soss::mock::subscribe("from_local", [&](const soss::xtypes::DynamicData& msg_from_local)
+        soss::mock::subscribe("from_middleware", [&](const soss::xtypes::DynamicData& msg_from_middleware)
         {
-            receive_msg_promise.set_value(msg_from_local);
+            receive_msg_promise.set_value(msg_from_middleware);
         });
 
         std::cout << LOG_PREFIX "Sending message..." << std::endl;
-        if(!soss::mock::publish_message("to_local", message_to))
+        if(!soss::mock::publish_message("to_middleware", message_to))
         {
             std::cerr << LOG_PREFIX "Error sending message" << std::endl;
             return 1;
@@ -44,13 +44,14 @@ int main()
         }
 
         soss::xtypes::DynamicData message_from = receive_msg_future.get();
+        std::cout << LOG_PREFIX "Message received!" << std::endl;
         if(message_to != message_from)
         {
             std::cerr << LOG_PREFIX "Error comparing message" << std::endl;
             return 3;
         }
 
-        std::cout << LOG_PREFIX "Message received!" << std::endl;
+        std::cout << LOG_PREFIX "Message is correct!" << std::endl;
 
         std::cout << LOG_PREFIX "Exiting..." << std::endl;
         soss_handle.quit().wait_for(2s);

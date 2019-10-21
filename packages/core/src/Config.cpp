@@ -625,7 +625,6 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
     if(mw_config.types_from != "" || middleware_type == "mock")
     {
 
-      std::cout << mw_name << "  " << mw_config.types_from << std::endl;
       const auto it = info_map.find(mw_config.types_from);
       if(it == info_map.end())
       {
@@ -658,7 +657,13 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       continue;
     }
 
-    std::vector<std::shared_ptr<TopicPublisher>> publishers;
+    struct PublisherData
+    {
+        std::shared_ptr<TopicPublisher> publisher;
+        const xtypes::DynamicType& type;
+    };
+    std::vector<PublisherData> publishers;
+
     publishers.reserve(config.route.to.size());
     for(const std::string& to : config.route.to)
     {
@@ -673,10 +678,11 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       }
 
       TopicInfo topic_info = remap_if_needed(to, config.remap, {topic_name, config.message_type});
+      const xtypes::DynamicType& pub_type = *it_to->second.types.find(topic_info.type)->second;
       std::shared_ptr<TopicPublisher> publisher =
           it_to->second.topic_publisher->advertise(
             topic_info.name,
-            *it_to->second.types.find(topic_info.type)->second,
+            pub_type,
             config_or_empty_node(to, config.middleware_configs));
 
       if(!publisher)
@@ -688,18 +694,9 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       }
       else
       {
-        publishers.push_back(publisher);
+        publishers.push_back({publisher, pub_type});
       }
     }
-
-    TopicSubscriberSystem::SubscriptionCallback callback =
-        [=](const xtypes::DynamicData& message)
-    {
-      for(const std::shared_ptr<TopicPublisher>& publisher : publishers)
-      {
-        publisher->publish(message);
-      }
-    };
 
     for(const std::string& from : config.route.from)
     {
@@ -714,9 +711,42 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       }
 
       TopicInfo topic_info = remap_if_needed(from, config.remap, {topic_name, config.message_type});
+      const xtypes::DynamicType& sub_type = *it_from->second.types.find(topic_info.type)->second;
+
+      struct Publication
+      {
+        std::shared_ptr<TopicPublisher> publisher;
+        const xtypes::DynamicType& type;
+        xtypes::TypeConsistency consistency;
+      };
+
+      std::vector<Publication> publications;
+      publications.reserve(publishers.size());
+      for(const auto& pub : publishers)
+      {
+          publications.push_back({pub.publisher, pub.type, pub.type.is_compatible(sub_type)});
+      }
+
+      TopicSubscriberSystem::SubscriptionCallback callback =
+          [=](const xtypes::DynamicData& message)
+      {
+        for(const Publication& publication : publications)
+        {
+          if(publication.consistency == xtypes::TypeConsistency::EQUALS)
+          {
+            publication.publisher->publish(message);
+          }
+          else //previously ensured that TypeConsistency is not NONE
+          {
+            xtypes::DynamicData compatible_message(message, publication.type);
+            publication.publisher->publish(compatible_message);
+          }
+        }
+      };
+
       valid &= it_from->second.topic_subscriber->subscribe(
             topic_info.name,
-            *it_from->second.types.find(topic_info.type)->second,
+            sub_type,
             callback,
             config_or_empty_node(from, config.middleware_configs));
     }
@@ -752,10 +782,11 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     }
 
     TopicInfo server_info = remap_if_needed(server, config.remap, {service_name, config.service_type});
+    const xtypes::DynamicType& server_type = *it->second.types.find(server_info.type)->second;
     std::shared_ptr<ServiceProvider> provider =
         it->second.service_provider->create_service_proxy(
           server_info.name,
-          *it->second.types.find(server_info.type)->second,
+          server_type,
           config_or_empty_node(server, config.middleware_configs));
 
     if(!provider)
@@ -765,14 +796,6 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
                 << "]" << std::endl;
       return false;
     }
-
-    ServiceClientSystem::RequestCallback callback =
-        [=](const xtypes::DynamicData& request,
-            ServiceClient& client,
-            const std::shared_ptr<void>& call_handle)
-    {
-      provider->call_service(request, client, call_handle);
-    };
 
     for(const std::string& client : config.route.clients)
     {
@@ -787,9 +810,28 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
       }
 
       TopicInfo client_info = remap_if_needed(client, config.remap, {service_name, config.service_type});
+      const xtypes::DynamicType& client_type = *it->second.types.find(client_info.type)->second;
+      xtypes::TypeConsistency consistency = client_type.is_compatible(server_type);
+
+      ServiceClientSystem::RequestCallback callback =
+          [=, &server_type](const xtypes::DynamicData& request,
+              ServiceClient& client,
+              const std::shared_ptr<void>& call_handle)
+      {
+        if(consistency == xtypes::TypeConsistency::EQUALS)
+        {
+          provider->call_service(request, client, call_handle);
+        }
+        else //previously ensured that TypeConsistency is not NONE
+        {
+          xtypes::DynamicData compatible_request(request, server_type);
+          provider->call_service(compatible_request, client, call_handle);
+        }
+      };
+
       valid &= it->second.service_client->create_client_proxy(
             client_info.name,
-            *it->second.types.find(client_info.type)->second,
+            client_type,
             callback,
             config_or_empty_node(client, config.middleware_configs));
     }
@@ -830,7 +872,8 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
         continue;
       }
 
-      if(!from_type->second->is_subset_of(*to_type->second))
+
+      if(from_type->second->is_compatible(*to_type->second) == xtypes::TypeConsistency::NONE)
       {
         std::cerr << "Remapping error: message type ["
                   << topic_info_from.type << "] from [" + it_from->first + "] can not be read as type ["
@@ -874,7 +917,7 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
       continue;
     }
 
-    if(!client_type->second->is_subset_of(*server_type->second)) //EPROSIMA: CHECK.
+    if(client_type->second->is_compatible(*server_type->second) == xtypes::TypeConsistency::NONE)
     {
       std::cerr << "Remapping error: service type ["
                 << topic_info_client.type << "] from [" + it_client->first + "] can not be read as type ["
