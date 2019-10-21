@@ -2,6 +2,7 @@
 #define SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
 
 #include "MiddlewareConnection.hpp"
+#include "conversion.hpp"
 
 #include <soss/SystemHandle.hpp>
 
@@ -10,7 +11,7 @@ class Subscriber
 public:
     Subscriber(
             const std::string& topic,
-            const soss::xtypes::DynamicType& type,
+            const xtypes::DynamicType& type,
             soss::TopicSubscriberSystem::SubscriptionCallback soss_callback,
             MiddlewareConnection& connection)
         : topic_(topic)
@@ -28,23 +29,25 @@ public:
 
     void receive(const MiddlewareMessage& middleware_message)
     {
-        soss::xtypes::DynamicData message(type_);
+        std::cout << "[soss-local-example]: (conversion) middleware -> soss" << std::endl;
 
-        // Conversion
-        message["x"].value(middleware_message.at("x"));
-        message["y"].value(middleware_message.at("y"));
+        xtypes::DynamicData soss_message(type_);
 
-        std::cout << "[middleware -> soss]: converted to xtypes:" << std::endl;
+        if(!conversion::middleware_to_soss(middleware_message, soss_message))
+        {
+            std::cerr << "Conversion error" << std::endl;
+            return;
+        }
 
-        soss_callback_(message);
+        soss_callback_(soss_message);
     }
 
     const std::string& topic() const { return topic_; }
-    const soss::xtypes::DynamicType& type() const { return type_; }
+    const xtypes::DynamicType& type() const { return type_; }
 
 private:
     const std::string topic_;
-    const soss::xtypes::DynamicType& type_;
+    const xtypes::DynamicType& type_;
     soss::TopicSubscriberSystem::SubscriptionCallback soss_callback_;
 
 };

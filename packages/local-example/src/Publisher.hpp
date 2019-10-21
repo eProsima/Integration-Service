@@ -2,6 +2,7 @@
 #define SOSS__XTYPES_EXAMPLE__INTERNAL__PUBLISHER_HPP
 
 #include "MiddlewareConnection.hpp"
+#include "conversion.hpp"
 
 #include <soss/SystemHandle.hpp>
 
@@ -10,13 +11,12 @@ class Publisher : public virtual soss::TopicPublisher
 public:
     Publisher(
             const std::string& topic,
-            const soss::xtypes::DynamicType& type,
+            const xtypes::DynamicType& type,
             MiddlewareConnection& connection)
         : topic_(topic)
         , type_(type)
         , connection_(connection)
-    {
-    }
+    {}
 
     virtual ~Publisher() override = default;
     Publisher(const Publisher& rhs) = delete;
@@ -24,15 +24,17 @@ public:
     Publisher(Publisher&& rhs) = delete;
     Publisher& operator = (Publisher&& rhs) = delete;
 
-    bool publish(const soss::xtypes::DynamicData& message) override
+    bool publish(const xtypes::DynamicData& soss_message) override
     {
+        std::cout << "[soss-local-example]: (conversion) soss -> middleware" << std::endl;
+
         MiddlewareMessage middleware_message;
 
-        // Conversion
-        middleware_message.emplace("x", message["x"].value<uint32_t>());
-        middleware_message.emplace("y", message["y"].value<uint32_t>());
-
-        std::cout << "[soss -> middleware]: converted to middleware type" << std::endl;
+        if(!conversion::soss_to_middleware(soss_message, middleware_message))
+        {
+            std::cerr << "Conversion error" << std::endl;
+            return false;
+        }
 
         connection_.publish(topic_, middleware_message);
 
@@ -40,11 +42,11 @@ public:
     }
 
     const std::string& topic() const { return topic_; }
-    const soss::xtypes::DynamicType& type() const { return type_; }
+    const xtypes::DynamicType& type() const { return type_; }
 
 private:
     const std::string topic_;
-    const soss::xtypes::DynamicType& type_;
+    const xtypes::DynamicType& type_;
     MiddlewareConnection& connection_;
 };
 

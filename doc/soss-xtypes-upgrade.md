@@ -49,19 +49,21 @@ data["array_inner"][1] = data["om2"];
 
 
 ### QoS
-- secuence/array bounds (DONE)
-- optional members (WORKING)
-- ignore member names
-- ignore members
-- type widening (e.g. `uint16_t` as `uint32_t`)
-
+- `NONE`
+- `EQUALS`
+- `IGNORE_TYPE_WIDTH`
+- `IGNORE_SEQUENCE_BOUNDS`
+- `IGNORE_ARRAY_BOUNDS`
+- `IGNORE_STRING_BOUNDS`
+- `IGNORE_MEMBER_NAMES`
+- `IGNORE_OTHER_MEMBERS`
 ```c++
 DynamicType t1;
 //...
 DynamicType t2;
 //...
 
-t1.is_subset_of(t2)
+t1.is_compatible(t2)
 ```
 
 
@@ -72,9 +74,9 @@ DynamicData d1(t1);
 DynamicData d2(t2);
 //...
 
-d1 == d2 //deep comparation based on QoS
+d1 == d2 //deep queality comparation
 d1 != d2
-d1 = d2
+d1 = d2 //same type assignation
 ```
 
 
@@ -227,11 +229,10 @@ topics:
 
 
 ## Future work
-- Qos (affect the behaviour of `is_subset_of`)
-    - Finish optional implementation (working now).
+- Qos (affect the behaviour of `is_compatible`)
     - Ignore members.
     - Ignore member names.
     - Type widening.
-- Unions and enums.
 - Good documentation with examples.
+- Unions and enums.
 - Update DDS and FIWARE System Handles to use with xtypes (DDS will works natively).

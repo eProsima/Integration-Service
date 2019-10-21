@@ -20,10 +20,6 @@
 
 #include <dds/core/xtypes/xtypes.hpp>
 
-namespace soss {
-
 namespace xtypes = dds::core::xtypes;
-
-} // namespace soss
 
 #endif // SOSS__FIELDTOSTRING_HPP
