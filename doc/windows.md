@@ -38,7 +38,8 @@ Download yaml from [their official repository](https://github.com/jbeder/yaml-cp
 A few problems have been encountered while installing Yaml-cpp on windows. Even defining the CMAKE_PREFIX_PATH might not work. in this cases there is a workaround that allows to keep building soss
 
 1. Download two separate instances of the official repository and compile them separately, one as a release and one in debug mode, since both the archives will be needed to compile soss.
-2. There might be the need to specify, in the yaml-cpp_DIR. this can be easly achieved by adding the line `set(yaml-cpp_DIR "<yaml-cpp_build_folder>")`
+2. There might be the need to specify, in the yaml-cpp_DIR. this can be easly achieved by adding the line 
+   `set(yaml-cpp_DIR "<yaml-cpp_build_folder>")`
 3. Run the `colcon build` to build soss, and move the files accordingly to the `unable to find file` errors colcon will encounter. this might take some time, but the result will be a folder that can be used to compile soss.
 
 
