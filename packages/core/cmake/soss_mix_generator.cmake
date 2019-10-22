@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/cpp/core/cmake/soss_mix_generator.cmake
+# copied from soss/packages/core/cmake/soss_mix_generator.cmake
 
 include(CMakeParseArguments)
 include(GNUInstallDirs)

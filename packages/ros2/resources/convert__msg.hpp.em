@@ -1,4 +1,4 @@
-// generated from soss/cpp/ros2/resource/soss__ros2__message.hpp.em
+// generated from soss/packages/ros2/resource/soss__ros2__message.hpp.em
 // generated code does not contain a copyright notice
 
 @#######################################################################

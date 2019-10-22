@@ -38,6 +38,10 @@ add_library(soss-core SHARED
   src/StringTemplate.cpp
 )
 
+# Generate the export macro header
+include(cmake/soss_generate_export_header.cmake)
+soss_generate_export_header(core)
+
 target_link_libraries(soss-core
   PUBLIC
     yaml-cpp

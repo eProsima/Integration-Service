@@ -20,12 +20,12 @@
 
 #include <soss/Message.hpp>
 #include <stdexcept>
-#include <soss/soss_export.hpp>
+#include <soss/core/export.hpp>
 
 namespace soss {
 
 //==============================================================================
-class SOSS_EXPORT StringTemplate
+class SOSS_CORE_API StringTemplate
 {
 public:
 

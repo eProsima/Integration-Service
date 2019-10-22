@@ -26,6 +26,8 @@ add_library(soss-ros2 SHARED
   src/MetaPublisher.cpp
 )
 
+soss_generate_export_header(ros2)
+
 target_link_libraries(soss-ros2
   PUBLIC
     soss::core

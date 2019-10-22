@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/cpp/rosidl/cmake/soss_rosidl_mix.cmake
+# copied from soss/packages/rosidl/cmake/soss_rosidl_mix.cmake
 
 include(CMakeParseArguments)
 include(GNUInstallDirs)

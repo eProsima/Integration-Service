@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/cpp/core/cmake/soss_install_middleware_plugin.cmake
+# copied from soss/packages/core/cmake/soss_install_middleware_plugin.cmake
 
 #################################################
 # soss_install_middleware_plugin(
