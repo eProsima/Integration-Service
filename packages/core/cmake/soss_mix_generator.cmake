@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/cpp/core/cmake/soss_mix_generator.cmake
+# copied from soss/packages/core/cmake/soss_mix_generator.cmake
 
 include(CMakeParseArguments)
 include(GNUInstallDirs)
@@ -251,13 +251,11 @@ function(soss_mix_generator)
       OUTPUT_FILE_DEP  _${dependency}_file_dependencies
     )
   endforeach()
-
   #########################
   # Generate files and configure targets for every required package that didn't
   # already have a mix made and installed.
   foreach(middleware ${_found_middleware_mixes})
     foreach(package ${_queued_${middleware}_packages})
-
       _soss_configure_mix_package(
         IDL_TYPE      ${_ARG_IDL_TYPE}
         SCRIPT
@@ -447,6 +445,8 @@ function(_soss_configure_mix_package)
       )
     endif()
   endif()
+
+  set(plugin_library_extension $<IF:$<PLATFORM_ID:Windows>,"dll","dl">)
 
   set(plugin_library_target ${mix_target})
   set(plugin_library_directory ../../../..)
@@ -676,12 +676,12 @@ function(_soss_mix_find_package_info)
   list(GET script_output 3 OUTPUT_FILE_DEP)
 
   foreach(output_var ${output_vars})
-    # The original output is a semicolon-separated list of four colon-separated
-    # lists. The four colon-separated lists were split apart above using
-    # list(GET ...). Now we convert each of those colon-separated lists into
+    # The original output is a semicolon-separated list of four hash-separated
+    # lists. The four hash-separated lists were split apart above using
+    # list(GET ...). Now we convert each of those hash-separated lists into
     # semicolon-separated lists so that cmake can recognize them correctly as
     # lists.
-    string(REPLACE ":" ";" ${output_var} "${${output_var}}")
+    string(REPLACE "#" ";" ${output_var} "${${output_var}}")
 
     # We pass the result up to the parent scope
     set(${_ARG_${output_var}} ${${output_var}} PARENT_SCOPE)

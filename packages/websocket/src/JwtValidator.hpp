@@ -19,7 +19,6 @@
 #define SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
 
 #include <functional>
-
 #include <jwt/jwt.hpp>
 
 namespace soss {

@@ -22,6 +22,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <soss/core/export.hpp>
 
 namespace soss {
 
@@ -73,7 +74,7 @@ namespace soss {
 /// 2. <soss_prefix>/<middleware>.mix
 /// 3. <soss_prefix>/soss/<middleware>.mix
 /// 4. <soss_prefix>/soss/<middleware>/<middleware>.mix
-class Search
+class SOSS_CORE_API Search
 {
 public:
 

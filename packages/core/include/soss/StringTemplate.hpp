@@ -19,11 +19,13 @@
 #define SOSS__STRINGTEMPLATE_HPP
 
 #include <soss/Message.hpp>
+#include <stdexcept>
+#include <soss/core/export.hpp>
 
 namespace soss {
 
 //==============================================================================
-class StringTemplate
+class SOSS_CORE_API StringTemplate
 {
 public:
 

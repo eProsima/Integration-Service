@@ -24,6 +24,16 @@
 
 #include <cstdlib>
 
+#ifdef WIN32
+#define ENV_LIB_PATH "CMAKE_PREFIX_PATH"
+#define LIB_PATH "lib/soss"
+#define IS_NOT_ABSOLUTE_PATH(path) path.find("C:\\") == std::string::npos && path.find("c:\\") == std::string::npos
+#else
+#define ENV_LIB_PATH "LD_LIBRARY_PATH"
+#define LIB_PATH "soss"
+#define IS_NOT_ABSOLUTE_PATH(path) path.at(0) != '/'
+#endif
+
 namespace soss {
 
 const std::string HomeEnvVar = "HOME";
@@ -69,7 +79,11 @@ std::vector<std::string> get_environment_variable_path_list(
   std::string::const_iterator end = var_str.end();
   for(std::string::const_iterator it = begin; it != end; ++it)
   {
+#if defined(WIN32)
+    if(*it == ';')
+#else
     if(*it == ':')
+#endif
     {
       result.emplace_back(begin, it);
       begin = it+1;
@@ -110,9 +124,10 @@ Search::Implementation::Implementation(const std::string& middleware)
   // Environment variables could change between different instantiations of the
   // Search object, so we re-check these each time a Search instance is created.
 
-  // Add LD_LIBRARY_PATH values first because they are the lowest priority
+  // Add external libraries values first because they are the lowest priority
   const std::vector<std::string> ld_library_paths =
-      get_environment_variable_path_list("LD_LIBRARY_PATH");
+      get_environment_variable_path_list(ENV_LIB_PATH);
+
   for(auto it = ld_library_paths.rbegin(); it != ld_library_paths.rend(); ++it)
     _env_soss_prefixes.add_path(*it);
 
@@ -166,7 +181,7 @@ std::string Search::Implementation::find_file(
   auto check_and_append = [&](
       const filesystem::path test) -> bool
   {
-    checked_paths.push_back(test);
+    checked_paths.push_back(test.string());
     return filesystem::exists(test);
   };
 
@@ -227,12 +242,12 @@ std::string Search::Implementation::find_file(
 
       if(!subdir.empty())
       {
-        if(check_and_append(soss_prefix/"soss"/_middleware/subdir/filename))
+        if(check_and_append(soss_prefix/LIB_PATH/_middleware/subdir/filename))
           return checked_paths.back();
       }
 
       {
-        if(check_and_append(soss_prefix/"soss"/_middleware/filename))
+        if(check_and_append(soss_prefix/LIB_PATH/_middleware/filename))
           return checked_paths.back();
       }
     }
@@ -250,7 +265,7 @@ std::string Search::Implementation::find_middleware_mix(
   auto check_and_append = [&](
       const filesystem::path test) -> bool
   {
-    checked_paths.push_back(test);
+    checked_paths.push_back(test.string());
     return filesystem::exists(test);
   };
 
@@ -291,12 +306,12 @@ std::string Search::Implementation::find_middleware_mix(
       }
 
       {
-        if(check_and_append(soss_prefix/"soss"/filename))
+        if(check_and_append(soss_prefix/LIB_PATH/filename))
            return checked_paths.back();
       }
 
       {
-        if(check_and_append(soss_prefix/"soss"/_middleware/filename))
+        if(check_and_append(soss_prefix/LIB_PATH/_middleware/filename))
           return checked_paths.back();
       }
     }
@@ -343,7 +358,7 @@ void Search::Implementation::PathSet::add_path(const std::string& path)
   if(path.empty())
     return;
 
-  if(path.at(0) != '/')
+  if(IS_NOT_ABSOLUTE_PATH(path))
   {
     std::cerr << "[soss error] Attempting to add a prefix path that is not an "
               << "absolute path: " << path << std::endl;

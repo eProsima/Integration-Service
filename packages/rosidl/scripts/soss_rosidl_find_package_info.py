@@ -85,13 +85,13 @@ def traverse_packages(root_pkg_name):
 def print_package_info(root_pkg_name, pkg_info_dict):
     dependency_list = set(pkg_info_dict.keys())
     dependency_list.remove(root_pkg_name)
-    dependency_list_str = ':'.join(dependency_list)
+    dependency_list_str = '#'.join(dependency_list)
 
     message_files = pkg_info_dict[root_pkg_name].msg_files
-    message_files_str = ':'.join(message_files)
+    message_files_str = '#'.join(message_files)
 
     service_files = pkg_info_dict[root_pkg_name].srv_files
-    service_files_str = ':'.join(service_files)
+    service_files_str = '#'.join(service_files)
 
     file_dependencies = []
     for pkg, info in pkg_info_dict.items():
@@ -99,7 +99,7 @@ def print_package_info(root_pkg_name, pkg_info_dict):
         if pkg == root_pkg_name:
             file_dependencies.extend(info.srv_files)
 
-    file_dependencies_str = ':'.join(file_dependencies)
+    file_dependencies_str = '#'.join(file_dependencies)
 
     output_str = ';'.join([dependency_list_str, message_files_str, service_files_str, file_dependencies_str])
     print(output_str)

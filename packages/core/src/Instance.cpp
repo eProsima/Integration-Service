@@ -249,7 +249,7 @@ public:
       if(filesystem::exists(abs_config_path))
       {
         Search::Implementation::set_config_file_directory(
-              abs_config_path.parent_path());
+              abs_config_path.parent_path().string());
       }
       else
       {
@@ -394,7 +394,7 @@ public:
     }
 
     Search::Implementation::set_config_file_directory(
-          filesystem::absolute(filesystem::path(_config_file).parent_path()));
+          filesystem::absolute(filesystem::path(_config_file).parent_path()).string());
 
     return true;
   }
@@ -499,7 +499,10 @@ InstanceHandle &InstanceHandle::quit()
 //==============================================================================
 InstanceHandle::~InstanceHandle()
 {
-  quit().wait();
+  if (_pimpl)
+  {
+    quit().wait();
+  }
 }
 
 //==============================================================================

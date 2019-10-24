@@ -20,6 +20,8 @@
 
 #include <soss/SystemHandle.hpp>
 
+#include <soss/ros2/export.hpp>
+
 #include <rclcpp/node.hpp>
 
 #include <functional>
@@ -29,7 +31,7 @@ namespace soss {
 namespace ros2 {
 
 //==============================================================================
-class Factory
+class SOSS_ROS2_API Factory
 {
 public:
 

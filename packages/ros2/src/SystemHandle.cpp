@@ -30,6 +30,30 @@ namespace ros2 {
 
 namespace {
 
+int set_platform_env(
+    const std::string& variable, 
+    const std::string& value, 
+    const bool overwrite)
+{
+#ifdef WIN32
+  std::ostringstream aux_d;
+  aux_d << variable << "=" << value;
+  return _putenv(aux_d.str().c_str());
+#else
+  return setenv(variable.c_str(), value.c_str(), overwrite);
+#endif // WIN32
+}
+
+int unset_platform_env(
+    const std::string& variable)
+{
+#ifdef WIN32
+  return set_platform_env(variable, "", false);
+#else
+  return unsetenv(variable.c_str());
+#endif // WIN32
+}
+
 rmw_qos_profile_t parse_rmw_qos_configuration(
     const YAML::Node& /*configuration*/)
 {
@@ -104,17 +128,18 @@ bool SystemHandle::configure(
     }
 
     std::string domain = domain_node.as<std::string>();
-    success += setenv("ROS_DOMAIN_ID", domain.c_str(), true);
+
+    success += set_platform_env("ROS_DOMAIN_ID", domain.c_str(), true);
 
     _node = std::make_shared<rclcpp::Node>(name, ns);
 
     if(previous_domain.empty())
     {
-        success += unsetenv("ROS_DOMAIN_ID");
+      success += unset_platform_env("ROS_DOMAIN_ID");
     }
     else
     {
-        success += setenv("ROS_DOMAIN_ID", previous_domain.c_str(), true);
+      success += set_platform_env("ROS_DOMAIN_ID", previous_domain.c_str(), true);
     }
   }
   else

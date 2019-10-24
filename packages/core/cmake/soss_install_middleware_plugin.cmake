@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/cpp/core/cmake/soss_install_middleware_plugin.cmake
+# copied from soss/packages/core/cmake/soss_install_middleware_plugin.cmake
 
 #################################################
 # soss_install_middleware_plugin(
@@ -84,6 +84,8 @@ function(soss_install_middleware_plugin)
   set_target_properties(${plugin_library_target} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${mix_build_dir}
   )
+
+  set(plugin_library_extension $<IF:$<PLATFORM_ID:Windows>,"dll","dl">)
 
   foreach(type ${system_types})
     set(plugin_library_mix_template "${mix_build_dir}/soss/${type}/${type}.mix.gen")

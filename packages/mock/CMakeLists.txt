@@ -22,6 +22,8 @@ add_library(soss-mock SHARED
   src/SystemHandle.cpp
 )
 
+soss_generate_export_header(mock)
+
 target_link_libraries(soss-mock
   PUBLIC
     soss::core

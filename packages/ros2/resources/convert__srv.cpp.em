@@ -1,4 +1,4 @@
-// generated from soss/cpp/ros2/resources/convert__srv.cpp.em
+// generated from soss/packages/ros2/resources/convert__srv.cpp.em
 // generated code does not contain a copyright notice
 
 @#######################################################################

@@ -18,6 +18,7 @@
 #ifndef SOSS__JSON__CONVERSION_HPP
 #define SOSS__JSON__CONVERSION_HPP
 
+#include <soss/json/export.hpp>
 #include <soss/json/json.hpp>
 #include <soss/Message.hpp>
 
@@ -28,10 +29,10 @@ using Json = nlohmann::json;
 
 //==============================================================================
 /// Convert from a soss message to a JSON message
-Json convert(const soss::Message& input);
+Json SOSS_JSON_API convert(const soss::Message& input);
 
 /// Convert from a JSON message to a soss message
-soss::Message convert(const std::string& type, const Json& input);
+soss::Message SOSS_JSON_API convert(const std::string& type, const Json& input);
 
 //==============================================================================
 /// Convert from a Json object to a string. The following types are supported:
@@ -40,7 +41,7 @@ soss::Message convert(const std::string& type, const Json& input);
 /// * number_integer
 /// * number_unsigned
 /// * number_float
-std::string to_string(const Json& input);
+std::string SOSS_JSON_API to_string(const Json& input);
 
 } // namespace json
 } // namespace soss
