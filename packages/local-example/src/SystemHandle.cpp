@@ -113,7 +113,7 @@ public:
         const std::string& topic_name,
         const xtypes::DynamicType& message_type,
         SubscriptionCallback callback,
-        const YAML::Node& ) override
+        const YAML::Node& /*configuration*/) override
     {
         auto subscriber = std::make_shared<Subscriber>(topic_name, message_type, callback, *connection_);
         subscribers_.emplace_back(std::move(subscriber));
@@ -128,7 +128,7 @@ public:
     std::shared_ptr<soss::TopicPublisher> advertise(
         const std::string& topic_name,
         const xtypes::DynamicType& message_type,
-        const YAML::Node& ) override
+        const YAML::Node& /*configuration*/) override
     {
         auto publisher = std::make_shared<Publisher>(topic_name, message_type, *connection_);
         publishers_.emplace_back(std::move(publisher));

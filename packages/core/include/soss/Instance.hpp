@@ -79,8 +79,8 @@ public:
 
   /// \brief Request the TypeRegitry for a middleware
   ///
-  /// \returns a pointer to the TypeRegistry or nullptr if the middleware does
-  /// not exits.
+  /// \returns a pointer to the TypeRegistry, or nullptr if the middleware does
+  /// not exists.
   const TypeRegistry* type_registry(const std::string& middleware_name);
 
 private:
