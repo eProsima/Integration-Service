@@ -68,6 +68,6 @@ install(
 install(
     FILES ${PROJECT_SOURCE_DIR}/test/test_config.yaml
     DESTINATION ${CMAKE_INSTALL_BINDIR}
-    COMPONENT soss-dds
+    COMPONENT ${PROJECT_NAME}
     )
 

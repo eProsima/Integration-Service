@@ -22,4 +22,4 @@
 
 namespace xtypes = dds::core::xtypes;
 
-#endif // SOSS__FIELDTOSTRING_HPP
+#endif // SOSS__MESSAGE_HPP

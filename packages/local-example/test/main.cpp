@@ -18,12 +18,12 @@ int main()
 
         const soss::TypeRegistry& mock_types = *soss_handle.type_registry("mock");
 
-        soss::xtypes::DynamicData message_to(*mock_types.at("coordinate2d"));
+        xtypes::DynamicData message_to(*mock_types.at("coordinate2d"));
         message_to["x"].value(2u);
         message_to["y"].value(4u);
 
-        std::promise<soss::xtypes::DynamicData> receive_msg_promise;
-        soss::mock::subscribe("from_middleware", [&](const soss::xtypes::DynamicData& msg_from_middleware)
+        std::promise<xtypes::DynamicData> receive_msg_promise;
+        soss::mock::subscribe("from_middleware", [&](const xtypes::DynamicData& msg_from_middleware)
         {
             receive_msg_promise.set_value(msg_from_middleware);
         });
@@ -43,7 +43,7 @@ int main()
             return 2;
         }
 
-        soss::xtypes::DynamicData message_from = receive_msg_future.get();
+        xtypes::DynamicData message_from = receive_msg_future.get();
         std::cout << LOG_PREFIX "Message received!" << std::endl;
         if(message_to != message_from)
         {
