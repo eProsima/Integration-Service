@@ -11,9 +11,9 @@ inline bool middleware_to_soss(
         const MiddlewareMessage& middleware_message,
         xtypes::DynamicData& soss_message)
 {
-    return soss_message.for_each([&](const xtypes::DynamicData::WritableNode& node)
+    return soss_message.for_each([&](xtypes::DynamicData::WritableNode& node)
     {
-        const std::string& member_name = node.access().struct_member().name();
+        const std::string& member_name = node.from_member()->name();
 
         switch(node.type().kind())
         {
@@ -35,7 +35,7 @@ inline bool soss_to_middleware(
 {
     return soss_message.for_each([&](const xtypes::DynamicData::ReadableNode& node)
     {
-        const std::string& member_name = node.access().struct_member().name();
+        const std::string& member_name = node.from_member()->name();
 
         switch(node.type().kind())
         {
