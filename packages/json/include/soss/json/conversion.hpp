@@ -29,19 +29,10 @@ using Json = nlohmann::json;
 
 //==============================================================================
 /// Convert from a soss message to a JSON message
-Json SOSS_JSON_API convert(const soss::Message& input);
+Json SOSS_JSON_API convert(const xtypes::DynamicData& input);
 
 /// Convert from a JSON message to a soss message
-soss::Message SOSS_JSON_API convert(const std::string& type, const Json& input);
-
-//==============================================================================
-/// Convert from a Json object to a string. The following types are supported:
-/// * string
-/// * boolean
-/// * number_integer
-/// * number_unsigned
-/// * number_float
-std::string SOSS_JSON_API to_string(const Json& input);
+xtypes::DynamicData SOSS_JSON_API convert(const xtypes::DynamicType& type, const Json& input);
 
 } // namespace json
 } // namespace soss
