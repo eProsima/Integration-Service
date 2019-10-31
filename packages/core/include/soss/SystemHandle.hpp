@@ -65,9 +65,6 @@ struct RequiredTypes
 /// - ServiceClientSystem
 /// - ServiceProviderSystem
 
-//Shorthand for DynamicTypes management
-namespace xtypes = dds::core::xtypes;
-
 using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
 
 class SystemHandle
