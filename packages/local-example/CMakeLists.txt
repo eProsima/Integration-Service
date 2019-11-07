@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(soss-local-example)
 
-find_package(fastrtps REQUIRED)
+find_package(xtypes REQUIRED)
 find_package(soss-core REQUIRED)
 find_package(soss-mock REQUIRED)
 

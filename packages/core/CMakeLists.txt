@@ -18,10 +18,8 @@ if(NOT SOSS_CONFIGURE_AS_SUBPROJECT)
 
 endif()
 
-find_package(fastrtps REQUIRED)
-
+find_package(xtypes REQUIRED)
 find_package(yaml-cpp REQUIRED)
-
 find_package(Boost REQUIRED
   COMPONENTS
     program_options
@@ -46,7 +44,7 @@ soss_generate_export_header(core)
 target_link_libraries(soss-core
   PUBLIC
     yaml-cpp
-    fastrtps
+    xtypes
   PRIVATE
     Boost::program_options
     $<$<PLATFORM_ID:Linux>:dl>
@@ -57,6 +55,7 @@ target_include_directories(soss-core
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    #$<INSTALL_INTERFACE:${xtypes_INCLUDE_DIR}>  #propagate the xtypes headers
 )
 
 target_compile_definitions(soss-core
