@@ -18,8 +18,8 @@
 #ifndef SOSS__MESSAGE_HPP
 #define SOSS__MESSAGE_HPP
 
-#include <dds/core/xtypes/xtypes.hpp>
+#include <xtypes/xtypes.hpp>
 
-namespace xtypes = dds::core::xtypes;
+namespace xtypes = eprosima::xtypes;
 
 #endif // SOSS__MESSAGE_HPP

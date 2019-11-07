@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(soss-json)
 
-find_package(fastrtps REQUIRED)
+find_package(xtypes REQUIRED)
 find_package(soss-core REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
