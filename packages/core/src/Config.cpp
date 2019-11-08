@@ -448,12 +448,6 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
           type_node.as<std::string>() : middleware_alias;
 
     const YAML::Node& types_from_node = config["types-from"];
-    if(!types_from_node && middleware == "mock")
-    {
-        std::cerr << "The 'mock' middleware needs 'types-from' property" << std::endl;
-        return false;
-    }
-
     const std::string types_from = types_from_node?
           types_from_node.as<std::string>() : "";
 
@@ -635,12 +629,10 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
   {
     const std::string& mw_name = mw_entry.first;
     const MiddlewareConfig& mw_config = mw_entry.second;
-    const std::string& middleware_type = mw_config.type;
     auto& types = info_map.at(mw_name).types;
 
-    if(mw_config.types_from != "" || middleware_type == "mock")
+    if(!mw_config.types_from.empty())
     {
-
       const auto it = info_map.find(mw_config.types_from);
       if(it == info_map.end())
       {
