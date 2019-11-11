@@ -885,14 +885,34 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
         continue;
       }
 
-
-      if(from_type->second->is_compatible(*to_type->second) == xtypes::TypeConsistency::NONE)
+      xtypes::TypeConsistency consistency = from_type->second->is_compatible(*to_type->second);
+      if(consistency == xtypes::TypeConsistency::NONE)
       {
         std::cerr << "Remapping error: message type ["
-                  << topic_info_from.type << "] from [" + it_from->first + "] can not be read as type ["
-                  << topic_info_to.type << "] in [" + it_to->first + "]" << std::endl;
+                  << topic_info_from.type << "] from [" << it_from->first << "] is not compatible with ["
+                  << topic_info_to.type << "] in [" << it_to->first << "]" << std::endl;
         valid = false;
         continue;
+      }
+      else if(consistency != xtypes::TypeConsistency::EQUALS)
+      {
+        std::cout << "The conversion between [" << topic_info_from.type << "] and ["
+                  << topic_info_to.type << "] has been allowed by adding the following QoS policies: ";
+
+        auto policy_name = [&](xtypes::TypeConsistency to_check, const std::string& name) -> std::string
+        {
+            return (consistency & to_check) == to_check ? "'" + name + "' " : "";
+        };
+
+        std::cout << policy_name(xtypes::TypeConsistency::IGNORE_TYPE_SIGN, "ignore type sign");
+        std::cout << policy_name(xtypes::TypeConsistency::IGNORE_TYPE_WIDTH, "ignore type width");
+        std::cout << policy_name(xtypes::TypeConsistency::IGNORE_SEQUENCE_BOUNDS, "ignore sequence bounds");
+        std::cout << policy_name(xtypes::TypeConsistency::IGNORE_ARRAY_BOUNDS, "ignore array bounds");
+        std::cout << policy_name(xtypes::TypeConsistency::IGNORE_STRING_BOUNDS, "ignore string bounds");
+        std::cout << policy_name(xtypes::TypeConsistency::IGNORE_MEMBER_NAMES, "ignore member names");
+        std::cout << policy_name(xtypes::TypeConsistency::IGNORE_MEMBERS, "ignore members");
+
+        std::cout << std::endl;
       }
     }
   }
