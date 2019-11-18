@@ -75,6 +75,9 @@ bool json_to_soss(
       case xtypes::TypeKind::CHAR_8_TYPE:
         soss_node.data().value(access_json_value(soss_node, json_stack.top()).get<char>());
         break;
+      case xtypes::TypeKind::INT_8_TYPE:
+        soss_node.data().value(access_json_value(soss_node, json_stack.top()).get<int8_t>());
+        break;
       case xtypes::TypeKind::UINT_8_TYPE:
         soss_node.data().value(access_json_value(soss_node, json_stack.top()).get<uint8_t>());
         break;
@@ -161,6 +164,9 @@ bool soss_to_json(
         break;
       case xtypes::TypeKind::CHAR_8_TYPE:
         add_json_node(soss_node, json_stack.top()) = soss_node.data().value<char>();
+        break;
+      case xtypes::TypeKind::INT_8_TYPE:
+        add_json_node(soss_node, json_stack.top()) = soss_node.data().value<int8_t>();
         break;
       case xtypes::TypeKind::UINT_8_TYPE:
         add_json_node(soss_node, json_stack.top()) = soss_node.data().value<uint8_t>();

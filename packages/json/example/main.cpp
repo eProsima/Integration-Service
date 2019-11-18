@@ -20,15 +20,15 @@ int main()
     outer.add_member("inners", xtypes::SequenceType(inner));
 
     xtypes::DynamicData internal(inner);
-    internal["int"].value(7);
-    internal["double"].value(5.9);
+    internal["int"] = 7;
+    internal["double"] = 5.9;
 
     xtypes::DynamicData xtypes_message(outer);
-    xtypes_message["int"].value(42);
-    xtypes_message["string"].string("Hello json :D");
+    xtypes_message["int"] = 42;
+    xtypes_message["string"] = "Hello json :D";
     for(size_t i = 0; i < xtypes_message["array"].size(); i++)
     {
-        xtypes_message["array"][i].value(10 + int(i));
+        xtypes_message["array"][i] = 10 + int(i);
     }
     xtypes_message["sequence"].push(50.3);
     xtypes_message["sequence"].push(100.8);
