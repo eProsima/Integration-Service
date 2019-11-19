@@ -18,6 +18,8 @@
 #include <soss/StringTemplate.hpp>
 #include <soss/FieldToString.hpp>
 
+#include <xtypes/AggregationType.hpp>
+
 #include <vector>
 
 namespace soss {
@@ -62,7 +64,7 @@ public:
       components.push_back(template_string.substr(last_end));
   }
 
-  std::string compute_string(const soss::Message& message) const
+  std::string compute_string(const xtypes::DynamicData& message) const
   {
     std::string result;
 
@@ -72,15 +74,15 @@ public:
       if(substitute_it != substitutions.end() && substitute_it->first == i)
       {
         const std::string& field_name = substitute_it->second;
-        const soss::Message::const_iterator field_it =
-            message.data.find(field_name);
+        const xtypes::AggregationType& type = static_cast<const xtypes::AggregationType&>(message.type());
 
-        if(field_it == message.data.end())
+        if (!type.has_member(field_name))
         {
           throw UnavailableMessageField(field_name, converter.details);
         }
 
-        result += converter.to_string(field_it);
+        const xtypes::DynamicData& data = message.cref()[field_name];
+        result += converter.to_string(data, field_name);
         ++substitute_it;
         continue;
       }
@@ -100,7 +102,7 @@ public:
   // perform substitutions.
   using SubstitutionMap = std::map<std::size_t, std::string>;
 
-  /// Right now this simply maps a component index to a soss::Message field name.
+  /// Right now this simply maps a component index to a xtypes::DynamicData field name.
   /// In the future, we can replace std::string with an abstract Substitution
   /// class that gets factory generated based on what type of substitution is
   /// requested. For right now we've only implemented "message.field"
@@ -133,7 +135,7 @@ StringTemplate::StringTemplate(StringTemplate&& other)
 }
 
 //==============================================================================
-std::string StringTemplate::compute_string(const soss::Message& message) const
+std::string StringTemplate::compute_string(const xtypes::DynamicData& message) const
 {
   return pimpl->compute_string(message);
 }

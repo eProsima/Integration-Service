@@ -32,7 +32,7 @@ namespace internal {
 struct MiddlewareConfig
 {
   std::string type;
-  std::string types_from;
+  std::vector<std::string> types_from;
   YAML::Node config_node;
 };
 

@@ -51,7 +51,7 @@ public:
   StringTemplate(StringTemplate&& other);
 
   /// Compute the desired output string given the input message.
-  std::string compute_string(const soss::Message& message) const;
+  std::string compute_string(const xtypes::DynamicData& message) const;
 
   /// Mutable reference to the usage details for this StringTemplate
   std::string& usage_details();
