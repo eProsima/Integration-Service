@@ -453,8 +453,22 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
           type_node.as<std::string>() : middleware_alias;
 
     const YAML::Node& types_from_node = config["types-from"];
-    const std::string types_from = types_from_node?
-          types_from_node.as<std::string>() : "";
+    std::vector<std::string> types_from;
+
+    if(types_from_node)
+    {
+        if (types_from_node.IsSequence())
+        {
+            for (const YAML::Node& types : types_from_node)
+            {
+                types_from.push_back(types.as<std::string>());
+            }
+        }
+        else
+        {
+            types_from.push_back(types_from_node.as<std::string>());
+        }
+    }
 
     m_middlewares.insert(
           std::make_pair(
@@ -638,16 +652,19 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
 
     if(!mw_config.types_from.empty())
     {
-      const auto it = info_map.find(mw_config.types_from);
-      if(it == info_map.end())
+      for (const std::string& type : mw_config.types_from)
       {
-        std::cerr << "'types-from' references to a non-existant middleware" << std::endl;
-        return false;
-      }
+        const auto it = info_map.find(type);
+        if(it == info_map.end())
+        {
+          std::cerr << "'types-from' references to a non-existant middleware" << std::endl;
+          return false;
+        }
 
-      for(auto&& it_type: info_map.at(mw_config.types_from).types)
-      {
-        types.emplace(it_type.second->name(), it_type.second);
+        for(auto&& it_type: info_map.at(type).types)
+        {
+          types.emplace(it_type.second->name(), it_type.second);
+        }
       }
     }
   }

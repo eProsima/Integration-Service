@@ -19,6 +19,7 @@
 #define SOSS__UTILITIES_HPP
 
 #include <soss/Message.hpp>
+#include <xtypes/StructType.hpp>
 
 #include <algorithm>
 #include <mutex>
@@ -151,8 +152,8 @@ struct Convert
 {
   using native_type = Type;
   using soss_type = native_type;
-  using field_iterator = std::map<std::string, Field>::iterator;
-  using const_field_iterator = std::map<std::string, Field>::const_iterator;
+  using field_iterator = std::map<std::string, xtypes::DynamicData>::iterator;
+  using const_field_iterator = std::map<std::string, xtypes::DynamicData>::const_iterator;
 
   static constexpr bool type_is_primitive =
          std::is_arithmetic<Type>::value
@@ -170,6 +171,7 @@ struct Convert
     return soss_type(std::forward<Args>(args)...);
   }
 
+  /*
   /// \brief Create a field containing the generic soss version of this type
   template<typename... Args>
   static Field make_soss_field(Args&&... args)
@@ -178,6 +180,7 @@ struct Convert
       "The soss::Convert struct should be specialized for non-primitive types");
     return soss::make_field<soss_type>(make_soss(std::forward<Args>(args)...));
   }
+  */
 
   /// \brief Add a field of this type to the specified message
   ///
@@ -186,11 +189,11 @@ struct Convert
   ///
   /// \param[in] name
   ///   The name that should be given to the field
-  static void add_field(soss::Message& msg, const std::string& name)
+  static void add_field(xtypes::StructType& msg_type, xtypes::DynamicType& field_type, const std::string& name)
   {
     static_assert(type_is_primitive,
       "The soss::Convert struct should be specialized for non-primitive types");
-    msg.data[name] = make_soss_field();
+    msg_type.add_member(name, field_type);
   }
 
   /// \brief Move data from a generic soss data structure to a native middleware
@@ -242,8 +245,8 @@ struct LowPrecisionConvert
 {
   using native_type = LowPrecision;
   using soss_type = HighPrecision;
-  using field_iterator = std::map<std::string, Field>::iterator;
-  using const_field_iterator = std::map<std::string, Field>::const_iterator;
+  using field_iterator = std::map<std::string, xtypes::DynamicData>::iterator;
+  using const_field_iterator = std::map<std::string, xtypes::DynamicData>::const_iterator;
 
   static constexpr bool type_is_primitive =
          std::is_arithmetic<HighPrecision>::value
@@ -257,17 +260,19 @@ struct LowPrecisionConvert
     return soss_type(std::forward<Args>(args)...);
   }
 
+  /*
   // Documentation inherited from Convert
   template<typename... Args>
   static Field make_soss_field(Args&&... args)
   {
     return soss::make_field<soss_type>(make_soss(std::forward<Args>(args)...));
   }
+  */
 
   // Documentation inherited from Convert
-  static void add_field(soss::Message& msg, const std::string& name)
+  static void add_field(xtypes::StructType& msg_type, xtypes::DynamicType& field_type, const std::string& name)
   {
-    msg.data[name] = make_soss_field();
+    msg_type.add_member(name, field_type);
   }
 
   // Documentation inherited from Convert
@@ -338,15 +343,15 @@ SOSS_CONVERT_LOW_PRECISION(uint64_t, bool);
 /// namespace.
 template<
     typename Type,
-    Message (*_initialize_message)(),
-    void (*_from_soss)(const soss::Message& from, Type& to),
-    void (*_to_soss)(const Type& from, soss::Message& to)>
+    xtypes::DynamicData (*_initialize_message)(),
+    void (*_from_soss)(const xtypes::DynamicData& from, Type& to),
+    void (*_to_soss)(const Type& from, xtypes::DynamicData& to)>
 struct MessageConvert
 {
   using native_type = Type;
-  using soss_type = Message;
-  using field_iterator = std::map<std::string, Field>::iterator;
-  using const_field_iterator = std::map<std::string, Field>::const_iterator;
+  using soss_type = xtypes::DynamicData;
+  using field_iterator = std::map<std::string, xtypes::DynamicData>::iterator;
+  using const_field_iterator = std::map<std::string, xtypes::DynamicData>::const_iterator;
 
   static constexpr bool type_is_primitive = false;
 
@@ -357,17 +362,19 @@ struct MessageConvert
     return (*_initialize_message)(std::forward<Args>(args)...);
   }
 
+  /*
   // Documentation inherited from Convert
   template<typename... Args>
   static Field make_soss_field(Args&&... args)
   {
     return soss::make_field<soss::Message>(make_soss(std::forward<Args>(args)...));
   }
+  */
 
   // Documentation inherited from Convert
-  static void add_field(soss::Message& msg, const std::string& name)
+  static void add_field(xtypes::StructType& msg_type, xtypes::DynamicType& field_type, const std::string& name)
   {
-    msg.data[name] = make_soss_field();
+    msg_type.add_member(name, field_type);
   }
 
   // Documentation inherited from Convert
@@ -379,7 +386,7 @@ struct MessageConvert
   // Documentation inherited from Convert
   static void from_soss_field(const const_field_iterator& from, native_type& to)
   {
-    from_soss(*from->second.cast<soss::Message>(), to);
+    from_soss(from->second, to);
   }
 
   // Documentation inherited from Convert
@@ -391,7 +398,7 @@ struct MessageConvert
   // Documentation inherited from Convert
   static void to_soss_field(const native_type& from, field_iterator to)
   {
-    to_soss(from, *to->second.cast<soss::Message>());
+    to_soss(from, to->second);
   }
 };
 
@@ -405,8 +412,8 @@ struct ContainerConvert
 {
   using native_type = NativeType;
   using soss_type = SossType;
-  using field_iterator = std::map<std::string, Field>::iterator;
-  using const_field_iterator = std::map<std::string, Field>::const_iterator;
+  using field_iterator = std::map<std::string, xtypes::DynamicData>::iterator;
+  using const_field_iterator = std::map<std::string, xtypes::DynamicData>::const_iterator;
 
   static constexpr bool type_is_primitive =
       Convert<ElementType>::type_is_primitive;
@@ -419,17 +426,19 @@ struct ContainerConvert
     return soss_type(std::forward<Args>(args)...);
   }
 
+  /*
   // Documentation inherited from Convert
   template<typename... Args>
   static Field make_soss_field(Args&&... args)
   {
     return soss::make_field<soss_type>(make_soss(std::forward<Args>(args)...));
   }
+  */
 
   // Documentation inherited from Convert
-  static void add_field(soss::Message& msg, const std::string& name)
+  static void add_field(xtypes::StructType& msg_type, xtypes::DynamicType& field_type, const std::string& name)
   {
-    msg.data[name] = make_soss_field();
+    msg_type.add_member(name, field_type);
   }
 
   // Documentation inherited from Convert
