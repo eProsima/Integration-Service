@@ -35,13 +35,11 @@ public:
   }
 
   std::string to_string(
-      const soss::Message::const_iterator& field_it,
+      const xtypes::DynamicData& field,
+      const std::string& field_name,
       const std::string& details) const
   {
-    const auto& field_name = field_it->first;
-    const auto& field = field_it->second;
-
-    const std::string& type = field.type();
+    const std::string& type = field.type().name();
     const auto it = conversions.find(type);
     if(it != conversions.end())
       return it->second(field);
@@ -53,26 +51,38 @@ private:
 
   FieldConversions()
   {
-    conversions[typeid(std::string).name()] = [](const soss::Field& field)
+    conversions[typeid(std::string).name()] = [](const xtypes::DynamicData& field) -> std::string
     {
-      return *field.cast<std::string>();
+      return field;
     };
 
+    add_primitive_conversion<bool>();
+    add_primitive_conversion<char>();
+    add_primitive_conversion<wchar_t>();
+    add_primitive_conversion<int8_t>();
+    add_primitive_conversion<uint8_t>();
+    add_primitive_conversion<int16_t>();
+    add_primitive_conversion<uint16_t>();
+    add_primitive_conversion<int32_t>();
+    add_primitive_conversion<uint32_t>();
     add_primitive_conversion<int64_t>();
     add_primitive_conversion<uint64_t>();
+    add_primitive_conversion<float>();
     add_primitive_conversion<double>();
+    add_primitive_conversion<long double>();
   }
 
   template<typename T>
   void add_primitive_conversion()
   {
-    conversions[typeid(T).name()] = [](const soss::Field& field)
+    conversions[typeid(T).name()] = [](const xtypes::DynamicData& field) -> std::string
     {
-      return std::to_string(*field.cast<T>());
+      T temp = field;
+      return std::to_string(temp);
     };
   }
 
-  using ConversionFunc = std::function<std::string(const soss::Field&)>;
+  using ConversionFunc = std::function<std::string(const xtypes::DynamicData&)>;
   using ConversionMap = std::unordered_map<std::string, ConversionFunc>;
 
   ConversionMap conversions;
@@ -88,9 +98,10 @@ FieldToString::FieldToString(const std::string& usage_details)
 
 //==============================================================================
 std::string FieldToString::to_string(
-    const Message::const_iterator& field_it) const
+    const xtypes::DynamicData& field,
+    const std::string& field_name) const
 {
-  return FieldConversions::instance().to_string(field_it, details);
+  return FieldConversions::instance().to_string(field, field_name, details);
 }
 
 //==============================================================================

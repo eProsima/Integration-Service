@@ -33,7 +33,9 @@ public:
   FieldToString(const std::string& usage_details);
 
   /// Convert a field to a string.
-  std::string to_string(const soss::Message::const_iterator& field_it) const;
+  std::string to_string(
+      const xtypes::DynamicData& field,
+      const std::string& field_name) const;
 
   /// If an unknown conversion is requested, this string will get passed along
   /// to the UnknownFieldToStringCast exception that gets thrown.
