@@ -252,9 +252,14 @@ bool add_topic_or_service_config(
     }
   }
 
-  // TODO(MXG): Come up with a yaml scene for specifying middleware
-  // configurations per topic/service and then fill in the middleware_configs
-  // map here
+  for (const auto& mw : config.route.all())
+  {
+    const YAML::Node& mw_config = node[mw];
+    if (mw_config)
+    {
+      config.middleware_configs[mw] = mw_config;
+    }
+  }
 
   if(valid)
   {
