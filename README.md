@@ -182,5 +182,6 @@ systems:
 	mw2: {...}
 {...}
 topics:
-	topic_name: { type: topic_type, route: mw1_to_mw2, mw1 : {mw1_params}, mw2 : {mw2_params } }
+	topic_name: { type: topic_type, route: mw1_to_mw2, mw1 : { mw1_params }, mw2 : { mw2_params } }
 ```
+
