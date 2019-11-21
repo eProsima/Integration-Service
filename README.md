@@ -176,9 +176,11 @@ one shell.
 
 It is possible to customize the behavior of the middlewares for each topic by adding a map with the system name as a key and the desired parameters as value, for example:
 
-`systems:
+```
+systems:
 	mw1: {...}
 	mw2: {...}
 {...}
 topics:
-	topic_name: { type: topic_type, route: mw1_to_mw2, mw1 : {mw1_params}, mw2 : {mw2_params } }`
+	topic_name: { type: topic_type, route: mw1_to_mw2, mw1 : {mw1_params}, mw2 : {mw2_params } }
+```
