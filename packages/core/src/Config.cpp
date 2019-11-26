@@ -116,6 +116,50 @@ std::unique_ptr<ServiceRoute> parse_service_route(const YAML::Node& node)
 }
 
 //==============================================================================
+bool add_types(
+    const YAML::Node& node,
+    const std::string& filename,
+    std::map<std::string, xtypes::DynamicType::Ptr>& types)
+{
+  if(!node["types"])
+  {
+    return true;
+  }
+
+  if(!node["types"].IsSequence())
+  {
+    std::cerr << "The config file [" << filename << "] has a 'types' entry but "
+              << "it's not a sequence."
+              << std::endl;
+    return false;
+  }
+
+  for(auto& entry: node["types"])
+  {
+    if(!entry["idl"])
+    {
+        std::cerr << "The config file [" << filename << "] has a 'types' entry "
+                  << "without the 'idl' property."
+                  << std::endl;
+    }
+
+    xtypes::idl::Context context;
+    context.allow_keyword_identifiers = true;
+    xtypes::idl::parse(entry["idl"].as<std::string>(), context);
+
+    if(context.success)
+    {
+      for(auto& type: context.get_all_types())
+      {
+        types.insert(type);
+      }
+    }
+  }
+
+  return true;
+}
+
+//==============================================================================
 bool add_named_route(
     const std::string& name,
     const YAML::Node& node,
@@ -483,6 +527,8 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
     return false;
   }
 
+  add_types(config_node, file, m_types);
+
   auto read_route = [&](const std::string& key, const YAML::Node& n) -> bool
   {
     return add_named_route(key, n, m_topic_routes, m_service_routes);
@@ -633,6 +679,17 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
     const auto requirements = m_required_types.find(mw_name);
     if(requirements != m_required_types.end())
     {
+      for(const std::string& required_type: requirements->second.messages)
+      {
+        auto type_it = m_types.find(required_type);
+        if(type_it != m_types.end())
+        {
+          info.types.emplace(*type_it);
+        }
+      }
+      info.types.insert(m_types.begin(), m_types.end());
+      //TODO: service requirements
+
       configured = info.handle->configure(requirements->second, mw_config.config_node, info.types);
     }
 
@@ -666,6 +723,18 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
           types.emplace(it_type.second->name(), it_type.second);
         }
       }
+
+      const auto requirements = m_required_types.find(mw_name);
+      for(const std::string& required_type: requirements->second.messages)
+      {
+        if(!types.count(required_type))
+        {
+          std::cerr << "The middleware '" << mw_name<< "' must be satisfy the required "
+                    << "type '" << required_type << "'"
+                    << std::endl;
+        }
+      }
+      //TODO: service requirements
     }
   }
 
