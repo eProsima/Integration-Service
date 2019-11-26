@@ -131,6 +131,7 @@ public:
   std::map<std::string, TopicConfig> m_topic_configs;
   std::map<std::string, ServiceConfig> m_service_configs;
   std::map<std::string, RequiredTypes> m_required_types;
+  std::map<std::string, xtypes::DynamicType::Ptr> m_types;
 
 private:
 
