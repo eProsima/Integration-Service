@@ -4,6 +4,7 @@ project(soss-websocket-test)
 
 find_package(soss-websocket REQUIRED)
 find_package(soss-mock REQUIRED)
+find_package(xtypes REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)

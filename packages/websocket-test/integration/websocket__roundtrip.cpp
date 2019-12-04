@@ -40,59 +40,56 @@ TEST_CASE("Transmit and receive all test messages", "[websocket]")
   std::this_thread::sleep_for(5s);
   std::cout << " -- Done waiting!" << std::endl;
 
-  std::promise<soss::Message> client_to_server_promise;
-  auto client_to_server_future = client_to_server_promise.get_future();
+  std::promise<xtypes::DynamicData> client_to_server_promise;
   // Note: The public API of soss::mock can only publish/subscribe into the
   // soss. A soss::mock subscription will never receive a soss::mock publication
   // from soss::mock::publish_message(~), so any messages that this subscription
   // receives will have come from the server_handle.
   REQUIRE(soss::mock::subscribe(
             "client_to_server",
-            [&](const soss::Message& message)
+            [&](const xtypes::DynamicData& message)
   {
     client_to_server_promise.set_value(message);
   }));
 
-  soss::Message msg_to_server;
-  msg_to_server.type = "websocket_test/ClientToServer";
+  const soss::TypeRegistry& mock_types = *client_handle.type_registry("mock");
+  xtypes::DynamicData msg_to_server(*mock_types.at("ClientToServer"));
+
   const float apple = 2.3f;
-  msg_to_server.data["apple"] = soss::Convert<float>::make_soss_field(apple);
+  msg_to_server["apple"] = apple;
   soss::mock::publish_message("client_to_server", msg_to_server);
 
+  auto client_to_server_future = client_to_server_promise.get_future();
   REQUIRE(client_to_server_future.wait_for(5s) == std::future_status::ready);
-  const soss::Message client_to_server_result = client_to_server_future.get();
-  REQUIRE(client_to_server_result.data.size() > 0);
+  const xtypes::DynamicData client_to_server_result = client_to_server_future.get();
+  REQUIRE(client_to_server_result.size() > 0);
 
-  float apple_result;
-  soss::Convert<float>::from_soss_field(
-        client_to_server_result.data.begin(), apple_result);
+  float apple_result = client_to_server_result["apple"];
   CHECK(apple_result == apple);
 
 
-  std::promise<soss::Message> server_to_client_promise;
-  auto server_to_client_future = server_to_client_promise.get_future();
+  std::promise<xtypes::DynamicData> server_to_client_promise;
   REQUIRE(soss::mock::subscribe(
             "server_to_client",
-            [&](const soss::Message& message)
+            [&](const xtypes::DynamicData& message)
   {
     server_to_client_promise.set_value(message);
   }));
 
-  soss::Message msg_to_client;
-  msg_to_client.type = "websocket_test/ServerToClient";
+  const soss::TypeRegistry& server_types = *server_handle.type_registry("mock");
+  xtypes::DynamicData msg_to_client(*mock_types.at("ServerToClient"));
 
   const std::string banana = "here is a banana";
-  msg_to_client.data["banana"] =
-      soss::Convert<std::string>::make_soss_field(banana);
+  msg_to_client["banana"] = banana;
   soss::mock::publish_message("server_to_client", msg_to_client);
 
+  auto server_to_client_future = server_to_client_promise.get_future();
   REQUIRE(server_to_client_future.wait_for(5s) == std::future_status::ready);
-  const soss::Message server_to_client_result = server_to_client_future.get();
-  REQUIRE(server_to_client_result.data.size() > 0);
+  const xtypes::DynamicData server_to_client_result = server_to_client_future.get();
+  REQUIRE(server_to_client_result.size() > 0);
 
   std::string banana_result;
-  soss::Convert<std::string>::from_soss_field(
-        server_to_client_result.data.begin(), banana_result);
+  banana_result = server_to_client_result["banana"].value<std::string>();
   CHECK(banana_result == banana);
 
   CHECK(client_handle.quit().wait() == 0);

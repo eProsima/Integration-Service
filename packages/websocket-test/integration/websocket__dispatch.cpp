@@ -25,6 +25,7 @@
 
 namespace {
 void run_test_case(
+    soss::InstanceHandle& handle,
     const std::string& initial_topic,
     const std::string& name,
     const uint32_t number,
@@ -35,34 +36,33 @@ void run_test_case(
 
   std::cout << "Testing topic [" << topic << "]" << std::endl;
 
-  std::promise<soss::Message> message_promise;
+  std::promise<xtypes::DynamicData> message_promise;
   auto message_future = message_promise.get_future();
   REQUIRE(soss::mock::subscribe(
-          topic, [&](const soss::Message& incoming_message)
+          topic, [&](const xtypes::DynamicData& incoming_message)
   {
     message_promise.set_value(incoming_message);
   }));
 
-  soss::Message message;
-  message.type = "websocket_test/Dispatch";
-  message.data["name"] = soss::Convert<std::string>::make_soss_field(name);
-  message.data["number"] = soss::Convert<uint32_t>::make_soss_field(number);
+  const soss::TypeRegistry& mock_types = *handle.type_registry("mock");
+  xtypes::DynamicData message(*mock_types.at("Dispatch"));
+
+  message["name"] = name;
+  message["number"] = number;
 
   soss::mock::publish_message(initial_topic, message);
 
   using namespace std::chrono_literals;
   REQUIRE(message_future.wait_for(5s) == std::future_status::ready);
-  const soss::Message result = message_future.get();
-  REQUIRE(result.data.size() > 0);
-
-  auto it = result.data.begin();
+  const xtypes::DynamicData result = message_future.get();
+  REQUIRE(result.size() > 0);
 
   std::string result_name;
-  soss::Convert<std::string>::from_soss_field(it++, result_name);
+  result_name = result["name"].value<std::string>();
   CHECK(result_name == name);
 
   uint32_t result_number;
-  soss::Convert<uint32_t>::from_soss_field(it++, result_number);
+  result_number = result["number"].value<uint32_t>();
   CHECK(result_number == number);
 }
 } // anonymous namespace
@@ -80,13 +80,13 @@ TEST_CASE("Transmit and dispatch messages", "[websocket]")
   std::this_thread::sleep_for(5s);
   std::cout << " -- Done waiting!" << std::endl;
 
-  run_test_case("dispatch_into_client", "apple", 1, "/topic");
-  run_test_case("dispatch_into_client", "banana", 2, "/topic");
-  run_test_case("dispatch_into_client", "cherry", 3, "/topic");
+  run_test_case(handle, "dispatch_into_client", "apple", 1, "/topic");
+  run_test_case(handle, "dispatch_into_client", "banana", 2, "/topic");
+  run_test_case(handle, "dispatch_into_client", "cherry", 3, "/topic");
 
-  run_test_case("dispatch_into_server", "avocado", 10, "");
-  run_test_case("dispatch_into_server", "blueberry", 20, "");
-  run_test_case("dispatch_into_server", "citrus", 30, "");
+  run_test_case(handle, "dispatch_into_server", "avocado", 10, "");
+  run_test_case(handle, "dispatch_into_server", "blueberry", 20, "");
+  run_test_case(handle, "dispatch_into_server", "citrus", 30, "");
 
   CHECK(handle.quit().wait() == 0);
 

@@ -29,7 +29,7 @@ public:
 
   TopicPublisher(
       const std::string& topic,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       const std::string& id,
       const YAML::Node& configuration,
       Endpoint& endpoint)
@@ -39,7 +39,7 @@ public:
     _endpoint.startup_advertisement(topic, message_type, id, configuration);
   }
 
-  bool publish(const soss::Message& message)
+  bool publish(const xtypes::DynamicData& message)
   {
     return _endpoint.publish(_topic, message);
   }
@@ -55,11 +55,11 @@ namespace {
 //==============================================================================
 std::string make_detail_string(
     const std::string& topic_name,
-    const std::string& message_type)
+    const xtypes::DynamicType& message_type)
 {
   return
       "[Middleware: Websocket, topic template: "
-      + topic_name + ", message type: " + message_type + "]";
+        + topic_name + ", message type: " + message_type.name() + "]";
 }
 } // anonymous namespace
 
@@ -70,7 +70,7 @@ public:
 
   MetaTopicPublisher(
       soss::StringTemplate&& string_template,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       const std::string& id,
       const YAML::Node& configuration,
       Endpoint& endpoint)
@@ -83,15 +83,15 @@ public:
     // Do nothing
   }
 
-  bool publish(const soss::Message& message)
+  bool publish(const xtypes::DynamicData& message)
   {
     const std::string& topic = _string_template.compute_string(message);
     const bool inserted = _advertised_topics.insert(topic).second;
 
     if(inserted)
     {
-      _endpoint.startup_advertisement(topic, _message_type, _id, _config);
-      _endpoint.runtime_advertisement(topic, _message_type, _id, _config);
+      _endpoint.startup_advertisement(topic, *_message_type, _id, _config);
+      _endpoint.runtime_advertisement(topic, *_message_type, _id, _config);
     }
 
     return _endpoint.publish(topic, message);
@@ -100,7 +100,7 @@ public:
 private:
 
   const soss::StringTemplate _string_template;
-  const std::string _message_type;
+  const xtypes::DynamicType::Ptr _message_type;
   const std::string _id;
   const YAML::Node _config;
   std::unordered_set<std::string> _advertised_topics;
@@ -111,7 +111,7 @@ private:
 //==============================================================================
 std::shared_ptr<soss::TopicPublisher> make_topic_publisher(
     const std::string& topic,
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     const std::string& id,
     const YAML::Node& configuration,
     Endpoint& endpoint)

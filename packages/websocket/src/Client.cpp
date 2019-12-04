@@ -289,7 +289,7 @@ public:
 
   void runtime_advertisement(
       const std::string& topic,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       const std::string& id,
       const YAML::Node& configuration) override
   {
@@ -297,7 +297,7 @@ public:
     {
       _connection->send(
             get_encoding().encode_advertise_msg(
-              topic, message_type, id, configuration));
+              topic, message_type.name(), id, configuration));
     }
   }
 

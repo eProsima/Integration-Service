@@ -53,6 +53,120 @@ const std::string JsonOpAdvertiseServiceKey = "advertise_service";
 const std::string JsonOpUnadvertiseServiceKey = "unadvertise_service";
 const std::string JsonOpServiceResponseKey = "service_response";
 
+// idl of ROSBRIDGE PROTOCOL messages
+const std::string idl_messages = R"(
+struct fragment
+{
+    string id;
+    string data;
+    int32 num;
+    int32 total;
+};
+
+struct png
+{
+    string id;
+    string data;
+    int32 num;
+    int32 total;
+};
+
+struct cbor
+{
+    sequence<int8> data;
+};
+
+struct set_level
+{
+    string id;
+    string level;
+};
+
+struct status
+{
+    string id;
+    string level;
+    string msg;
+};
+
+struct auth
+{
+    string mac;
+    string client;
+    string dest;
+    string rand;
+    int32 t;
+    string level;
+    int32 end;
+};
+
+struct advertise
+{
+    string id;
+    string topic;
+    string type;
+};
+
+struct unadvertise
+{
+    string id;
+    string topic;
+};
+
+struct publish
+{
+    string id;
+    string topic;
+    string msg;
+};
+
+struct subscribe
+{
+    string id;
+    string topic;
+    string type;
+    int32 throttle_rate;
+    int32 queue_length;
+    int32 fragment_size;
+    string compression;
+};
+
+struct unsubscribe
+{
+    string id;
+    string topic;
+};
+
+struct call_service
+{
+    string id;
+    string service;
+    sequence<string> args;
+    int32 fragment_size;
+    string compression;
+};
+
+struct advertise_service
+{
+    string type;
+    string service;
+};
+
+struct unadvertise_service
+{
+    string service;
+};
+
+struct service_response
+{
+    string id;
+    string service;
+    sequence<string> values;
+    boolean result;
+};
+
+)";
+
 //==============================================================================
 static void throw_missing_key(
     const Json& object,
@@ -71,7 +185,20 @@ static std::string get_optional_string(
     const std::string& key)
 {
   const auto it = object.find(key);
-  return it == object.end()? "" : soss::json::to_string(it.value());
+
+  if(it == object.end())
+  {
+    return "";
+  }
+  else
+  {
+    std::string temp_str = it.value().dump();
+    if (temp_str.find("\"") == 0)
+    {
+      return temp_str.substr(1, temp_str.size() - 2);
+    }
+    return temp_str;
+  }
 }
 
 //==============================================================================
@@ -83,25 +210,35 @@ static std::string get_required_string(
   if(it == object.end())
     throw_missing_key(object, key);
 
-  return soss::json::to_string(it.value());
+  std::string temp_str = it.value().dump();
+  if (temp_str.find("\"") == 0)
+  {
+    return temp_str.substr(1, temp_str.size() - 2);
+  }
+  return temp_str;
 }
 
 //==============================================================================
-static soss::Message get_required_msg(
+static xtypes::DynamicData get_required_msg(
     const Json& object,
+    const xtypes::DynamicType& type,
     const std::string& key)
 {
   const auto it = object.find(key);
   if(it == object.end())
     throw_missing_key(object, key);
 
-  return json::convert("", it.value());
+  return json::convert(type, it.value());
 }
 
 //==============================================================================
 class RosbridgeV2_0 : public Encoding
 {
 public:
+  RosbridgeV2_0()
+  {
+    types_ = xtypes::idl::parse(idl_messages).get_all_types();
+  }
 
   void interpret_websocket_msg(
       const std::string& msg_str,
@@ -120,13 +257,23 @@ public:
 
     const std::string& op_str = op_it.value().get<std::string>();
 
+    xtypes::DynamicType::Ptr type_ptr;
+
+    auto type_it = types_.find(op_str);
+    if (type_it != types_.end())
+    {
+      type_ptr = type_it->second;
+    }
+
     // Publish is the most likely type of message to be received, so we'll check
     // for that type first.
     if(op_str == JsonOpPublishKey)
     {
+      std::string topic_name = get_required_string(msg, JsonTopicNameKey);
+      const xtypes::DynamicType& dest_type = get_type_by_topic(topic_name);
       endpoint.receive_publication_ws(
-            get_required_string(msg, JsonTopicNameKey),
-            get_required_msg(msg, JsonMsgKey),
+            topic_name,
+            get_required_msg(msg, dest_type, JsonMsgKey),
             std::move(connection_handle));
       return;
     }
@@ -135,9 +282,11 @@ public:
     // message to be received, so we'll check for that type next.
     if(op_str == JsonOpServiceRequestKey)
     {
+      std::string topic_name = get_required_string(msg, JsonServiceKey);
+      const xtypes::DynamicType& dest_type = get_type_by_topic(topic_name);
       endpoint.receive_service_request_ws(
-            get_required_string(msg, JsonServiceKey),
-            get_required_msg(msg, JsonArgsKey),
+            topic_name,
+            get_required_msg(msg, dest_type, JsonArgsKey),
             get_optional_string(msg, JsonIdKey),
             std::move(connection_handle));
       return;
@@ -147,9 +296,11 @@ public:
     // message to be received, so we'll check for that type next.
     if(op_str == JsonOpServiceResponseKey)
     {
+      std::string topic_name = get_required_string(msg, JsonServiceKey);
+      const xtypes::DynamicType& dest_type = get_type_by_topic(topic_name);
       endpoint.receive_service_response_ws(
             get_required_string(msg, JsonServiceKey),
-            get_required_msg(msg, JsonValuesKey),
+            get_required_msg(msg, dest_type, JsonValuesKey),
             get_optional_string(msg, JsonIdKey),
             std::move(connection_handle));
       return;
@@ -157,9 +308,10 @@ public:
 
     if(op_str == JsonOpAdvertiseTopicKey)
     {
+      const xtypes::DynamicType& topic_type = get_type(get_required_string(msg, JsonTypeNameKey));
       endpoint.receive_topic_advertisement_ws(
             get_required_string(msg, JsonTopicNameKey),
-            get_required_string(msg, JsonTypeNameKey),
+            topic_type,
             get_optional_string(msg, JsonIdKey),
             std::move(connection_handle));
       return;
@@ -176,9 +328,10 @@ public:
 
     if(op_str == JsonOpSubscribeKey)
     {
+      const xtypes::DynamicType* topic_type = get_type_ptr(get_optional_string(msg, JsonTypeNameKey));
       endpoint.receive_subscribe_request_ws(
             get_required_string(msg, JsonTopicNameKey),
-            get_optional_string(msg, JsonTypeNameKey),
+            topic_type,
             get_optional_string(msg, JsonIdKey),
             std::move(connection_handle));
       return;
@@ -195,27 +348,29 @@ public:
 
     if(op_str == JsonOpAdvertiseServiceKey)
     {
+      const xtypes::DynamicType& topic_type = get_type(get_required_string(msg, JsonTypeNameKey));
       endpoint.receive_service_advertisement_ws(
             get_required_string(msg, JsonServiceKey),
-            get_required_string(msg, JsonTypeNameKey),
+            topic_type,
             std::move(connection_handle));
       return;
     }
 
     if(op_str == JsonOpUnadvertiseServiceKey)
     {
+      const xtypes::DynamicType* topic_type = get_type_ptr(get_optional_string(msg, JsonTypeNameKey));
       endpoint.receive_service_unadvertisement_ws(
             get_required_string(msg, JsonServiceKey),
-            get_optional_string(msg, JsonTypeNameKey),
+            topic_type,
             std::move(connection_handle));
     }
   }
 
   std::string encode_publication_msg(
       const std::string& topic_name,
-      const std::string& /*topic_type*/,
+      const std::string& topic_type,
       const std::string& id,
-      const soss::Message& msg) const override
+      const xtypes::DynamicData& msg) const override
   {
     Json output;
     output[JsonOpKey] = JsonOpPublishKey;
@@ -224,14 +379,16 @@ public:
     if(!id.empty())
       output[JsonIdKey] = id;
 
+    types_by_topic_[topic_name] = topic_type;
+
     return output.dump();
   }
 
   std::string encode_service_response_msg(
       const std::string& service_name,
-      const std::string& /*service_type*/,
+      const std::string& service_type,
       const std::string& id,
-      const soss::Message& response,
+      const xtypes::DynamicData& response,
       const bool result) const override
   {
     Json output;
@@ -241,6 +398,8 @@ public:
     output[JsonResultKey] = result;
     if(!id.empty())
       output[JsonIdKey] = id;
+
+    types_by_topic_[service_name] = service_type;
 
     return output.dump();
   }
@@ -260,6 +419,8 @@ public:
     if(!id.empty())
       output[JsonIdKey] = id;
 
+    types_by_topic_[topic_name] = message_type;
+
     return output.dump();
   }
 
@@ -276,13 +437,15 @@ public:
     if(!id.empty())
       output[JsonIdKey] = id;
 
+    types_by_topic_[topic_name] = message_type;
+
     return output.dump();
   }
 
   std::string encode_call_service_msg(
       const std::string& service_name,
-      const std::string& /*service_type*/,
-      const soss::Message& service_request,
+      const std::string& service_type,
+      const xtypes::DynamicData& service_request,
       const std::string& id,
       const YAML::Node& /*configuration*/) const override
   {
@@ -294,6 +457,8 @@ public:
     output[JsonArgsKey] = json::convert(service_request);
     if(!id.empty())
       output[JsonIdKey] = id;
+
+    types_by_topic_[service_name] = service_type;
 
     return output.dump();
   }
@@ -309,8 +474,61 @@ public:
     output[JsonTypeNameKey] = service_type;
     output[JsonServiceKey] = service_name;
 
+    types_by_topic_[service_name] = service_type;
+
     return output.dump();
   }
+
+  const xtypes::DynamicType& get_type(
+      const std::string& type_name) const
+  {
+    auto type_it = types_.find(type_name);
+    if (type_it != types_.end())
+    {
+      return *type_it->second;
+    }
+    else
+    {
+      throw std::runtime_error(
+            "[soss::websocket::rosbridge_v2] Incoming message refers an unregistered "
+            "type: " + type_name);
+    }
+  }
+
+  const xtypes::DynamicType* get_type_ptr(
+      const std::string& type_name) const
+  {
+    auto type_it = types_.find(type_name);
+    if (type_it != types_.end())
+    {
+      return type_it->second.get();
+    }
+    else
+    {
+      throw std::runtime_error(
+            "[soss::websocket::rosbridge_v2] Incoming message refers an unregistered "
+            "type: " + type_name);
+    }
+  }
+
+  bool add_type(
+      const xtypes::DynamicType& type,
+      const std::string& type_name) override
+  {
+    std::string name = type_name.empty() ? type.name() : type_name;
+    auto result = types_.emplace(name, type);
+    return result.second;
+  }
+
+  const xtypes::DynamicType& get_type_by_topic(
+      const std::string& topic_name) const
+  {
+    return get_type(types_by_topic_[topic_name]);
+  }
+
+protected:
+  std::map<std::string, xtypes::DynamicType::Ptr> types_;
+  mutable std::map<std::string, std::string> types_by_topic_;
 
 };
 
