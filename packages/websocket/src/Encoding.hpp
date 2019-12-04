@@ -43,13 +43,13 @@ public:
       const std::string& topic_name,
       const std::string& topic_type,
       const std::string& id,
-      const soss::Message& msg) const = 0;
+      const xtypes::DynamicData& msg) const = 0;
 
   virtual std::string encode_service_response_msg(
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,
-      const soss::Message& response,
+      const xtypes::DynamicData& response,
       bool result) const = 0;
 
   virtual std::string encode_subscribe_msg(
@@ -67,7 +67,7 @@ public:
   virtual std::string encode_call_service_msg(
       const std::string& service_name,
       const std::string& service_type,
-      const soss::Message& service_request,
+      const xtypes::DynamicData& service_request,
       const std::string& id,
       const YAML::Node& configuration) const = 0;
 
@@ -76,6 +76,15 @@ public:
       const std::string& service_type,
       const std::string& id,
       const YAML::Node& configuration) const = 0;
+
+  virtual bool add_type(
+        const xtypes::DynamicType& type,
+        const std::string& type_name = "")
+  {
+      (void)type;
+      (void)type_name;
+      return false;
+  }
 };
 
 using EncodingPtr = std::shared_ptr<Encoding>;

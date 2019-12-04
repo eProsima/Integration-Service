@@ -44,7 +44,9 @@ public:
 
   bool configure(
       const RequiredTypes& types,
-      const YAML::Node& configuration) override;
+      const YAML::Node& configuration,
+      TypeRegistry& type_registry) override;
+
 
   virtual bool okay() const = 0;
 
@@ -57,30 +59,30 @@ public:
 
   bool subscribe(
       const std::string& topic_name,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       TopicSubscriberSystem::SubscriptionCallback callback,
       const YAML::Node& configuration) override final;
 
   std::shared_ptr<TopicPublisher> advertise(
       const std::string& topic_name,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       const YAML::Node& configuration) override final;
 
   bool create_client_proxy(
       const std::string& service_name,
-      const std::string& service_type,
+      const xtypes::DynamicType& service_type,
       ServiceClientSystem::RequestCallback callback,
       const YAML::Node& configuration) override final;
 
   std::shared_ptr<ServiceProvider> create_service_proxy(
       const std::string& service_name,
-      const std::string& service_type,
+      const xtypes::DynamicType& service_type,
       const YAML::Node& configuration) override final;
 
   /// Send out an advertisement the next time a connection is made.
   void startup_advertisement(
       const std::string& topic,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       const std::string& id,
       const YAML::Node& configuration);
 
@@ -91,17 +93,17 @@ public:
   /// for publication topics that are determined at runtime by topic templates.
   virtual void runtime_advertisement(
       const std::string& topic,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       const std::string& id,
       const YAML::Node& configuration) = 0;
 
   bool publish(
       const std::string& topic,
-      const soss::Message& message);
+      const xtypes::DynamicData& message);
 
   void call_service(
       const std::string& service,
-      const soss::Message& request,
+      const xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle);
 
@@ -110,14 +112,14 @@ public:
 
   void receive_response(
       std::shared_ptr<void> call_handle,
-      const soss::Message& response) override final;
+      const xtypes::DynamicData& response) override final;
 
 
   // --------- Functions for reacting to websocket messages --------
 
   void receive_topic_advertisement_ws(
       const std::string& topic_name,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       const std::string& id,
       std::shared_ptr<void> connection_handle);
 
@@ -128,12 +130,12 @@ public:
 
   void receive_publication_ws(
       const std::string& topic_name,
-      const soss::Message& message,
+      const xtypes::DynamicData& message,
       std::shared_ptr<void> connection_handle);
 
   void receive_subscribe_request_ws(
       const std::string& topic_name,
-      const std::string& message_type,
+      const xtypes::DynamicType* message_type,
       const std::string& id,
       std::shared_ptr<void> connection_handle);
 
@@ -146,24 +148,24 @@ public:
   // being ignored here, namely "fragment_size" and "compression"
   void receive_service_request_ws(
       const std::string& service_name,
-      const soss::Message& request,
+      const xtypes::DynamicData& request,
       const std::string& id,
       std::shared_ptr<void> connection_handle);
 
   void receive_service_advertisement_ws(
       const std::string& service_name,
-      const std::string& service_type,
+      const xtypes::DynamicType& service_type,
       std::shared_ptr<void> connection_handle);
 
   void receive_service_unadvertisement_ws(
       const std::string& service_name,
-      const std::string& service_type,
+      const xtypes::DynamicType* service_type,
       std::shared_ptr<void> connection_handle);
 
   // TODO(MXG): We are ignoring the "result" field for now
   void receive_service_response_ws(
       const std::string& service_name,
-      const soss::Message& response,
+      const xtypes::DynamicData& response,
       const std::string& id,
       std::shared_ptr<void> connection_handle);
 
@@ -233,6 +235,7 @@ private:
   std::unordered_map<std::string, ClientProxyInfo> _client_proxy_info;
   std::unordered_map<std::string, ServiceProviderInfo> _service_provider_info;
   std::unordered_map<std::string, ServiceRequestInfo> _service_request_info;
+  std::unordered_map<std::string, xtypes::DynamicType::Ptr> _message_types;
 
   std::size_t _next_service_call_id;
 
@@ -243,7 +246,7 @@ using EndpointPtr = std::unique_ptr<Endpoint>;
 //==============================================================================
 std::shared_ptr<TopicPublisher> make_topic_publisher(
     const std::string& topic,
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     const std::string& id,
     const YAML::Node& configuration,
     Endpoint& endpoint);

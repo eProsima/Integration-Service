@@ -35,7 +35,7 @@ public:
   }
 
   void call_service(
-      const soss::Message& request,
+      const xtypes::DynamicData& request,
       ServiceClient& client,
       std::shared_ptr<void> call_handle)
   {

@@ -55,7 +55,8 @@ Endpoint::Endpoint()
 //==============================================================================
 bool Endpoint::configure(
     const RequiredTypes& types,
-    const YAML::Node& configuration)
+    const YAML::Node& configuration,
+    TypeRegistry& type_registry)
 {
   if(const YAML::Node encode_node = configuration[YamlEncodingKey])
   {
@@ -92,6 +93,22 @@ bool Endpoint::configure(
     return false;
   }
 
+  for (const std::string& type : types.messages)
+  {
+      if (!type.empty())
+      {
+          _encoding->add_type(*type_registry.at(type), type);
+      }
+  }
+
+  for (const std::string& type : types.services)
+  {
+      if (!type.empty())
+      {
+          _encoding->add_type(*type_registry.at(type), type);
+      }
+  }
+
   _endpoint = configure_endpoint(types, configuration);
 
   return static_cast<bool>(_endpoint);
@@ -100,16 +117,16 @@ bool Endpoint::configure(
 //==============================================================================
 bool Endpoint::subscribe(
     const std::string& topic_name,
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     SubscriptionCallback callback,
     const YAML::Node& configuration)
 {
   _startup_messages.emplace_back(
         _encoding->encode_subscribe_msg(
-          topic_name, message_type, "", configuration));
+          topic_name, message_type.name(), "", configuration));
 
   TopicSubscribeInfo& info = _topic_subscribe_info[topic_name];
-  info.type = message_type;
+  info.type = message_type.name();
   info.callback = callback;
 
   return true;
@@ -118,7 +135,7 @@ bool Endpoint::subscribe(
 //==============================================================================
 std::shared_ptr<TopicPublisher> Endpoint::advertise(
     const std::string& topic_name,
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     const YAML::Node& configuration)
 {
   return make_topic_publisher(
@@ -128,12 +145,12 @@ std::shared_ptr<TopicPublisher> Endpoint::advertise(
 //==============================================================================
 bool Endpoint::create_client_proxy(
     const std::string& service_name,
-    const std::string& service_type,
+    const xtypes::DynamicType& service_type,
     RequestCallback callback,
     const YAML::Node& /*configuration*/)
 {
   ClientProxyInfo& info = _client_proxy_info[service_name];
-  info.type = service_type;
+  info.type = service_type.name();
   info.callback = callback;
 
   return true;
@@ -142,11 +159,11 @@ bool Endpoint::create_client_proxy(
 //==============================================================================
 std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
     const std::string& service_name,
-    const std::string& service_type,
+    const xtypes::DynamicType& service_type,
     const YAML::Node& configuration)
 {
   ServiceProviderInfo& info = _service_provider_info[service_name];
-  info.type = service_type;
+  info.type = service_type.name();
   info.configuration = configuration;
 
   return make_service_provider(service_name, *this);
@@ -155,22 +172,22 @@ std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
 //==============================================================================
 void Endpoint::startup_advertisement(
     const std::string& topic,
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     const std::string& id,
     const YAML::Node& configuration)
 {
   TopicPublishInfo& info = _topic_publish_info[topic];
-  info.type = message_type;
+  info.type = message_type.name();
 
   _startup_messages.emplace_back(
         _encoding->encode_advertise_msg(
-          topic, message_type, id, configuration));
+          topic, message_type.name(), id, configuration));
 }
 
 //==============================================================================
 bool Endpoint::publish(
     const std::string& topic,
-    const soss::Message& message)
+    const xtypes::DynamicData& message)
 {
   const TopicPublishInfo& info = _topic_publish_info.at(topic);
 
@@ -198,7 +215,7 @@ bool Endpoint::publish(
 //==============================================================================
 void Endpoint::call_service(
     const std::string& service,
-    const soss::Message& request,
+    const xtypes::DynamicData& request,
     ServiceClient& client,
     std::shared_ptr<void> call_handle)
 {
@@ -218,7 +235,7 @@ void Endpoint::call_service(
 //==============================================================================
 void Endpoint::receive_response(
     std::shared_ptr<void> v_call_handle,
-    const soss::Message& response)
+    const xtypes::DynamicData& response)
 {
   const auto& call_handle =
       *static_cast<const CallHandle*>(v_call_handle.get());
@@ -237,7 +254,7 @@ void Endpoint::receive_response(
 //==============================================================================
 void Endpoint::receive_topic_advertisement_ws(
     const std::string& topic_name,
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     const std::string& /*id*/,
     std::shared_ptr<void> connection_handle)
 {
@@ -245,12 +262,12 @@ void Endpoint::receive_topic_advertisement_ws(
   if(it != _topic_subscribe_info.end())
   {
     TopicSubscribeInfo& info = it->second;
-    if(message_type != info.type)
+    if(message_type.name() != info.type)
     {
       info.blacklist.insert(connection_handle);
       std::cerr << "[soss::websocket] A remote connection advertised a topic "
                 << "we want to subscribe to [" << topic_name << "] but with "
-                << "the wrong message type [" << message_type << "]. The "
+                << "the wrong message type [" << message_type.name() << "]. The "
                 << "expected type is [" << info.type << "]. Messages from "
                 << "this connection will be ignored." << std::endl;
     }
@@ -273,7 +290,7 @@ void Endpoint::receive_topic_unadvertisement_ws(
 //==============================================================================
 void Endpoint::receive_publication_ws(
     const std::string& topic_name,
-    const soss::Message& message,
+    const xtypes::DynamicData& message,
     std::shared_ptr<void> connection_handle)
 {
   auto it = _topic_subscribe_info.find(topic_name);
@@ -290,7 +307,7 @@ void Endpoint::receive_publication_ws(
 //==============================================================================
 void Endpoint::receive_subscribe_request_ws(
     const std::string& topic_name,
-    const std::string& message_type,
+    const xtypes::DynamicType* message_type,
     const std::string& id,
     std::shared_ptr<void> connection_handle)
 {
@@ -307,11 +324,11 @@ void Endpoint::receive_subscribe_request_ws(
   }
   else
   {
-    if(!message_type.empty() && message_type != info.type)
+    if(message_type != nullptr && message_type->name() != info.type)
     {
       std::cerr << "[soss::websocket] Received subscription request for topic ["
                 << topic_name << "], but the requested message type ["
-                << message_type << "] does not match the one we are publishing "
+                << message_type->name() << "] does not match the one we are publishing "
                 << "[" << info.type << "]" << std::endl;
       return;
     }
@@ -363,7 +380,7 @@ void Endpoint::receive_unsubscribe_request_ws(
 //==============================================================================
 void Endpoint::receive_service_request_ws(
     const std::string& service_name,
-    const soss::Message& request,
+    const xtypes::DynamicData& request,
     const std::string& id,
     std::shared_ptr<void> connection_handle)
 {
@@ -386,17 +403,17 @@ void Endpoint::receive_service_request_ws(
 //==============================================================================
 void Endpoint::receive_service_advertisement_ws(
     const std::string& service_name,
-    const std::string& service_type,
+    const xtypes::DynamicType& service_type,
     std::shared_ptr<void> connection_handle)
 {
   _service_provider_info[service_name] =
-      ServiceProviderInfo{service_type, connection_handle, YAML::Node{}};
+      ServiceProviderInfo{service_type.name(), connection_handle, YAML::Node{}};
 }
 
 //==============================================================================
 void Endpoint::receive_service_unadvertisement_ws(
     const std::string& service_name,
-    const std::string& /*service_type*/,
+    const xtypes::DynamicType* /*service_type*/,
     std::shared_ptr<void> connection_handle)
 {
   auto it = _service_provider_info.find(service_name);
@@ -410,7 +427,7 @@ void Endpoint::receive_service_unadvertisement_ws(
 //==============================================================================
 void Endpoint::receive_service_response_ws(
     const std::string& /*service_name*/,
-    const soss::Message& response,
+    const xtypes::DynamicData& response,
     const std::string& id,
     std::shared_ptr<void> /*connection_handle*/)
 {

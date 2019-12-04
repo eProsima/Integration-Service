@@ -7,6 +7,7 @@ if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
 endif()
 
 find_package(soss-core REQUIRED)
+find_package(xtypes REQUIRED)
 find_package(soss-json REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(websocketpp REQUIRED)
