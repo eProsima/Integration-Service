@@ -19,7 +19,6 @@
 #define SOSS__UTILITIES_HPP
 
 #include <soss/Message.hpp>
-#include <xtypes/StructType.hpp>
 
 #include <algorithm>
 #include <mutex>
@@ -29,120 +28,8 @@
 namespace soss {
 
 //==============================================================================
-template<typename Container>
-void vector_resize(Container& vector, std::size_t size)
-{
-  vector.resize(size);
-}
-
-template<typename T, std::size_t N>
-void vector_resize(std::array<T, N>& /*array*/, std::size_t /*size*/)
-{
-  // Do nothing. Arrays don't need to be resized.
-}
-
-//==============================================================================
-template<typename Container>
-void vector_reserve(Container& vector, std::size_t size)
-{
-  vector.reserve(size);
-}
-
-template<typename T, std::size_t N>
-void vector_reserve(std::array<T, N>& /*array*/, std::size_t /*size*/)
-{
-  // Do nothing. Arrays don't need to be reserved.
-}
-
-//==============================================================================
-template<typename Container, typename Arg>
-void vector_push_back(Container& vector, Arg&& arg)
-{
-  vector.push_back(std::forward<Arg>(arg));
-}
-
-//==============================================================================
-template<typename T, std::size_t N, typename Arg>
-void vector_push_back(std::array<T, N>& /*array*/, Arg&& /*arg*/)
-{
-  // Do nothing. Arrays will never be told to push_back(). This overload only
-  // exists to satisfy the compiler.
-}
-
-//==============================================================================
-/// \brief Convenience function for converting a bounded vector of
-/// soss::Messages into a bounded vector of middleware-specific messages.
-///
-/// To make the limit unbounded, set the UpperBound argument to
-/// std::numeric_limits<VectorType::size_type>::max()
-///
-/// This is effectively a function, but we wrap it in a struct so that it can be
-/// used as a template argument.
-template<typename ElementType, std::size_t UpperBound>
-struct convert_bounded_vector
-{
-  template<typename FromType, typename ToType,
-           typename FromContainer, typename ToContainer>
-  static void convert(
-      const FromContainer& from,
-      ToContainer& to,
-      void(*convert)(const FromType& from, ToType& to),
-      ToType(*initialize)() = []() { return ToType(); })
-  {
-    // TODO(MXG): Should we emit a warning when the incoming data exceeds the
-    // upper bound?
-    const std::size_t N = std::min(from.size(), UpperBound);
-    vector_reserve(to, N);
-    for(std::size_t i=0; i < N; ++i)
-    {
-      const FromType& from_msg = from[i];
-      if(i < to.size())
-      {
-        (*convert)(from_msg, to[i]);
-      }
-      else
-      {
-        ToType to_msg = (*initialize)();
-        (*convert)(from_msg, to_msg);
-        vector_push_back(to, std::move(to_msg));
-      }
-    }
-
-    if(to.size() > N)
-      vector_resize(to, N);
-  }
-};
-
-//==============================================================================
-/// \brief This template specialization is needed to deal with the edge case
-/// produced by vectors of bools. std::vector<bool> is specialized to be
-/// implemented as a bitmap, and as a result its operator[] cannot return its
-/// bool elements by reference. Instead it returns a "reference" proxy object,
-/// which is not something can be used by the standard convert_bounded_vector
-/// function.
-template<std::size_t UpperBound>
-struct convert_bounded_vector<bool, UpperBound>
-{
-  template<typename FromContainer, typename ToContainer>
-  static void convert(
-      const FromContainer& from,
-      ToContainer& to,
-      void(* /*unused*/ )(
-        const typename FromContainer::value_type& from,
-        typename ToContainer::value_type& to),
-      typename ToContainer::value_type(* /*unused*/ )() =
-          []() { return typename ToContainer::value_type(); })
-  {
-    const std::size_t N = std::min(from.size(), UpperBound);
-    vector_resize(to, N);
-    for(std::size_t i=0; i < N; ++i)
-      to[i] = static_cast<typename ToContainer::value_type>(from[i]);
-  }
-};
-
-//==============================================================================
-/// \brief A utility to help with converting data between generic soss Field
-/// objects and middleware-specific data structures.
+/// \brief A utility to help with converting data between generic DynamicData
+/// field objects and middleware-specific data structures.
 ///
 /// This struct will work as-is on primitive types (a.k.a. arithmetic types or
 /// strings), but you should create a template specialization for converting to
@@ -151,171 +38,73 @@ template<typename Type>
 struct Convert
 {
   using native_type = Type;
-  using soss_type = native_type;
-  using field_iterator = std::map<std::string, xtypes::DynamicData>::iterator;
-  using const_field_iterator = std::map<std::string, xtypes::DynamicData>::const_iterator;
 
   static constexpr bool type_is_primitive =
          std::is_arithmetic<Type>::value
       || std::is_same<std::string, Type>::value
       || std::is_same<std::basic_string<char16_t>, Type>::value;
 
-  /// \brief Create an instance of the generic soss version of this type
-  ///
-  /// For primitive types, this will be the same as the native type
-  template<typename... Args>
-  static soss_type make_soss(Args&&... args)
-  {
-    static_assert(type_is_primitive,
-      "The soss::Convert struct should be specialized for non-primitive types");
-    return soss_type(std::forward<Args>(args)...);
-  }
-
-  /*
-  /// \brief Create a field containing the generic soss version of this type
-  template<typename... Args>
-  static Field make_soss_field(Args&&... args)
-  {
-    static_assert(type_is_primitive,
-      "The soss::Convert struct should be specialized for non-primitive types");
-    return soss::make_field<soss_type>(make_soss(std::forward<Args>(args)...));
-  }
-  */
-
-  /// \brief Add a field of this type to the specified message
-  ///
-  /// \param[out] msg
-  ///   The message to add the field to
-  ///
-  /// \param[in] name
-  ///   The name that should be given to the field
-  static void add_field(xtypes::StructType& msg_type, xtypes::DynamicType& field_type, const std::string& name)
-  {
-    static_assert(type_is_primitive,
-      "The soss::Convert struct should be specialized for non-primitive types");
-    msg_type.add_member(name, field_type);
-  }
-
-  /// \brief Move data from a generic soss data structure to a native middleware
+  /// \brief Move data from a xtype field to a native middleware
   /// data structure
-  static void from_soss(const soss_type& from, native_type& to)
+  static void from_xtype_field(const xtypes::ReadableDynamicDataRef& from, native_type& to)
   {
-    static_assert(type_is_primitive,
-      "The soss::Convert struct should be specialized for non-primitive types");
-    to = from;
+    to = from.value<native_type>();
   }
 
-  /// \brief Move data from a generic soss message field to a native middleware
-  /// data structure
-  static void from_soss_field(const const_field_iterator& from, native_type& to)
-  {
-    static_assert(type_is_primitive,
-      "The soss::Convert struct should be specialized for non-primitive types");
-    to = *from->second.cast<soss_type>();
-  }
-
-  /// \brief Move data from a native middleware data structure to a generic soss
-  /// data structure.
-  static void to_soss(const native_type& from, soss_type& to)
-  {
-    to = from;
-  }
-
-  /// \brief Move data from a native middleware data structure to a generic soss
+  /// \brief Move data from a native middleware data structure to a xtype
   /// message field.
-  static void to_soss_field(const native_type& from, field_iterator to)
+  static void to_xtype_field(const native_type& from, xtypes::WritableDynamicDataRef to)
   {
     static_assert(type_is_primitive,
       "The soss::Convert struct should be specialized for non-primitive types");
-    *to->second.cast<soss_type>() = from;
+    to.value<native_type>(from);
   }
 };
 
 //==============================================================================
-/// \brief A class that ensures that low-precision data values will be stored as
-/// their higher precision equivalents in the soss::Message, and that low
-/// precision values can be assigned from higher precision data within a
-/// soss::Message. This helps convert messages between middlewares that care
-/// about precision and those that don't.
+/// \brief A class that helps create a Convert<> specialization for managing some
+/// char issues.
 ///
-/// The macro SOSS_CONVERT_LOW_PRECISION(H, L) will create the specialization,
-/// but most potential low-precision conversions are already provided.
-template<typename HighPrecision, typename LowPrecision>
-struct LowPrecisionConvert
+/// 'rosidl' parse 'char' types as 'signed' values from 'msg' files and
+/// parse as 'unsigned' from idl files. This create a mismatched between types.
+/// This patch solves this issue when the native type differs from the
+/// DynamicData type for this specific case.
+// NOTE: This specialization can be removed safety if rosidl modifies its behaviour.
+struct CharConvert
 {
-  using native_type = LowPrecision;
-  using soss_type = HighPrecision;
-  using field_iterator = std::map<std::string, xtypes::DynamicData>::iterator;
-  using const_field_iterator = std::map<std::string, xtypes::DynamicData>::const_iterator;
+  using native_type = char;
 
-  static constexpr bool type_is_primitive =
-         std::is_arithmetic<HighPrecision>::value
-      || std::is_same<std::string, HighPrecision>::value
-      || std::is_same<std::basic_string<char16_t>, HighPrecision>::value;
+  static constexpr bool type_is_primitive = true;
 
   // Documentation inherited from Convert
-  template<typename... Args>
-  static soss_type make_soss(Args&&... args)
+  static void from_xtype_field(const xtypes::ReadableDynamicDataRef& from, native_type& to)
   {
-    return soss_type(std::forward<Args>(args)...);
-  }
-
-  /*
-  // Documentation inherited from Convert
-  template<typename... Args>
-  static Field make_soss_field(Args&&... args)
-  {
-    return soss::make_field<soss_type>(make_soss(std::forward<Args>(args)...));
-  }
-  */
-
-  // Documentation inherited from Convert
-  static void add_field(xtypes::StructType& msg_type, xtypes::DynamicType& field_type, const std::string& name)
-  {
-    msg_type.add_member(name, field_type);
+    if(from.type().kind() == xtypes::TypeKind::UINT_8_TYPE)
+    {
+      to = static_cast<native_type>(from.value<uint8_t>());
+    }
+    else
+    {
+      to = from.value<native_type>();
+    }
   }
 
   // Documentation inherited from Convert
-  static void from_soss(const soss_type& from, native_type& to)
+  static void to_xtype_field(const native_type& from, xtypes::WritableDynamicDataRef to)
   {
-    to = static_cast<native_type>(from);
-  }
-
-  // Documentation inherited from Convert
-  static void from_soss_field(const const_field_iterator& from, native_type& to)
-  {
-    to = static_cast<native_type>(*from->second.cast<soss_type>());
-  }
-
-  // Documentation inherited from Convert
-  static void to_soss(const native_type& from, soss_type& to)
-  {
-    to = from;
-  }
-
-  // Documentation inherited from Convert
-  static void to_soss_field(const native_type& from, field_iterator to)
-  {
-    *to->second.cast<soss_type>() = from;
+    if(to.type().kind() == xtypes::TypeKind::UINT_8_TYPE)
+    {
+      to.value<uint8_t>(static_cast<uint8_t>(from));
+    }
+    else
+    {
+      to.value<native_type>(from);
+    }
   }
 };
 
-#define SOSS_CONVERT_LOW_PRECISION(H, L) \
-  template<> struct Convert<L> : LowPrecisionConvert<H, L> { }
-
-SOSS_CONVERT_LOW_PRECISION(double, float);
-
-SOSS_CONVERT_LOW_PRECISION(uint64_t, uint8_t);
-SOSS_CONVERT_LOW_PRECISION(uint64_t, uint16_t);
-SOSS_CONVERT_LOW_PRECISION(uint64_t, uint32_t);
-
-SOSS_CONVERT_LOW_PRECISION(int64_t, int8_t);
-SOSS_CONVERT_LOW_PRECISION(int64_t, int16_t);
-SOSS_CONVERT_LOW_PRECISION(int64_t, int32_t);
-
-/// This is done to accommodate ROS1, which represents booleans using uint8.
-/// Hopefully using xtypes can remedy this in the future.
-SOSS_CONVERT_LOW_PRECISION(uint64_t, bool);
+template<>
+struct Convert<char> : CharConvert { };
 
 //==============================================================================
 /// \brief A class that helps create a Convert<> specialization for compound
@@ -331,9 +120,8 @@ SOSS_CONVERT_LOW_PRECISION(uint64_t, bool);
 /// struct Convert<native::middleware::type>
 ///   : soss::MessageConvert<
 ///        native::middleware::type,
-///       &native::middleware::instantiate_type_fnc,
-///       &native::middleware::convert_from_soss_fnc,
-///       &native::middleware::convert_to_soss_fnc
+///       &native::middleware::convert_from_xtype_fnc,
+///       &native::middleware::convert_to_xtype_fnc
 ///   > { };
 ///
 /// } // namespace soss
@@ -343,129 +131,91 @@ SOSS_CONVERT_LOW_PRECISION(uint64_t, bool);
 /// namespace.
 template<
     typename Type,
-    xtypes::DynamicData (*_initialize_message)(),
-    void (*_from_soss)(const xtypes::DynamicData& from, Type& to),
-    void (*_to_soss)(const Type& from, xtypes::DynamicData& to)>
+    void (*_from_xtype)(const xtypes::ReadableDynamicDataRef& from, Type& to),
+    void (*_to_xtype)(const Type& from, xtypes::WritableDynamicDataRef to)>
 struct MessageConvert
 {
   using native_type = Type;
-  using soss_type = xtypes::DynamicData;
-  using field_iterator = std::map<std::string, xtypes::DynamicData>::iterator;
-  using const_field_iterator = std::map<std::string, xtypes::DynamicData>::const_iterator;
 
   static constexpr bool type_is_primitive = false;
 
   // Documentation inherited from Convert
-  template<typename... Args>
-  static soss_type make_soss(Args&&... args)
+  static void from_xtype_field(const xtypes::ReadableDynamicDataRef& from, native_type& to)
   {
-    return (*_initialize_message)(std::forward<Args>(args)...);
-  }
-
-  /*
-  // Documentation inherited from Convert
-  template<typename... Args>
-  static Field make_soss_field(Args&&... args)
-  {
-    return soss::make_field<soss::Message>(make_soss(std::forward<Args>(args)...));
-  }
-  */
-
-  // Documentation inherited from Convert
-  static void add_field(xtypes::StructType& msg_type, xtypes::DynamicType& field_type, const std::string& name)
-  {
-    msg_type.add_member(name, field_type);
+    (*_from_xtype)(from, to);
   }
 
   // Documentation inherited from Convert
-  static void from_soss(const soss_type& from, native_type& to)
+  static void to_xtype_field(const native_type& from, xtypes::WritableDynamicDataRef to)
   {
-    (*_from_soss)(from, to);
-  }
-
-  // Documentation inherited from Convert
-  static void from_soss_field(const const_field_iterator& from, native_type& to)
-  {
-    from_soss(from->second, to);
-  }
-
-  // Documentation inherited from Convert
-  static void to_soss(const native_type& from, soss_type& to)
-  {
-    (*_to_soss)(from, to);
-  }
-
-  // Documentation inherited from Convert
-  static void to_soss_field(const native_type& from, field_iterator to)
-  {
-    to_soss(from, to->second);
+    (*_to_xtype)(from, to);
   }
 };
 
 //==============================================================================
+/// \brief Convenience function for converting a bounded xtypes::CollectionType
+/// into a bounded vector of middleware-specific messages.
+///
+/// To make the limit unbounded, set the UpperBound argument to
+/// std::numeric_limits<VectorType::size_type>::max()
 template<
     typename ElementType,
     typename NativeType,
-    typename SossType,
-    class ContainerConversionImpl>
+    std::size_t UpperBound>
 struct ContainerConvert
 {
   using native_type = NativeType;
-  using soss_type = SossType;
-  using field_iterator = std::map<std::string, xtypes::DynamicData>::iterator;
-  using const_field_iterator = std::map<std::string, xtypes::DynamicData>::const_iterator;
 
   static constexpr bool type_is_primitive =
       Convert<ElementType>::type_is_primitive;
 
-
-  // Documentation inherited from Convert
-  template<typename... Args>
-  static soss_type make_soss(Args&&... args)
+  static void from_xtype(const xtypes::ReadableDynamicDataRef& from, ElementType& to)
   {
-    return soss_type(std::forward<Args>(args)...);
+    Convert<ElementType>::from_xtype_field(from, to);
   }
 
-  /*
-  // Documentation inherited from Convert
-  template<typename... Args>
-  static Field make_soss_field(Args&&... args)
+  /// \brief This template specialization is needed to deal with the edge case
+  /// produced by vectors of bools. std::vector<bool> is specialized to be
+  /// implemented as a bitmap, and as a result its operator[] cannot return its
+  /// bool elements by reference. Instead it returns a "reference" proxy object.
+  static void from_xtype(const xtypes::ReadableDynamicDataRef& from, std::vector<bool>::reference to)
   {
-    return soss::make_field<soss_type>(make_soss(std::forward<Args>(args)...));
-  }
-  */
-
-  // Documentation inherited from Convert
-  static void add_field(xtypes::StructType& msg_type, xtypes::DynamicType& field_type, const std::string& name)
-  {
-    msg_type.add_member(name, field_type);
+    bool temp = from;
+    to = temp;
   }
 
-  // Documentation inherited from Convert
-  static void from_soss(const soss_type& from, native_type& to)
+  template<typename Container>
+  static void container_resize(Container& vector, std::size_t size)
   {
-    ContainerConversionImpl::convert(
-          from, to, &Convert<ElementType>::from_soss);
+    vector.resize(size);
+  }
+
+  template<typename T, std::size_t N>
+  static void container_resize(std::array<T, N>& /*array*/, std::size_t /*size*/)
+  {
+    // Do nothing. Arrays don't need to be resized.
   }
 
   // Documentation inherited from Convert
-  static void from_soss_field(const const_field_iterator& from, native_type& to)
+  static void from_xtype_field(const xtypes::ReadableDynamicDataRef& from, native_type& to)
   {
-    from_soss(*from->second.cast<soss_type>(), to);
-  }
-
-  static void to_soss(const native_type& from, soss_type& to)
-  {
-    ContainerConversionImpl::convert(
-          from, to,
-          &Convert<ElementType>::to_soss,
-          &Convert<ElementType>::make_soss);
+    const std::size_t N = std::min(from.size(), UpperBound);
+    container_resize(to, N);
+    for(std::size_t i=0; i < N; ++i)
+    {
+      from_xtype(from[i], to[i]);
+    }
   }
 
   // Documentation inherited from Convert
-  static void to_soss_field(const native_type& from, field_iterator to)
+  static void to_xtype_field(const native_type& from, xtypes::WritableDynamicDataRef to)
   {
-    to_soss(from, *to->second.cast<soss_type>());
+    const std::size_t N = std::min(from.size(), UpperBound);
+    to.resize(N);
+    for(std::size_t i=0; i < N; ++i)
+    {
+      Convert<ElementType>::to_xtype_field(from[i], to[i]);
+    }
   }
 };
 
@@ -475,9 +225,7 @@ struct Convert<std::vector<ElementType, Allocator>>
     : ContainerConvert<
     ElementType,
     std::vector<typename Convert<ElementType>::native_type, Allocator>,
-    std::vector<typename Convert<ElementType>::soss_type>,
-    soss::convert_bounded_vector<ElementType, std::numeric_limits<
-          typename std::vector<ElementType, Allocator>::size_type>::max()>> { };
+    std::numeric_limits<typename std::vector<ElementType, Allocator>::size_type>::max()> { };
 
 //==============================================================================
 template<typename ElementType, std::size_t N>
@@ -485,8 +233,16 @@ struct Convert<std::array<ElementType, N>>
     : ContainerConvert<
     ElementType,
     std::array<typename Convert<ElementType>::native_type, N>,
-    std::vector<typename Convert<ElementType>::soss_type>,
-    soss::convert_bounded_vector<ElementType, N>> { };
+    N> { };
+
+//==============================================================================
+template<typename ElementType, std::size_t N, typename Allocator,
+    template<typename, std::size_t ,typename> class VectorImpl>
+struct Convert<VectorImpl<ElementType, N, Allocator>>
+    : ContainerConvert<
+    ElementType,
+    VectorImpl<typename Convert<ElementType>::native_type, N, Allocator>,
+    N> { };
 
 //==============================================================================
 /// \brief A thread-safe repository for resources to avoid unnecessary
@@ -526,7 +282,6 @@ public:
     std::unique_lock<std::mutex> lock(_mutex);
     _queue.emplace_back(std::move(r));
   }
-
 
 private:
 

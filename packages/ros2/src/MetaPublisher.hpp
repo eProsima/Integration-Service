@@ -27,7 +27,7 @@ namespace ros2 {
 
 //==============================================================================
 std::shared_ptr<TopicPublisher> make_meta_publisher(
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     rclcpp::Node& node,
     const std::string& topic_name,
     const rmw_qos_profile_t& qos_profile,

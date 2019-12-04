@@ -46,13 +46,8 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
   const int argc = 1;
   const char* argv[argc];
   argv[0] = "soss";
-  if (rclcpp::is_initialized())
+  if (!rclcpp::is_initialized())
   {
-    std::cout << "Skipping rclcpp init. rcl already initialized." << std::endl;
-  }
-  else
-  {
-    std::cout << "Initializing rclcpp." << std::endl;
     rclcpp::init(argc, argv);
   }
 
@@ -97,7 +92,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
   std_msgs::msg::String pub_msg;
   pub_msg.set__data("Hello node");
-  
+
   rclcpp::executors::SingleThreadedExecutor executor;
   using namespace std::chrono_literals;
 
@@ -115,7 +110,6 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
   soss::InstanceHandle handle = soss::run_instance(
     config_node, { ROS2__ROSIDL__BUILD_DIR });
-
 
   REQUIRE(handle);
 

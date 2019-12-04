@@ -18,9 +18,13 @@ cpp_srv_type = '{}::srv::{}'.format(spec.pkg_name, camelcase_srv_type)
 
 srv_type_string = '{}/{}'.format(spec.pkg_name, camelcase_srv_type)
 
-namespace_parts = [
+namespace_parts_srv = [
     'convert', spec.pkg_name, 'srv', underscore_srv_type]
-namespace_variable = '__'.join(namespace_parts)
+namespace_variable_srv = '__'.join(namespace_parts_srv)
+
+namespace_parts_msg = [
+    'convert', spec.pkg_name, 'msg', underscore_srv_type]
+namespace_variable_msg = '__'.join(namespace_parts_msg)
 
 ros2_srv_dependency = '{}/srv/{}.hpp'.format(
       spec.pkg_name, underscore_srv_type)
@@ -42,6 +46,9 @@ alphabetical_response_fields = sorted(spec.response.fields, key=lambda x: x.name
 }@
 
 // Include the header for the generic message type
+#include <soss/Message.hpp>
+
+// Include the header for the conversions
 #include <soss/utilities.hpp>
 
 // Include the header for the concrete service type
@@ -60,7 +67,7 @@ alphabetical_response_fields = sorted(spec.response.fields, key=lambda x: x.name
 
 namespace soss {
 namespace ros2 {
-namespace @(namespace_variable) {
+namespace @(namespace_variable_srv) {
 
 using Ros2_Srv = @(cpp_srv_type);
 using Ros2_Request = Ros2_Srv::Request;
@@ -68,90 +75,84 @@ using Ros2_Response = Ros2_Srv::Response;
 const std::string g_srv_name = "@(srv_type_string)";
 const std::string g_request_name = g_srv_name + ":request";
 const std::string g_response_name = g_srv_name + ":response";
+const std::string g_idl = R"(
+@(idl)
+)";
 
 namespace {
-
-//==============================================================================
-soss::Message initialize_request()
-{
-  soss::Message msg;
-  msg.type = g_request_name;
-@[for field in alphabetical_request_fields]@
-  soss::Convert<Ros2_Request::_@(field.name)_type>::add_field(msg, "@(field.name)");
-@[end for]@
-
-  return msg;
+const xtypes::StructType& request_type() {
+  xtypes::idl::Context context;
+  context.allow_keyword_identifiers = true;
+  context.ignore_redefinition = true;
+  xtypes::idl::parse(g_idl, context);
+  static xtypes::StructType type(context.module().structure("@(cpp_srv_type)_Request"));
+  type.name(g_request_name);
+  return type;
 }
 
-//==============================================================================
-void request_to_ros2(const soss::Message& from, Ros2_Request& to)
-{
-  auto from_field = from.data.begin();
-@[for field in alphabetical_request_fields]@
-  soss::Convert<Ros2_Request::_@(field.name)_type>::from_soss_field(from_field++, to.@(field.name));
-@[end for]@
+TypeFactoryRegistrar register_request_type(g_request_name, &request_type);
 
-  // Suppress possible unused variable warnings
-  (void)from;
-  (void)to;
-  (void)from_field;
+const xtypes::StructType& response_type() {
+  xtypes::idl::Context context;
+  context.allow_keyword_identifiers = true;
+  context.ignore_redefinition = true;
+  xtypes::idl::parse(g_idl, context);
+  static xtypes::StructType type(context.module().structure("@(cpp_srv_type)_Response"));
+  type.name(g_response_name);
+  return type;
 }
 
-//==============================================================================
-void request_to_soss(const Ros2_Request& from, soss::Message& to)
-{
-  auto to_field = to.data.begin();
-@[for field in alphabetical_request_fields]@
-  soss::Convert<Ros2_Request::_@(field.name)_type>::to_soss_field(from.@(field.name), to_field++);
-@[end for]@
-
-  // Suppress possible unused variable warnings
-  (void)from;
-  (void)to;
-  (void)to_field;
-}
-
-//==============================================================================
-soss::Message initialize_response()
-{
-  soss::Message msg;
-  msg.type = g_response_name;
-@[for field in alphabetical_response_fields]@
-  soss::Convert<Ros2_Response::_@(field.name)_type>::add_field(msg, "@(field.name)");
-@[end for]@
-
-  return msg;
-}
-
-//==============================================================================
-void response_to_ros2(const soss::Message& from, Ros2_Response& to)
-{
-  auto from_field = from.data.begin();
-@[for field in alphabetical_response_fields]@
-  soss::Convert<Ros2_Response::_@(field.name)_type>::from_soss_field(from_field++, to.@(field.name));
-@[end for]@
-
-  // Suppress possible unused variable warnings
-  (void)from;
-  (void)to;
-  (void)from_field;
-}
-
-//==============================================================================
-void response_to_soss(const Ros2_Response& from, soss::Message& to)
-{
-  auto to_field = to.data.begin();
-@[for field in alphabetical_response_fields]@
-  soss::Convert<Ros2_Response::_@(field.name)_type>::to_soss_field(from.@(field.name), to_field++);
-@[end for]@
-
-  // Suppress possible unused variable warnings
-  (void)from;
-  (void)to;
-  (void)to_field;
-}
-
+TypeFactoryRegistrar register_response_type(g_response_name, &response_type);
 } // anonymous namespace
+
+
+//==============================================================================
+void request_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Request& to)
+{
+@[for field in alphabetical_request_fields]@
+  soss::Convert<Ros2_Request::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
+@[end for]@
+
+  // Suppress possible unused variable warnings
+  (void)from;
+  (void)to;
+}
+
+//==============================================================================
+void request_to_xtype(const Ros2_Request& from, xtypes::WritableDynamicDataRef to)
+{
+@[for field in alphabetical_request_fields]@
+  soss::Convert<Ros2_Request::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
+@[end for]@
+
+  // Suppress possible unused variable warnings
+  (void)from;
+  (void)to;
+}
+
+//==============================================================================
+void response_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Response& to)
+{
+@[for field in alphabetical_response_fields]@
+  soss::Convert<Ros2_Response::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
+@[end for]@
+
+  // Suppress possible unused variable warnings
+  (void)from;
+  (void)to;
+}
+
+//==============================================================================
+void response_to_xtype(const Ros2_Response& from, xtypes::WritableDynamicDataRef to)
+{
+@[for field in alphabetical_response_fields]@
+  soss::Convert<Ros2_Response::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
+@[end for]@
+
+  // Suppress possible unused variable warnings
+  (void)from;
+  (void)to;
+}
 
 //==============================================================================
 class ClientProxy final : public virtual soss::ServiceClient
@@ -164,10 +165,9 @@ public:
       const ServiceClientSystem::RequestCallback& callback,
       const rmw_qos_profile_t& qos_profile)
     : _callback(callback),
-      _handle(std::make_shared<PromiseHolder>())
+      _handle(std::make_shared<PromiseHolder>()),
+      _request_data(request_type())
   {
-    _request = initialize_request();
-
     _service = node.create_service<Ros2_Srv>(
           service_name,
           [=](const std::shared_ptr<rmw_request_id_t> request_header,
@@ -179,7 +179,7 @@ public:
 
   void receive_response(
       std::shared_ptr<void> call_handle,
-      const Message& result) override
+      const xtypes::DynamicData& result) override
   {
     const std::shared_ptr<PromiseHolder>& handle =
         std::static_pointer_cast<PromiseHolder>(call_handle);
@@ -191,17 +191,17 @@ public:
 private:
 
   void service_callback(
-      const std::shared_ptr<rmw_request_id_t>& /*request_header*/,
+      const std::shared_ptr<rmw_request_id_t>&, //request_header
       const std::shared_ptr<Ros2_Request>& request,
       const std::shared_ptr<Ros2_Response>& response)
   {
-    request_to_soss(*request, _request);
+    request_to_xtype(*request, _request_data);
 
     std::promise<Ros2_Response> response_promise;
     _handle->promise = &response_promise;
 
     std::future<Ros2_Response> future_response = response_promise.get_future();
-    _callback(_request, *this, _handle);
+    _callback(_request_data, *this, _handle);
 
     future_response.wait();
 
@@ -215,7 +215,7 @@ private:
 
   const ServiceClientSystem::RequestCallback _callback;
   const std::shared_ptr<PromiseHolder> _handle;
-  soss::Message _request;
+  xtypes::DynamicData _request_data;
   Ros2_Response _response;
   rclcpp::Service<Ros2_Srv>::SharedPtr _service;
 
@@ -232,10 +232,13 @@ std::shared_ptr<soss::ServiceClient> make_client(
 }
 
 namespace {
-ServiceClientFactoryRegistrar register_client(g_srv_name, &make_client);
+ServiceClientFactoryRegistrar register_client(g_response_name, &make_client);
 } // anonymous namespace
 
 //==============================================================================
+xtypes::DynamicData initialize_response() {
+  return xtypes::DynamicData(response_type());
+}
 class ServerProxy final : public virtual soss::ServiceProvider
 {
 public:
@@ -252,7 +255,7 @@ public:
   }
 
   void call_service(
-      const Message& request,
+      const xtypes::DynamicData& request,
       ServiceClient& soss_client,
       std::shared_ptr<void> call_handle) override
   {
@@ -284,8 +287,8 @@ private:
     future_response.wait();
 
     const Ros2_Response::SharedPtr& response = future_response.get();
-    soss::Message soss_response = _response_pool.pop();
-    response_to_soss(*response, soss_response);
+    xtypes::DynamicData soss_response = _response_pool.pop();
+    response_to_xtype(*response, soss_response);
 
     soss_client.receive_response(std::move(call_handle), soss_response);
 
@@ -295,7 +298,7 @@ private:
 
   const std::string _service_name;
   soss::SharedResourcePool<Ros2_Request> _request_pool;
-  soss::ResourcePool<soss::Message, &initialize_response> _response_pool;
+  soss::ResourcePool<xtypes::DynamicData, &initialize_response> _response_pool;
   rclcpp::Client<Ros2_Srv>::SharedPtr _ros2_client;
 
 };
@@ -310,9 +313,9 @@ std::shared_ptr<soss::ServiceProvider> make_server(
 }
 
 namespace {
-ServiceProviderFactoryRegistrar register_server(g_srv_name, &make_server);
+ServiceProviderFactoryRegistrar register_server(g_request_name, &make_server);
 }
 
-} // namespace @(namespace_variable)
+} // namespace @(namespace_variable_srv)
 } // namespace ros2
 } // namespace soss

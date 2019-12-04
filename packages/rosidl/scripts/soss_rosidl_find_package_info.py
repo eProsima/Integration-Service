@@ -8,6 +8,7 @@ import sys
 try:
     from rosidl_adapter.parser import parse_message_file
     from rosidl_adapter.parser import parse_service_file
+
 except ImportError:
     print('Unable to import rosidl_adapter. Please source a ROS2 installation first.', end='', file=sys.stderr)
     sys.exit(1)

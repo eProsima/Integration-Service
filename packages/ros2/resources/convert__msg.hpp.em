@@ -48,16 +48,20 @@ for field in spec.fields:
 
 alphabetical_fields = sorted(spec.fields, key=lambda x: x.name)
 }@
+
 #ifndef @(header_guard_variable)
 #define @(header_guard_variable)
 
-// Include the header for the generic soss message type
-#include <soss/ros2/utilities.hpp>
+// Include the header for the generic message type
+#include <soss/Message.hpp>
+
+// Include the header for the conversions
+#include <soss/utilities.hpp>
 
 // Include the header for the concrete ros2 message type
 #include <@(ros2_msg_dependency)>
 
-// Include the headers for the soss message conversion dependencies
+// Include the headers for the message conversion dependencies
 @[if conversion_dependencies.keys()]@
 @[    for key in sorted(conversion_dependencies.keys())]@
 #include <@(key)> // @(', '.join(conversion_dependencies[key]))
@@ -72,45 +76,44 @@ namespace @(namespace_variable) {
 
 using Ros2_Msg = @(cpp_msg_type);
 const std::string g_msg_name = "@(msg_type_string)";
+const std::string g_idl = R"(
+@(idl)
+)";
 
 //==============================================================================
-inline soss::Message initialize()
+inline const xtypes::StructType& type()
 {
-  soss::Message msg;
-  msg.type = g_msg_name;
-@[for field in alphabetical_fields]@
-  soss::Convert<Ros2_Msg::_@(field.name)_type>::add_field(msg, "@(field.name)");
-@[end for]@
-
-  return msg;
+  xtypes::idl::Context context;
+  context.allow_keyword_identifiers = true;
+  context.ignore_redefinition = true;
+  xtypes::idl::parse(g_idl, context);
+  static xtypes::StructType type(context.module().structure("@(cpp_msg_type)"));
+  type.name(g_msg_name);
+  return type;
 }
 
 //==============================================================================
-inline void convert_to_ros2(const soss::Message& from, Ros2_Msg& to)
+inline void convert_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Msg& to)
 {
-  auto from_field = from.data.begin();
 @[for field in alphabetical_fields]@
-  soss::Convert<Ros2_Msg::_@(field.name)_type>::from_soss_field(from_field++, to.@(field.name));
+  soss::Convert<Ros2_Msg::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
 @[end for]@
 
   // Suppress possible unused variable warnings
   (void)from;
   (void)to;
-  (void)from_field;
 }
 
 //==============================================================================
-inline void convert_to_soss(const Ros2_Msg& from, soss::Message& to)
+inline void convert_to_xtype(const Ros2_Msg& from, xtypes::WritableDynamicDataRef to)
 {
-  auto to_field = to.data.begin();
 @[for field in alphabetical_fields]@
-  soss::Convert<Ros2_Msg::_@(field.name)_type>::to_soss_field(from.@(field.name), to_field++);
+  soss::Convert<Ros2_Msg::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
 @[end for]@
 
   // Suppress possible unused variable warnings
   (void)from;
   (void)to;
-  (void)to_field;
 }
 
 } // namespace @(namespace_variable)
@@ -120,9 +123,8 @@ template<>
 struct Convert<ros2::@(namespace_variable)::Ros2_Msg>
     : MessageConvert<
      ros2::@(namespace_variable)::Ros2_Msg,
-    &ros2::@(namespace_variable)::initialize,
     &ros2::@(namespace_variable)::convert_to_ros2,
-    &ros2::@(namespace_variable)::convert_to_soss
+    &ros2::@(namespace_variable)::convert_to_xtype
     > { };
 
 } // namespace soss

@@ -1,6 +1,6 @@
 systems:
   ros2: { type: ros2 }
-  mock: { type: mock }
+  mock: { type: mock, types-from: ros2 }
 
 routes:
   mock_to_ros2: { from: mock, to: ros2 }
@@ -13,5 +13,5 @@ topics:
   echo_pose: { type: "geometry_msgs/Pose", route: mock_to_ros2 }
 
 services:
-  get_plan: { type: "nav_msgs/GetPlan", route: ros2_srv }
-  echo_plan: { type: "nav_msgs/GetPlan", route: mock_srv }
+  get_plan: { type: "nav_msgs/GetPlan:request", route: ros2_srv }
+  echo_plan: { type: "nav_msgs/GetPlan:response", route: mock_srv }

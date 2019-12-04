@@ -17,9 +17,10 @@
 
 #include "MetaPublisher.hpp"
 
+#include <soss/StringTemplate.hpp>
+
 #include <soss/ros2/Factory.hpp>
 
-#include <soss/StringTemplate.hpp>
 
 namespace soss {
 namespace ros2 {
@@ -30,8 +31,8 @@ class MetaPublisher : public soss::TopicPublisher
 public:
 
   MetaPublisher(
-      StringTemplate&& topic_template,
-      const std::string& message_type,
+      const StringTemplate&& topic_template,
+      const xtypes::DynamicType& message_type,
       rclcpp::Node& node,
       const rmw_qos_profile_t& qos_profile,
       const YAML::Node& /*unused*/)
@@ -43,7 +44,7 @@ public:
     // Do nothing
   }
 
-  bool publish(const soss::Message& message) override final
+  bool publish(const xtypes::DynamicData &message) override final
   {
     const std::string topic_name = _topic_template.compute_string(message);
 
@@ -64,8 +65,8 @@ public:
 
 private:
 
-  const soss::StringTemplate _topic_template;
-  const std::string _message_type;
+  const StringTemplate _topic_template;
+  const xtypes::DynamicType& _message_type;
   rclcpp::Node& _node;
   const rmw_qos_profile_t _qos_profile;
 
@@ -89,14 +90,14 @@ std::string make_detail_string(
 
 //==============================================================================
 std::shared_ptr<soss::TopicPublisher> make_meta_publisher(
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     rclcpp::Node& node,
     const std::string& topic_name,
     const rmw_qos_profile_t& qos_profile,
     const YAML::Node& configuration)
 {
   return std::make_shared<MetaPublisher>(
-      StringTemplate(topic_name, make_detail_string(topic_name, message_type)),
+      StringTemplate(topic_name, make_detail_string(topic_name, message_type.name())),
       message_type, node, qos_profile, configuration);
 }
 

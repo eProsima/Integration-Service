@@ -596,7 +596,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
                   << "[" << entry.first << "]" << std::endl;
         return false;
       }
-      m_required_types[it_remap.first].messages.insert(it_remap.second.type);
+      m_required_types[it_remap.first].services.insert(it_remap.second.type);
     }
   }
 

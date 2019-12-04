@@ -1,13 +1,11 @@
 systems:
   ros2: { type: ros2 }
-  mock: { type: mock }
+  mock: { type: mock, types-from: ros2 }
 
 routes:
   mock_to_ros2: { from: mock, to: ros2 }
   ros2_to_mock: { from: ros2, to: mock }
-  mock_srv: { server: mock, clients: ros2 }
-  ros2_srv: { server: ros2, clients: mock }
 
 topics:
-  transmit_primitives: { type: "test_msgs/BoundedArrayNested", route: ros2_to_mock }
-  echo_primitives: { type: "test_msgs/BoundedArrayNested", route: mock_to_ros2 }
+  transmit: { type: "test_msgs/BoundedArrayNested", route: ros2_to_mock }
+  echo: { type: "test_msgs/BoundedArrayNested", route: mock_to_ros2 }

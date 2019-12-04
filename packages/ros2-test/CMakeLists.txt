@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5.0)
 project(soss-ros2-test)
 
 # Get soss dependencies
+find_package(xtypes REQUIRED)
 find_package(soss-core REQUIRED)
 find_package(soss-mock REQUIRED)
 find_package(soss-rosidl REQUIRED)
