@@ -26,6 +26,24 @@ namespace ros2 {
 class Factory::Implementation
 {
 public:
+  //============================================================================
+  void register_type_factory(
+      const std::string& message_type,
+      TypeFactory type_factory)
+  {
+    _type_factories[message_type] = std::move(type_factory);
+  }
+
+  //============================================================================
+  xtypes::DynamicType::Ptr create_type(
+      const std::string& message_type)
+  {
+    auto it = _type_factories.find(message_type);
+    if(it == _type_factories.end())
+      return xtypes::DynamicType::Ptr();
+
+    return it->second();
+  }
 
   //============================================================================
   void register_subscription_factory(
@@ -37,17 +55,17 @@ public:
 
   //============================================================================
   std::shared_ptr<void> create_subscription(
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       rclcpp::Node& node,
       const std::string& topic_name,
       TopicSubscriberSystem::SubscriptionCallback callback,
       const rmw_qos_profile_t& qos_profile)
   {
-    auto it = _subscription_factories.find(message_type);
+    auto it = _subscription_factories.find(message_type.name());
     if(it == _subscription_factories.end())
       return nullptr;
 
-    return it->second(node, topic_name, std::move(callback), qos_profile);
+    return it->second(node, topic_name, message_type, std::move(callback), qos_profile);
   }
 
   //============================================================================
@@ -60,12 +78,12 @@ public:
 
   //============================================================================
   std::shared_ptr<TopicPublisher> create_publisher(
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       rclcpp::Node& node,
       const std::string& topic_name,
       const rmw_qos_profile_t& qos_profile)
   {
-    auto it = _publisher_factories.find(message_type);
+    auto it = _publisher_factories.find(message_type.name());
     if(it == _publisher_factories.end())
       return nullptr;
 
@@ -119,6 +137,7 @@ public:
 
 private:
 
+  std::unordered_map<std::string, TypeFactory> _type_factories;
   std::unordered_map<std::string, SubscriptionFactory> _subscription_factories;
   std::unordered_map<std::string, PublisherFactory> _publisher_factories;
   std::unordered_map<std::string, ServiceClientFactory> _client_proxy_factories;
@@ -134,6 +153,22 @@ Factory& Factory::instance()
 }
 
 //==============================================================================
+void Factory::register_type_factory(
+    const std::string& message_type,
+    TypeFactory type_factory)
+{
+  _pimpl->register_type_factory(
+        message_type, std::move(type_factory));
+}
+
+//==============================================================================
+xtypes::DynamicType::Ptr Factory::create_type(
+    const std::string& message_type)
+{
+  return _pimpl->create_type(message_type);
+}
+
+//==============================================================================
 void Factory::register_subscription_factory(
     const std::string& message_type,
     SubscriptionFactory subscriber_factory)
@@ -144,7 +179,7 @@ void Factory::register_subscription_factory(
 
 //==============================================================================
 std::shared_ptr<void> Factory::create_subscription(
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     rclcpp::Node& node,
     const std::string& topic_name,
     TopicSubscriberSystem::SubscriptionCallback callback,
@@ -165,7 +200,7 @@ void Factory::register_publisher_factory(
 
 //==============================================================================
 std::shared_ptr<TopicPublisher> Factory::create_publisher(
-    const std::string& message_type,
+    const xtypes::DynamicType& message_type,
     rclcpp::Node& node,
     const std::string& topic_name,
     const rmw_qos_profile_t& qos_profile)

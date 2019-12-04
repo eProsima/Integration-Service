@@ -56,57 +56,34 @@ geometry_msgs::msg::PoseStamped generate_random_pose(const int sec = 0)
   return ros2_pose;
 }
 
-soss::Message generate_pose_msg(
-    const geometry_msgs::msg::PoseStamped& p)
+void transform_pose_msg(
+    const geometry_msgs::msg::PoseStamped& p,
+    xtypes::WritableDynamicDataRef to)
 {
-  soss::Message stamp;
-  stamp.type = "builtin_interfaces/Time";
-  stamp.data["sec"] = soss::Convert<int32_t>::make_soss_field(p.header.stamp.sec);
-  stamp.data["nanosec"] = soss::Convert<uint32_t>::make_soss_field(p.header.stamp.nanosec);
-
-  soss::Message header;
-  header.type = "std_msgs/Header";
-  header.data["stamp"] = soss::make_field<soss::Message>(stamp);
-  header.data["frame_id"] = soss::Convert<std::string>::make_soss_field("map");
-
-  soss::Message position;
-  position.type = "geometry_msgs/Point";
-  position.data["x"] = soss::Convert<double>::make_soss_field(p.pose.position.x);
-  position.data["y"] = soss::Convert<double>::make_soss_field(p.pose.position.y);
-  position.data["z"] = soss::Convert<double>::make_soss_field(p.pose.position.z);
-
-  soss::Message orientation;
-  orientation.type = "geometry_msgs/Quaternion";
-  orientation.data["x"] = soss::Convert<double>::make_soss_field(p.pose.orientation.x);
-  orientation.data["y"] = soss::Convert<double>::make_soss_field(p.pose.orientation.y);
-  orientation.data["z"] = soss::Convert<double>::make_soss_field(p.pose.orientation.z);
-  orientation.data["w"] = soss::Convert<double>::make_soss_field(p.pose.orientation.w);
-
-  soss::Message pose;
-  pose.type = "geometry_msgs/Pose";
-  pose.data["position"] = soss::make_field<soss::Message>(position);
-  pose.data["orientation"] = soss::make_field<soss::Message>(orientation);
-
-  soss::Message msg;
-  msg.type = "geometry_msgs/PoseStamped";
-  msg.data["header"] = soss::make_field<soss::Message>(header);
-  msg.data["pose"] = soss::make_field<soss::Message>(pose);
-
-  return msg;
+  to["header"]["stamp"]["sec"] = p.header.stamp.sec;
+  to["header"]["stamp"]["nanosec"] = p.header.stamp.nanosec;
+  to["header"]["frame_id"] = "map";
+  to["pose"]["position"]["x"] = p.pose.position.x;
+  to["pose"]["position"]["y"] = p.pose.position.y;
+  to["pose"]["position"]["z"] = p.pose.position.z;
+  to["pose"]["orientation"]["x"] = p.pose.orientation.x;
+  to["pose"]["orientation"]["y"] = p.pose.orientation.y;
+  to["pose"]["orientation"]["z"] = p.pose.orientation.z;
+  to["pose"]["orientation"]["w"] = p.pose.orientation.w;
 }
 
-soss::Message generate_plan_request_msg(
+xtypes::DynamicData generate_plan_request_msg(
+    const xtypes::DynamicType& request_type,
     const geometry_msgs::msg::PoseStamped& start,
     const geometry_msgs::msg::PoseStamped& goal,
     const float tolerance = 1e-3f)
 {
-  soss::Message msg;
-  msg.type = "nav_msgs/GetPlan:request";
-  msg.data["goal"] = soss::make_field<soss::Message>(generate_pose_msg(goal));
-  msg.data["start"] = soss::make_field<soss::Message>(generate_pose_msg(start));
-  msg.data["tolerance"] = soss::Convert<float>::make_soss_field(tolerance);
+  xtypes::DynamicData message(request_type);
+  transform_pose_msg(goal, message["goal"]);
+  transform_pose_msg(start, message["start"]);
+  message["tolerance"] = tolerance;
 
-  return msg;
+  return message;
 }
 
 std::string print_header(const std_msgs::msg::Header& header)
@@ -173,21 +150,20 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
 
   SECTION("Publish a pose and get it echoed back")
   {
-#ifndef RCLCPP__QOS_HPP_
     const auto publisher =
+#ifndef RCLCPP__QOS_HPP_
         ros2->create_publisher<geometry_msgs::msg::Pose>("transmit_pose");
 #else
-    const auto publisher =
         ros2->create_publisher<geometry_msgs::msg::Pose>(
           "transmit_pose", rclcpp::SystemDefaultsQoS());
 #endif // RCLCPP__QOS_HPP_
     REQUIRE(publisher);
 
-    std::promise<soss::Message> msg_promise;
-    std::future<soss::Message> msg_future = msg_promise.get_future();
+    std::promise<xtypes::DynamicData> msg_promise;
+    std::future<xtypes::DynamicData> msg_future = msg_promise.get_future();
     std::mutex mock_sub_mutex;
     bool mock_sub_value_received = false;
-    auto mock_sub = [&](const soss::Message& msg)
+    auto mock_sub = [&](const xtypes::DynamicData& msg)
     {
       std::unique_lock<std::mutex> lock(mock_sub_mutex);
       if(mock_sub_value_received)
@@ -219,23 +195,17 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     }
 
     REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
-    soss::Message received_msg = msg_future.get();
+    xtypes::DynamicData received_msg = msg_future.get();
 
-    CHECK(received_msg.type == "geometry_msgs/Pose");
+    CHECK(received_msg.type().name() == "geometry_msgs/Pose");
 
-    soss::Message* position =
-        received_msg.data["position"].cast<soss::Message>();
-    REQUIRE(position);
-
-    soss::Message* orientation =
-        received_msg.data["orientation"].cast<soss::Message>();
-    REQUIRE(orientation);
+    xtypes::ReadableDynamicDataRef position = received_msg["position"];
+    xtypes::ReadableDynamicDataRef orientation = received_msg["orientation"];
 
     #define TEST_POSITION_OF( u ) \
     { \
-      const double* u = position->data[#u].cast<double>(); \
-      REQUIRE(u); \
-      CHECK_THAT(*u, WithinAbs(ros2_pose.position.u, tolerance)); \
+      const double u = position[#u]; \
+      CHECK_THAT(u, WithinAbs(ros2_pose.position.u, tolerance)); \
     }
 
     TEST_POSITION_OF(x);
@@ -266,6 +236,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     const auto subscriber = ros2->create_subscription<geometry_msgs::msg::Pose>(
           "echo_pose", rclcpp::SystemDefaultsQoS(), echo_sub);
 #endif // RCLCPP__QOS_HPP_
+    REQUIRE(subscriber);
 
     // Keep spinning and publishing while we wait for the promise to be
     // delivered. Try to cycle this for no more than a few seconds. If it's not
@@ -289,8 +260,13 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
 
     CHECK(ros2_pose == received_pose);
   }
+
   SECTION("Request a plan and get it echoed back")
   {
+    // Get request type from ros2 middleware
+    const soss::TypeRegistry& ros2_types = *handle.type_registry("ros2");
+    const xtypes::DynamicType& request_type = *ros2_types.at("nav_msgs/GetPlan:request");
+
     // Create a plan
     nav_msgs::srv::GetPlan_Response plan_response;
     plan_response.plan.header.stamp.sec = 284;
@@ -309,7 +285,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     bool service_called = false;
     std::mutex service_mutex;
     const auto ros2_plan_service = [&](
-        const std::shared_ptr<rmw_request_id_t> /*request_header*/,
+        const std::shared_ptr<rmw_request_id_t>, //request_header
         const std::shared_ptr<nav_msgs::srv::GetPlan::Request> request,
         const std::shared_ptr<nav_msgs::srv::GetPlan::Response> response)
     {
@@ -330,7 +306,8 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
 
     executor.spin_node_some(ros2);
 
-    soss::Message request_msg = generate_plan_request_msg(
+    xtypes::DynamicData request_msg = generate_plan_request_msg(
+          request_type,
           plan_response.plan.poses.front(),
           plan_response.plan.poses.back());
 
@@ -363,13 +340,14 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
         break;
     }
     REQUIRE(future_response_msg.wait_for(0s) == std::future_status::ready);
-    const soss::Message response_msg = future_response_msg.get();
+
+    const xtypes::DynamicData response_msg = future_response_msg.get();
 
     // TODO(MXG): We could copy the request message that gets passed to here and
     // compare it against the original request message that was sent. This would
     // require implementing comparison operators for the soss::Message class.
     std::mutex serve_mutex;
-    soss::mock::serve("echo_plan", [&](const soss::Message&)
+    soss::mock::serve("echo_plan", [&](const xtypes::DynamicData&)
     {
       std::unique_lock<std::mutex> lock(serve_mutex);
       return response_msg;
@@ -401,7 +379,6 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     CHECK(*response == plan_response);
     compare_plans(response->plan, plan_response.plan);
   }
-
   // Quit and wait for no more than a minute. We don't want the test to get
   // hung here indefinitely in the case of an error.
   handle.quit().wait_for(1min);

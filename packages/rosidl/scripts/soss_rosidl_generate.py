@@ -7,11 +7,13 @@ import em
 from io import StringIO
 import os
 import sys
+import subprocess
 
 try:
     from rosidl_adapter.parser import parse_message_file
     from rosidl_adapter.parser import parse_service_file
     from rosidl_cmake import convert_camel_case_to_lower_case_underscore
+
 except ImportError:
     print('Unable to import rosidl_adapter. Please source a ROS2 installation first.', end='', file=sys.stderr)
     sys.exit(1)
@@ -48,12 +50,37 @@ def generate_file(template, destination, context):
     with open(output_file_path, 'w') as file:
         file.write(output_buffer.getvalue())
 
+def sys_call(command):
+    dev_null = open(os.devnull, 'w')
+    return subprocess.check_output((command).split(), universal_newlines = True, stderr = dev_null)
+
+def find_idl_include_paths():
+    environment = sys_call("env")
+    for line in environment.splitlines():
+        if line.find('AMENT_PREFIX_PATH') >= 0:
+            line = line[line.find("="):]
+            includes = line.replace("=", " -I").replace(":", " -I")
+            idl_includes = ""
+            for include in includes.split():
+                idl_includes += include + "/share "
+            return idl_includes
+
+def get_idl_from_file(idl_file, includes):
+    preprocess_cmd = "cpp -H " + includes + " " + idl_file
+    unrolled_idl = sys_call(preprocess_cmd)
+    idl = ""
+    for line in unrolled_idl.splitlines():
+        if line and line[0] != "#":
+            idl += line + "\n"
+    return idl
 
 def generate_files(package, source_dir, header_dir, idl_files, cpp_files, hpp_files, prefix, parse_fnc):
-
+    includes = find_idl_include_paths()
     for idl_file in idl_files:
+        idl = get_idl_from_file(idl_file[:-3] + "idl", includes)
 
         context = {
+            'idl': idl,
             'spec': parse_fnc(package, idl_file),
             'subdir': prefix,
             'get_header_filename_from_msg_name': convert_camel_case_to_lower_case_underscore

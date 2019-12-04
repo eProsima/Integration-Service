@@ -41,7 +41,8 @@ public:
   // Documentation inherited
   bool configure(
       const RequiredTypes& types,
-      const YAML::Node& configuration) override;
+      const YAML::Node& configuration,
+      TypeRegistry& type_registry) override;
 
   // Documentation inherited
   bool okay() const override;
@@ -55,27 +56,27 @@ public:
   // Documentation inherited
   bool subscribe(
       const std::string& topic_name,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       SubscriptionCallback callback,
       const YAML::Node& configuration) override;
 
   // Documentation inherited
   std::shared_ptr<TopicPublisher> advertise(
       const std::string& topic_name,
-      const std::string& message_type,
+      const xtypes::DynamicType& message_type,
       const YAML::Node& configuration) override;
 
   // Documentation inherited
   bool create_client_proxy(
       const std::string& service_name,
-      const std::string& service_type,
+      const xtypes::DynamicType& service_type,
       RequestCallback callback,
       const YAML::Node& configuration) override;
 
   // Documentation inherited
   std::shared_ptr<ServiceProvider> create_service_proxy(
       const std::string& service_name,
-      const std::string& service_type,
+      const xtypes::DynamicType& service_type,
       const YAML::Node& configuration) override;
 
 private:

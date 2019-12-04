@@ -28,6 +28,7 @@
 #else
 #include <dlfcn.h>
 #endif
+#include <assert.h>
 
 #ifdef WIN32
 #define OPEN_LIB(libname) LoadLibraryW(libname)

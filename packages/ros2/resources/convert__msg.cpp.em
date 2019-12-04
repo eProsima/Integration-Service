@@ -27,7 +27,6 @@ conversion_dependency = 'soss/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
 
 // Include the API header for this message type
 #include <@(conversion_dependency)>
-
 // Include the Factory header so we can add this message type to the Factory
 #include <soss/ros2/Factory.hpp>
 
@@ -39,6 +38,11 @@ namespace ros2 {
 namespace @(namespace_variable) {
 
 //==============================================================================
+namespace {
+TypeFactoryRegistrar register_type(g_msg_name, &type);
+} // anonymous namespace
+
+//==============================================================================
 class Subscription final
 {
 public:
@@ -47,10 +51,11 @@ public:
       rclcpp::Node& node,
       TopicSubscriberSystem::SubscriptionCallback callback,
       const std::string& topic_name,
+      const xtypes::DynamicType& message_type,
       const rmw_qos_profile_t& qos_profile)
     : _callback(std::move(callback))
+    , _message_type(message_type)
   {
-    _message = initialize();
 
 #ifndef RCLCPP__QOS_HPP_
     _subscription = node.create_subscription<Ros2_Msg>(
@@ -69,16 +74,15 @@ private:
 
   void subscription_callback(const Ros2_Msg& msg)
   {
-    convert_to_soss(msg, _message);
-    _callback(_message);
+    xtypes::DynamicData data(_message_type);
+    convert_to_xtype(msg, data);
+    _callback(data);
   }
 
   // Save the SOSS callback that we were given by the soss-ros2 plugin
   TopicSubscriberSystem::SubscriptionCallback _callback;
 
-  // Save a pre-initialized copy of the message so that we don't need to
-  // allocate and deallocate more than necessary
-  soss::Message _message;
+  const xtypes::DynamicType& _message_type;
 
   // Hang onto the subscription handle to make sure the connection to the topic
   // stays alive
@@ -90,11 +94,12 @@ private:
 std::shared_ptr<void> subscribe(
     rclcpp::Node& node,
     const std::string& topic_name,
+    const xtypes::DynamicType& message_type,
     TopicSubscriberSystem::SubscriptionCallback callback,
     const rmw_qos_profile_t& qos_profile)
 {
   return std::make_shared<Subscription>(
-        node, std::move(callback), topic_name, qos_profile);
+        node, std::move(callback), topic_name, message_type, qos_profile);
 }
 
 namespace {
@@ -122,7 +127,7 @@ public:
 #endif
   }
 
-  bool publish(const soss::Message& message) override
+  bool publish(const xtypes::DynamicData& message) override
   {
     Ros2_Msg ros2_msg;
     convert_to_ros2(message, ros2_msg);
