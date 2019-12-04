@@ -35,11 +35,14 @@ public:
   }
 
   std::string to_string(
-      const xtypes::DynamicData& field,
+      xtypes::ReadableDynamicDataRef field,
       const std::string& field_name,
       const std::string& details) const
   {
-    const std::string& type = field.type().name();
+    const std::string& type =
+      (field.type().name().find("std::string") != std::string::npos)
+      ? "std::string"
+      : field.type().name();
     const auto it = conversions.find(type);
     if(it != conversions.end())
       return it->second(field);
@@ -51,7 +54,7 @@ private:
 
   FieldConversions()
   {
-    conversions[typeid(std::string).name()] = [](const xtypes::DynamicData& field) -> std::string
+    conversions["std::string"] = [](xtypes::ReadableDynamicDataRef field) -> std::string
     {
       return field;
     };
@@ -75,14 +78,14 @@ private:
   template<typename T>
   void add_primitive_conversion()
   {
-    conversions[typeid(T).name()] = [](const xtypes::DynamicData& field) -> std::string
+    conversions[xtypes::primitive_type<T>().name()] = [](xtypes::ReadableDynamicDataRef field) -> std::string
     {
       T temp = field;
       return std::to_string(temp);
     };
   }
 
-  using ConversionFunc = std::function<std::string(const xtypes::DynamicData&)>;
+  using ConversionFunc = std::function<std::string(xtypes::ReadableDynamicDataRef)>;
   using ConversionMap = std::unordered_map<std::string, ConversionFunc>;
 
   ConversionMap conversions;
@@ -98,7 +101,7 @@ FieldToString::FieldToString(const std::string& usage_details)
 
 //==============================================================================
 std::string FieldToString::to_string(
-    const xtypes::DynamicData& field,
+    xtypes::ReadableDynamicDataRef field,
     const std::string& field_name) const
 {
   return FieldConversions::instance().to_string(field, field_name, details);

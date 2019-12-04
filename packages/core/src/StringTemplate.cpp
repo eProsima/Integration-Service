@@ -67,9 +67,13 @@ public:
   std::string compute_string(const xtypes::DynamicData& message) const
   {
     std::string result;
+    if (!components.empty())
+    {
+      result = components[0];
+    }
 
     SubstitutionMap::const_iterator substitute_it = substitutions.begin();
-    for(std::size_t i=0; i < components.size(); ++i)
+    for(std::size_t i=1; i < components.size(); ++i)
     {
       if(substitute_it != substitutions.end() && substitute_it->first == i)
       {
@@ -81,7 +85,7 @@ public:
           throw UnavailableMessageField(field_name, converter.details);
         }
 
-        const xtypes::DynamicData& data = message.cref()[field_name];
+        xtypes::ReadableDynamicDataRef data = message[field_name];
         result += converter.to_string(data, field_name);
         ++substitute_it;
         continue;

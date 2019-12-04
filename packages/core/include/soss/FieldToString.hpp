@@ -34,7 +34,7 @@ public:
 
   /// Convert a field to a string.
   std::string to_string(
-      const xtypes::DynamicData& field,
+      xtypes::ReadableDynamicDataRef field,
       const std::string& field_name) const;
 
   /// If an unknown conversion is requested, this string will get passed along
