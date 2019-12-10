@@ -134,6 +134,7 @@ bool add_types(
     return false;
   }
 
+  int idl_index = 0;
   for(auto& entry: node["types"])
   {
     if(!entry["idl"])
@@ -154,6 +155,13 @@ bool add_types(
         types.insert(type);
       }
     }
+    else
+    {
+        std::cerr << "Error parsing the idl '" << idl_index << "' placed in the yaml config. "
+                  << "Please, review and fix your idl specification syntax."
+                  << std::endl;
+    }
+    idl_index++;
   }
 
   return true;
@@ -729,7 +737,7 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
       {
         if(!types.count(required_type))
         {
-          std::cerr << "The middleware '" << mw_name<< "' must be satisfy the required "
+          std::cerr << "The middleware '" << mw_name<< "' must satisfy the required "
                     << "type '" << required_type << "'"
                     << std::endl;
         }

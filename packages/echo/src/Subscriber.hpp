@@ -2,7 +2,6 @@
 #define SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
 
 #include "MiddlewareConnection.hpp"
-#include "conversion.hpp"
 
 #include <soss/SystemHandle.hpp>
 
@@ -27,17 +26,11 @@ public:
     Subscriber(Subscriber&& rhs) = delete;
     Subscriber& operator = (Subscriber&& rhs) = delete;
 
-    void receive(const MiddlewareMessage& middleware_message)
+    void receive(const Json& middleware_message)
     {
-        std::cout << "[soss-local-example]: (conversion) middleware -> soss" << std::endl;
+        std::cout << "[soss-echo]: (conversion) middleware -> soss" << std::endl;
 
-        xtypes::DynamicData soss_message(type_);
-
-        if(!conversion::middleware_to_soss(middleware_message, soss_message))
-        {
-            std::cerr << "Conversion error" << std::endl;
-            return;
-        }
+        xtypes::DynamicData soss_message = soss::json::convert(type_, middleware_message);
 
         soss_callback_(soss_message);
     }

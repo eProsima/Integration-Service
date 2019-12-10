@@ -1,6 +1,8 @@
 #ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP
 #define SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP
 
+#include <soss/json/conversion.hpp>
+
 #include <map>
 #include <queue>
 #include <sstream>
@@ -10,16 +12,19 @@
 #include <mutex>
 #include <condition_variable>
 
+#define MIDDLEWARE_PREFIX "[soss-echo-middleware]: "
 
-typedef std::map<std::string, uint32_t> MiddlewareMessage;
+using Json = soss::json::Json;
 
 // Class used for emulate the remote connection with the middleware.
 class MiddlewareConnection
 {
+    using Callback = std::function<void(const Json& message)>;
+
     struct MiddlewareMessageQueued
     {
         std::string topic;
-        MiddlewareMessage message;
+        Json message;
     };
 
 public:
@@ -27,20 +32,9 @@ public:
         : roundtrip_(roundtrip)
     {}
 
-    void publish(
-            const std::string& topic,
-            const MiddlewareMessage& message)
-    {
-        debug_print("[soss-local-example-middleware]: send to middleware: ", message);
-        if(roundtrip_)
-        {
-            receive(topic, message);
-        }
-    }
-
     void subscribe(
             const std::string& topic,
-            const std::function<void(const MiddlewareMessage& message)>& callback)
+            Callback callback)
     {
         auto it = topic_callbacks_.find(topic);
         if(it != topic_callbacks_.end())
@@ -53,9 +47,21 @@ public:
         }
     }
 
+    void publish(
+            const std::string& topic,
+            const Json& message)
+    {
+        std::cout << MIDDLEWARE_PREFIX "send to middleware:" << std::endl;
+        std::cout << message.dump(4) << std::endl;
+        if(roundtrip_)
+        {
+            receive(topic, message);
+        }
+    }
+
     void receive(
             const std::string& topic,
-            const MiddlewareMessage& message)
+            const Json& message)
     {
         std::unique_lock<std::mutex> push_lock(income_mutex_);
         income_.push(MiddlewareMessageQueued{topic, message});
@@ -87,13 +93,14 @@ private:
             }
 
             std::string topic = income_.front().topic;
-            MiddlewareMessage& message = income_.front().message;
+            Json& message = income_.front().message;
 
             income_.pop();
 
             pop_lock.unlock();
 
-            debug_print("[soss-local-example-middleware]: receive from middleware: ", message);
+            std::cout << MIDDLEWARE_PREFIX "receive from middleware:" << std::endl;
+            std::cout << message.dump(4) << std::endl;
 
             auto it = topic_callbacks_.find(topic);
             if(it != topic_callbacks_.end())
@@ -105,7 +112,7 @@ private:
             }
             else
             {
-                std::cerr << "[soss-local-example-middleware]: No exists callback for topic '" << topic << "'" << std::endl;
+                std::cout << MIDDLEWARE_PREFIX "no callback for topic '" << topic << "'" << std::endl;
             }
         }
     }
@@ -115,21 +122,8 @@ private:
     std::condition_variable pop_condition_;
     std::thread listen_thread;
     bool running_;
-    std::map<std::string, std::vector<std::function<void(const MiddlewareMessage& message)>>> topic_callbacks_;
+    std::map<std::string, std::vector<Callback>> topic_callbacks_;
     bool roundtrip_;
-
-    static void debug_print(const std::string& prefix, const MiddlewareMessage& message)
-    {
-        std::stringstream ss; //Used to avoid mixing differents outs
-        ss << prefix;
-        for(auto&& member: message)
-        {
-            ss << member.first << ": " << member.second << ", ";
-        }
-        ss << std::endl;
-
-        std::cout << ss.str();
-    }
 };
 
 #endif //SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP

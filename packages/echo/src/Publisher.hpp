@@ -2,7 +2,6 @@
 #define SOSS__XTYPES_EXAMPLE__INTERNAL__PUBLISHER_HPP
 
 #include "MiddlewareConnection.hpp"
-#include "conversion.hpp"
 
 #include <soss/SystemHandle.hpp>
 
@@ -26,15 +25,9 @@ public:
 
     bool publish(const xtypes::DynamicData& soss_message) override
     {
-        std::cout << "[soss-local-example]: (conversion) soss -> middleware" << std::endl;
+        std::cout << "[soss-echo]: (conversion) soss -> middleware" << std::endl;
 
-        MiddlewareMessage middleware_message;
-
-        if(!conversion::soss_to_middleware(soss_message, middleware_message))
-        {
-            std::cerr << "Conversion error" << std::endl;
-            return false;
-        }
+        Json middleware_message = soss::json::convert(soss_message);
 
         connection_.publish(topic_, middleware_message);
 

@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(soss-local-example)
+project(soss-echo)
 
 find_package(xtypes REQUIRED)
 find_package(soss-core REQUIRED)
+find_package(soss-json REQUIRED)
 find_package(soss-mock REQUIRED)
 
 ########################################################################
@@ -26,27 +27,28 @@ target_compile_options(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         soss::core
+        soss::json
 )
 
 ########################################################################
 # Test
-set(TEST_NAME ${PROJECT_NAME}-test)
-add_executable(${TEST_NAME}
-    test/main.cpp
+set(EXAMPLE_NAME ${PROJECT_NAME}-example)
+add_executable(${EXAMPLE_NAME}
+    example/main.cpp
 )
 
-set_target_properties(${TEST_NAME}
+set_target_properties(${EXAMPLE_NAME}
     PROPERTIES
         CXX_STANDARD 14
         POSITION_INDEPENDENT_CODE ON
 )
 
-target_compile_options(${TEST_NAME}
+target_compile_options(${EXAMPLE_NAME}
     PRIVATE
         -Werror -Wall -Wextra -Wpedantic
 )
 
-target_link_libraries(${TEST_NAME}
+target_link_libraries(${EXAMPLE_NAME}
     PRIVATE
         soss::mock
 )
@@ -54,19 +56,19 @@ target_link_libraries(${TEST_NAME}
 ########################################################################
 # Installation
 soss_install_middleware_plugin(
-    MIDDLEWARE local-example
+    MIDDLEWARE echo
     TARGET ${PROJECT_NAME}
 )
 
-# Install test
+# Install example
 install(
-    TARGETS ${TEST_NAME}
+    TARGETS ${EXAMPLE_NAME}
     DESTINATION "${CMAKE_INSTALL_BINDIR}"
     COMPONENT ${PROJECT_NAME}
 )
 
 install(
-    FILES ${PROJECT_SOURCE_DIR}/test/test_config.yaml
+    FILES ${PROJECT_SOURCE_DIR}/example/config.yaml
     DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT ${PROJECT_NAME}
     )
