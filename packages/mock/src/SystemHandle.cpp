@@ -153,16 +153,9 @@ public:
 
   bool configure(
       const RequiredTypes&,
-      const YAML::Node& config,
+      const YAML::Node&,
       TypeRegistry&) override
   {
-    const YAML::Node& types_from_node = config["types-from"];
-    if(!types_from_node)
-    {
-        std::cerr << "The 'mock' middleware mandatory needs 'types-from' property" << std::endl;
-        return false;
-    }
-
     return true;
   }
 
