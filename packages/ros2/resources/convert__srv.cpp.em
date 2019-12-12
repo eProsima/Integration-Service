@@ -75,9 +75,9 @@ using Ros2_Response = Ros2_Srv::Response;
 const std::string g_srv_name = "@(srv_type_string)";
 const std::string g_request_name = g_srv_name + ":request";
 const std::string g_response_name = g_srv_name + ":response";
-const std::string g_idl = R"(
+const std::string g_idl = R"~~~(
 @(idl)
-)";
+)~~~";
 
 namespace {
 const xtypes::StructType& request_type() {

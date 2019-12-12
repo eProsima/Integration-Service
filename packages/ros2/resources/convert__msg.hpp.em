@@ -76,9 +76,9 @@ namespace @(namespace_variable) {
 
 using Ros2_Msg = @(cpp_msg_type);
 const std::string g_msg_name = "@(msg_type_string)";
-const std::string g_idl = R"(
+const std::string g_idl = R"~~~(
 @(idl)
-)";
+)~~~";
 
 //==============================================================================
 inline const xtypes::StructType& type()
