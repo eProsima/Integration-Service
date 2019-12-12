@@ -571,14 +571,18 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
         return false;
       }
 
-      m_required_types[mw].messages.insert(config.message_type);
+      auto it_mw_remap = config.remap.find(mw);
+      if(it_mw_remap == config.remap.end() || it_mw_remap->second.type == "")
+      {
+        m_required_types[mw].messages.insert(config.message_type);
+      }
     }
 
     for (auto&& it_remap: config.remap)
     {
       if(m_middlewares.find(it_remap.first) == m_middlewares.end())
       {
-        std::cerr << "Unrecognized system [" << it_remap.first << "] requested for mapping topic "
+         std::cerr << "Unrecognized system [" << it_remap.first << "] requested for mapping topic "
                   << "[" << entry.first << "]" << std::endl;
         return false;
       }
@@ -598,7 +602,12 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
                   << "[" << entry.first << "]" << std::endl;
         return false;
       }
-      m_required_types[mw].services.insert(config.service_type);
+
+      auto it_mw_remap = config.remap.find(mw);
+      if(it_mw_remap == config.remap.end() || it_mw_remap->second.type == "")
+      {
+        m_required_types[mw].services.insert(config.service_type);
+      }
     }
 
     for (auto&& it_remap: config.remap)
@@ -695,7 +704,6 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
           info.types.emplace(*type_it);
         }
       }
-      info.types.insert(m_types.begin(), m_types.end());
       //TODO: service requirements
 
       configured = info.handle->configure(requirements->second, mw_config.config_node, info.types);
