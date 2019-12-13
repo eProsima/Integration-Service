@@ -39,14 +39,18 @@ using the ROS PPAs. To run the `soss-ros2-test` integration test, you will also 
 $ sudo apt install ros-crystal-test-msgs
 ```
 
+Note: the same steps are applicable to dashing
+
 Create a [colcon workspace](https://colcon.readthedocs.io/en/released/user/quick-start.html) and clone soss into it:
 
 ```
 $ cd ~
 $ mkdir -p workspaces/soss
 $ cd workspaces/soss
-$ git clone ssh://git@github.com/osrf/soss_v2 src/soss
+$ git clone ssh://git@github.com/osrf/soss_v2 src/soss --recursive
 ```
+
+Note: the `--recursive` flag is mandatory to download some required third-parties.
 
 Now source the ROS2 Crystal overlay:
 

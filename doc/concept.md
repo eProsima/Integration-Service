@@ -25,7 +25,7 @@ obtain an instance which translates between WebSocket+JSON (as produced and
 consumed by a standard Web browser) and ROS 2:
 ```
 systems:
-  web: { type: websocket_client, host: localhost, port: 12345 }
+  web: { type: websocket_client, types-from: robot, host: localhost, port: 12345 }
   robot: { type: ros2 }
 routes:
   web2robot: {from: web, to: robot}
@@ -39,9 +39,9 @@ firmware:
 
 ```
 systems:
-  web: { type: websocket_server_json, port: 12345 }
+  web: { type: websocket_server_json, types-from: ros2, port: 12345 }
   robot: { type: ros2 }
-  door: { type: veridian_dynamics_proprietary_door_firmware, serial: 1765TED }
+  door: { type: veridian_dynamics_proprietary_door_firmware, types-from: ros2, serial: 1765TED }
 
 routes:
   web2robot: {from: web, to: robot}
@@ -102,3 +102,76 @@ Because of this, downstream users can extend `soss` to communicate with any midd
 
 A single `soss` executable can route any number of topics or services to/from any number of
 middlewares.
+
+### Type definition
+Some System Handles have the hability to give to soss the types definition
+(using [XTypes](https://github.com/eProsima/xtypes)) that they can use.
+`ros1` or `ros2` are examples of this.
+Nevertheless, there are cases where the System Handle is not able to get the type specification
+(`websocket`, `mock`, `dds`, `fiware`, ...) that it needs for the communication.
+
+To give it this information to the System Handle, you have 2 ways:
+- Using the `types-from` property, that _import_ the types specification from another system.
+- Specify the type yourself embedded an IDL into the YAML.
+
+Regarding to the second way, the IDL content can be provided in the YAML file as follows:
+
+```YAML
+types:
+    - idl: >
+        struct name
+        {
+            idl_type1 member_1_name;
+            idl_type2 member_2_name;
+        };
+```
+
+The name for each type can be whatever the user wants, with the two following rules:
+
+1. The name can not have spaces in it.
+1. The name must be formed only by letters, numbers and underscores.
+
+Note: a minimal of a structure type is required for the communication.
+
+For more details about IDL definition, please refer to [IDL documentation](https://www.omg.org/spec/IDL/4.2/PDF).
+
+The following is an example of a full configuration used in a dds-fiware communication using the types
+definition into the IDL.
+
+```YAML
+types:
+    - idl: >
+        struct Stamp
+        {
+            int32 sec;
+            uint32 nanosec;
+        };
+
+        struct Header
+        {
+            string frame_id;
+            stamp stamp;
+        };
+
+systems:
+    dds: { type: dds }
+    fiware: { type: fiware, host: 192.168.1.59, port: 1026 }
+
+routes:
+    fiware_to_dds: { from: fiware, to: dds }
+    dds_to_fiware: { from: dds, to: fiware }
+
+topics:
+    hello_dds:
+      type: "Header"
+      route: fiware_to_dds
+    hello_fiware:
+      type: "Header"
+      route: dds_to_fiware
+```
+
+Note that the publisher and subscriber in the DDS world need to be configured with a compatible IDL.
+That means that the type definition may differ between them.
+In that case, some [QoS policies](https://github.com/eProsima/xtypes#type-consistency-qos-policies)
+will enable to try to convert the type.
+`soss` will notify the user with the different QoS policies enabled in the communication.
