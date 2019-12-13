@@ -699,7 +699,15 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
           info.types.emplace(*type_it);
         }
       }
-      //TODO: service requirements
+
+      for(const std::string& required_type: requirements->second.services)
+      {
+        auto type_it = m_types.find(required_type);
+        if(type_it != m_types.end())
+        {
+          info.types.emplace(*type_it);
+        }
+      }
 
       configured = info.handle->configure(requirements->second, mw_config.config_node, info.types);
     }
@@ -745,7 +753,16 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
                     << std::endl;
         }
       }
-      //TODO: service requirements
+
+      for(const std::string& required_type: requirements->second.services)
+      {
+        if(!types.count(required_type))
+        {
+          std::cerr << "The middleware '" << mw_name<< "' must satisfy the required "
+                    << "type '" << required_type << "'"
+                    << std::endl;
+        }
+      }
     }
   }
 
