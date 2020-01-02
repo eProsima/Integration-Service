@@ -118,18 +118,34 @@ Regarding to the second way, the IDL content can be provided in the YAML file as
 
 ```YAML
 types:
-    - idl: >
-        struct name
-        {
-            idl_type1 member_1_name;
-            idl_type2 member_2_name;
-        };
+    idls:
+        - >
+            struct name
+            {
+                idl_type1 member_1_name;
+                idl_type2 member_2_name;
+            };
+
+    paths: [ idl_include_path_1, idl_include_path_2 ]
 ```
 
 The name for each type can be whatever the user wants, with the two following rules:
 
 1. The name can not have spaces in it.
 1. The name must be formed only by letters, numbers and underscores.
+
+The `paths` section is optional, and it is used provide to the preprocessor a list of paths where it should search
+for included IDL files within our IDL content.
+
+The following snipped could be used to parse an IDL file instead of an IDL content.
+
+```YAML
+types:
+    idls:
+        - > '#include <idl_file_to_parse.idl>'
+
+    paths: [ idl_file_to_parse_path ]
+```
 
 Note: a minimal of a structure type is required for the communication.
 
@@ -140,18 +156,19 @@ definition into the IDL.
 
 ```YAML
 types:
-    - idl: >
-        struct Stamp
-        {
-            int32 sec;
-            uint32 nanosec;
-        };
+    idls:
+        - >
+            struct Stamp
+            {
+                int32 sec;
+                uint32 nanosec;
+            };
 
-        struct Header
-        {
-            string frame_id;
-            stamp stamp;
-        };
+            struct Header
+            {
+                string frame_id;
+                stamp stamp;
+            };
 
 systems:
     dds: { type: dds }

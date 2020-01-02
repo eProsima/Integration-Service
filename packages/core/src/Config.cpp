@@ -126,27 +126,40 @@ bool add_types(
     return true;
   }
 
-  if(!node["types"].IsSequence())
+  if(!node["types"]["idls"])
   {
-    std::cerr << "The config file [" << filename << "] has a 'types' entry but "
+    std::cerr << "The config file [" << filename << "] has a 'types' entry which doesn't contains an 'idls' entry."
+              << std::endl;
+    return false;
+  }
+
+  if(!node["types"]["idls"].IsSequence())
+  {
+    std::cerr << "The config file [" << filename << "] has an 'idls' entry but "
               << "it's not a sequence."
               << std::endl;
     return false;
   }
 
-  int idl_index = 0;
-  for(auto& entry: node["types"])
+  std::vector<std::string> include_paths;
+  if(node["types"]["paths"])
   {
-    if(!entry["idl"])
+    for (auto& path : node["types"]["paths"])
     {
-        std::cerr << "The config file [" << filename << "] has a 'types' entry "
-                  << "without the 'idl' property."
-                  << std::endl;
+      include_paths.push_back(path.as<std::string>());
     }
+  }
 
+  int idl_index = 0;
+  for(auto& entry: node["types"]["idls"])
+  {
     xtypes::idl::Context context;
     context.allow_keyword_identifiers = true;
-    xtypes::idl::parse(entry["idl"].as<std::string>(), context);
+    if(!include_paths.empty())
+    {
+      context.include_paths = include_paths;
+    }
+    xtypes::idl::parse(entry.as<std::string>(), context);
 
     if(context.success)
     {
@@ -157,9 +170,9 @@ bool add_types(
     }
     else
     {
-        std::cerr << "Error parsing the idl '" << idl_index << "' placed in the yaml config. "
-                  << "Please, review and fix your idl specification syntax."
-                  << std::endl;
+      std::cerr << "Error parsing the idl '" << idl_index << "' placed in the yaml config. "
+                << "Please, review and fix your idl specification syntax."
+                << std::endl;
     }
     idl_index++;
   }

@@ -1,16 +1,17 @@
 types:
-    - idl: >
-        struct coordinate2d {
-            long x;
-            long y;
-        };
+    idls:
+        - >
+            struct coordinate2d {
+                long x;
+                long y;
+            };
 
-    - idl: >
-        struct coordinate3d {
-            float x;
-            float y;
-            float z;
-        };
+        - >
+            struct coordinate3d {
+                float x;
+                float y;
+                float z;
+            };
 
 systems:
     echo: { type: echo, roundtrip: true }
