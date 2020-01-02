@@ -1,14 +1,15 @@
 types:
-    - idl: >
-        struct ClientToServer
-        {
-            float apple;
-        };
+    idls:
+        - >
+            struct ClientToServer
+            {
+                float apple;
+            };
 
-        struct ServerToClient
-        {
-            string banana;
-        };
+            struct ServerToClient
+            {
+                string banana;
+            };
 
 systems:
   ws_client: { type: websocket_client, host: localhost, port: 12345, cert_authorities: [certs/test_authority.ca.crt],
