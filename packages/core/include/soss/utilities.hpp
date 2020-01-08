@@ -190,8 +190,8 @@ struct ContainerConvert
     vector.resize(size);
   }
 
-  template<typename T, std::size_t N>
-  static void container_resize(std::array<T, N>& /*array*/, std::size_t /*size*/)
+  template<template <typename, std::size_t> class Array, typename T, std::size_t N>
+  static void container_resize(Array<T, N>& /*array*/, std::size_t /*size*/)
   {
     // Do nothing. Arrays don't need to be resized.
   }
@@ -228,11 +228,11 @@ struct Convert<std::vector<ElementType, Allocator>>
     std::numeric_limits<typename std::vector<ElementType, Allocator>::size_type>::max()> { };
 
 //==============================================================================
-template<typename ElementType, std::size_t N>
-struct Convert<std::array<ElementType, N>>
+template<template <typename, std::size_t> class Array, typename ElementType, std::size_t N>
+struct Convert<Array<ElementType, N>>
     : ContainerConvert<
     ElementType,
-    std::array<typename Convert<ElementType>::native_type, N>,
+    Array<typename Convert<ElementType>::native_type, N>,
     N> { };
 
 //==============================================================================
