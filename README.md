@@ -171,3 +171,17 @@ $ rostopic pub -r 1 /hello_ros2 std_msgs/String "Hello, ros2"
 
 Unfortunately this demo requires 6 shell environments to run, but soss itself only occupies
 one shell.
+
+### Configuring the topic's middleware
+
+It is possible to customize the behavior of the middlewares for each topic by adding a map with the system name as a key and the desired parameters as value, for example:
+
+```
+systems:
+	mw1: {...}
+	mw2: {...}
+{...}
+topics:
+	topic_name: { type: topic_type, route: mw1_to_mw2, mw1 : { mw1_params }, mw2 : { mw2_params } }
+```
+
