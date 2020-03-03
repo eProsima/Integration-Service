@@ -229,6 +229,39 @@ bool add_named_route(
 }
 
 //==============================================================================
+bool set_middleware_config(
+    std::map<std::string, YAML::Node>& middleware_configs,
+    const TopicRoute& route,
+    const YAML::Node& node)
+{
+  // types, route, and remap should be ignored?
+  for (const std::string& from : route.from)
+  {
+    middleware_configs[from] = node;
+  }
+  for (const std::string& to : route.to)
+  {
+    middleware_configs[to] = node;
+  }
+  return true;
+}
+
+//==============================================================================
+bool set_middleware_config(
+    std::map<std::string, YAML::Node>& middleware_configs,
+    const ServiceRoute& route,
+    const YAML::Node& node)
+{
+  // types, route, and remap should be ignored?
+  middleware_configs[route.server] = node;
+  for (const std::string& client : route.clients)
+  {
+    middleware_configs[client] = node;
+  }
+  return true;
+}
+
+//==============================================================================
 template<typename ConfigType, typename RouteType>
 bool add_topic_or_service_config(
     const std::string& channel_type,
@@ -327,6 +360,12 @@ bool add_topic_or_service_config(
   // TODO(MXG): Come up with a yaml scene for specifying middleware
   // configurations per topic/service and then fill in the middleware_configs
   // map here
+  // Proposal
+  if (valid)
+  {
+    valid = set_middleware_config(config.middleware_configs, config.route, node);
+  }
+  // End of proposal
 
   if(valid)
   {
