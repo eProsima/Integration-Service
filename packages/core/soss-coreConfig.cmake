@@ -31,5 +31,6 @@ include("${CMAKE_CURRENT_LIST_DIR}/cmake/soss_mix_install_extension.cmake")
 
 include(CMakeFindDependencyMacro)
 find_dependency(yaml-cpp)
+find_package(xtypes REQUIRED)
 
 set(soss-core_FOUND TRUE)
