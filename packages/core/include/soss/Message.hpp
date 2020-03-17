@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__MESSAGE_HPP
 #define SOSS__MESSAGE_HPP
 
 #include <xtypes/xtypes.hpp>
+#include <xtypes/idl/idl.hpp>
 
 namespace xtypes = eprosima::xtypes;
 
