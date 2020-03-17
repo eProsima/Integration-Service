@@ -19,6 +19,7 @@
 #define SOSS__MESSAGE_HPP
 
 #include <xtypes/xtypes.hpp>
+#include <xtypes/idl/idl.hpp>
 
 namespace xtypes = eprosima::xtypes;
 

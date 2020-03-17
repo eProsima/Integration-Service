@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include "Search-impl.hpp"
 #include "Config.hpp"
@@ -35,14 +35,14 @@ bool scalar_or_list_node_to_set(
 {
   bool valid = true;
 
-  if(node.IsSequence())
+  if (node.IsSequence())
   {
-    for(YAML::const_iterator it = node.begin(); it != node.end(); ++it)
+    for (YAML::const_iterator it = node.begin(); it != node.end(); ++it)
     {
       values.insert(it->as<std::string>());
     }
   }
-  else if(node.IsScalar())
+  else if (node.IsScalar())
   {
     values.insert(node.as<std::string>());
   }
@@ -51,7 +51,7 @@ bool scalar_or_list_node_to_set(
     valid = false;
   }
 
-  if(!valid)
+  if (!valid)
   {
     std::cerr << "config-file [" << field << "] entry in " << route_type
               << " route must point to a string or list of at least one string"
@@ -63,38 +63,42 @@ bool scalar_or_list_node_to_set(
 }
 
 //==============================================================================
-std::unique_ptr<TopicRoute> parse_topic_route(const YAML::Node& node)
+std::unique_ptr<TopicRoute> parse_topic_route(
+    const YAML::Node& node)
 {
   auto route = std::make_unique<TopicRoute>();
   bool valid = true;
 
   valid &= scalar_or_list_node_to_set(
-        node["from"], route->from, "from", "topic");
+    node["from"], route->from, "from", "topic");
 
   valid &= scalar_or_list_node_to_set(
-        node["to"], route->to, "to", "topic");
+    node["to"], route->to, "to", "topic");
 
-  if(!valid)
+  if (!valid)
+  {
     return nullptr;
+  }
 
   return route;
 }
 
 //==============================================================================
-std::unique_ptr<ServiceRoute> parse_service_route(const YAML::Node& node)
+std::unique_ptr<ServiceRoute> parse_service_route(
+    const YAML::Node& node)
 {
   bool valid = true;
   auto route = std::make_unique<ServiceRoute>();
 
   const YAML::Node& server = node["server"];
-  if(!server)
+  if (!server)
   {
     std::cerr << "config-file service route must contain a [server] entry!"
               << std::endl;
     valid = false;
   }
 
-  if(!server.IsScalar() || server.as<std::string>().empty())
+  if (!server.IsScalar() || server.as<std::string>().empty())
   {
     std::cerr << "config-file service route [server] entry must be a scalar "
               << "string! Only one middleware can be the server on a route!"
@@ -107,10 +111,12 @@ std::unique_ptr<ServiceRoute> parse_service_route(const YAML::Node& node)
   }
 
   valid &= scalar_or_list_node_to_set(
-        node["clients"], route->clients, "clients", "service");
+    node["clients"], route->clients, "clients", "service");
 
-  if(!valid)
+  if (!valid)
+  {
     return nullptr;
+  }
 
   return route;
 }
@@ -121,19 +127,19 @@ bool add_types(
     const std::string& filename,
     std::map<std::string, xtypes::DynamicType::Ptr>& types)
 {
-  if(!node["types"])
+  if (!node["types"])
   {
     return true;
   }
 
-  if(!node["types"]["idls"])
+  if (!node["types"]["idls"])
   {
     std::cerr << "The config file [" << filename << "] has a 'types' entry which doesn't contains an 'idls' entry."
               << std::endl;
     return false;
   }
 
-  if(!node["types"]["idls"].IsSequence())
+  if (!node["types"]["idls"].IsSequence())
   {
     std::cerr << "The config file [" << filename << "] has an 'idls' entry but "
               << "it's not a sequence."
@@ -142,7 +148,7 @@ bool add_types(
   }
 
   std::vector<std::string> include_paths;
-  if(node["types"]["paths"])
+  if (node["types"]["paths"])
   {
     for (auto& path : node["types"]["paths"])
     {
@@ -151,19 +157,19 @@ bool add_types(
   }
 
   int idl_index = 0;
-  for(auto& entry: node["types"]["idls"])
+  for (auto& entry: node["types"]["idls"])
   {
     xtypes::idl::Context context;
     context.allow_keyword_identifiers = true;
-    if(!include_paths.empty())
+    if (!include_paths.empty())
     {
       context.include_paths = include_paths;
     }
     xtypes::idl::parse(entry.as<std::string>(), context);
 
-    if(context.success)
+    if (context.success)
     {
-      for(auto& type: context.get_all_types())
+      for (auto& type: context.get_all_scoped_types())
       {
         types.insert(type);
       }
@@ -188,10 +194,10 @@ bool add_named_route(
     std::map<std::string, ServiceRoute>& service_routes)
 {
   bool inserted = false;
-  if(node["from"] && node["to"])
+  if (node["from"] && node["to"])
   {
     const auto route = parse_topic_route(node);
-    if(!route)
+    if (!route)
     {
       std::cerr << "Failed to parse the route named ["
                 << name << "]" << std::endl;
@@ -200,10 +206,10 @@ bool add_named_route(
 
     inserted = topic_routes.insert(std::make_pair(name, *route)).second;
   }
-  else if(node["server"] && node["clients"])
+  else if (node["server"] && node["clients"])
   {
     const auto route = parse_service_route(node);
-    if(!route)
+    if (!route)
     {
       std::cerr << "Failed to parse the route named ["
                 << name << "]" << std::endl;
@@ -220,7 +226,7 @@ bool add_named_route(
     return false;
   }
 
-  if(!inserted)
+  if (!inserted)
   {
     std::cerr << "Duplicate route named [" << name << "]!" << std::endl;
   }
@@ -277,7 +283,7 @@ bool add_topic_or_service_config(
   ConfigType config;
 
   const YAML::Node& type = node["type"];
-  if(!type)
+  if (!type)
   {
     std::cerr << channel_type << " configuration [" << name
               << "] is missing its [type] field!" << std::endl;
@@ -289,7 +295,7 @@ bool add_topic_or_service_config(
   }
 
   const YAML::Node& route = node["route"];
-  if(!route)
+  if (!route)
   {
     std::cerr << channel_type << " configuration [" << name
               << "] is missing its [route] field!" << std::endl;
@@ -297,11 +303,11 @@ bool add_topic_or_service_config(
   }
   else
   {
-    if(route.IsScalar())
+    if (route.IsScalar())
     {
       const std::string& route_name = route.as<std::string>();
       const auto it = predefined_routes.find(route_name);
-      if(it == predefined_routes.end())
+      if (it == predefined_routes.end())
       {
         std::cerr << channel_type << " configuration [" << name
                   << "] requested a route named [" << route_name << "] but a "
@@ -314,10 +320,10 @@ bool add_topic_or_service_config(
         set_route(config, it->second);
       }
     }
-    else if(route.IsMap())
+    else if (route.IsMap())
     {
       const auto route_config = parse_route(route);
-      if(!route_config)
+      if (!route_config)
       {
         std::cerr << "Failed to parse the route configuration for the "
                   << channel_type << " [" << name << "]!" << std::endl;
@@ -331,9 +337,9 @@ bool add_topic_or_service_config(
   }
 
   const YAML::Node& remap = node["remap"];
-  if(remap)
+  if (remap)
   {
-    if(!remap.IsMap())
+    if (!remap.IsMap())
     {
       std::cerr << "A [remap] field was given for the " << channel_type
                 << " configuration [" << name
@@ -342,16 +348,16 @@ bool add_topic_or_service_config(
     }
     else
     {
-      for(YAML::const_iterator it = remap.begin(); it != remap.end(); ++it)
+      for (YAML::const_iterator it = remap.begin(); it != remap.end(); ++it)
       {
         TopicInfo& remap = config.remap[it->first.as<std::string>()];
-        if(it->second["topic"])
+        if (it->second["topic"])
         {
-            remap.name = it->second["topic"].as<std::string>();
+          remap.name = it->second["topic"].as<std::string>();
         }
-        if(it->second["type"])
+        if (it->second["type"])
         {
-            remap.type = it->second["type"].as<std::string>();
+          remap.type = it->second["type"].as<std::string>();
         }
       }
     }
@@ -367,9 +373,9 @@ bool add_topic_or_service_config(
   }
   // End of proposal
 
-  if(valid)
+  if (valid)
   {
-    if(!config_map.insert(std::make_pair(name, config)).second)
+    if (!config_map.insert(std::make_pair(name, config)).second)
     {
       std::cerr << channel_type << " configuration [" << name
                 << "] was specified twice!" << std::endl;
@@ -388,10 +394,16 @@ bool add_topic_config(
     std::map<std::string, TopicConfig>& topic_configs)
 {
   return add_topic_or_service_config<TopicConfig, TopicRoute>(
-        "topic", name, node, topic_routes, topic_configs,
-        [](TopicConfig& c, std::string s){ c.message_type = std::move(s); },
-        [](TopicConfig& c, TopicRoute r){ c.route = std::move(r); },
-        [](const YAML::Node& node){ return parse_topic_route(node); });
+    "topic", name, node, topic_routes, topic_configs,
+    [](TopicConfig& c, std::string s){
+          c.message_type = std::move(s);
+        },
+    [](TopicConfig& c, TopicRoute r){
+          c.route = std::move(r);
+        },
+    [](const YAML::Node& node){
+          return parse_topic_route(node);
+        });
 }
 
 //==============================================================================
@@ -402,15 +414,21 @@ bool add_service_config(
     std::map<std::string, ServiceConfig>& service_configs)
 {
   return add_topic_or_service_config<ServiceConfig, ServiceRoute>(
-        "service", name, node, service_routes, service_configs,
-        [](ServiceConfig& c, std::string s){ c.service_type = std::move(s); },
-        [](ServiceConfig& c, ServiceRoute r){ c.route = std::move(r); },
-        [](const YAML::Node& node){ return parse_service_route(node); });
+    "service", name, node, service_routes, service_configs,
+    [](ServiceConfig& c, std::string s){
+          c.service_type = std::move(s);
+        },
+    [](ServiceConfig& c, ServiceRoute r){
+          c.route = std::move(r);
+        },
+    [](const YAML::Node& node){
+          return parse_service_route(node);
+        });
 }
 
 //==============================================================================
 using ReadDictEntry =
-    std::function<bool(const std::string& key, const YAML::Node& value)>;
+    std::function<bool (const std::string& key, const YAML::Node& value)>;
 
 bool read_dictionary(
     const YAML::Node& config_node,
@@ -419,25 +437,25 @@ bool read_dictionary(
     const ReadDictEntry& read_fcn)
 {
   const YAML::Node& field = config_node[field_name];
-  if(field)
+  if (field)
   {
-    if(!field.IsMap())
+    if (!field.IsMap())
     {
       std::cerr << "The config file [" << filename << "] has a [" << field_name
                 << "] field, but it is not pointing to a dictionary of "
-                // We use this to make the field name singular
-                << field_name.substr(0, field_name.size()-1)
+        // We use this to make the field name singular
+                << field_name.substr(0, field_name.size() - 1)
                 << "configurations!" << std::endl;
       return false;
     }
 
     bool configs_okay = true;
-    for(YAML::const_iterator it = field.begin(); it != field.end(); ++it)
+    for (YAML::const_iterator it = field.begin(); it != field.end(); ++it)
     {
       configs_okay &= read_fcn(it->first.as<std::string>(), it->second);
     }
 
-    if(!configs_okay)
+    if (!configs_okay)
     {
       std::cerr << "Error found in an entry of the [" << field_name
                 << "] dictionary of the config-file [" << filename << "]"
@@ -455,8 +473,10 @@ YAML::Node config_or_empty_node(
     const std::map<std::string, YAML::Node>& map)
 {
   const auto it = map.find(key);
-  if(it == map.end())
+  if (it == map.end())
+  {
     return YAML::Node();
+  }
 
   return it->second;
 }
@@ -468,17 +488,17 @@ TopicInfo remap_if_needed(
     const TopicInfo& original)
 {
   const auto it = remap.find(middleware);
-  if(it == remap.end())
+  if (it == remap.end())
   {
     return original;
   }
 
   TopicInfo config = original;
-  if(!it->second.name.empty())
+  if (!it->second.name.empty())
   {
     config.name = it->second.name;
   }
-  if(!it->second.type.empty())
+  if (!it->second.type.empty())
   {
     config.type = it->second.type;
   }
@@ -488,28 +508,33 @@ TopicInfo remap_if_needed(
 } // anonymous namespace
 
 //==============================================================================
-Config::Config(const YAML::Node& node, const std::string& filename)
+Config::Config(
+    const YAML::Node& node,
+    const std::string& filename)
 {
-  if(node && !node.IsNull())
+  if (node && !node.IsNull())
+  {
     parse(node, filename);
+  }
 }
 
 //==============================================================================
-Config Config::from_file(const std::string& file)
+Config Config::from_file(
+    const std::string& file)
 {
   YAML::Node config_node;
   try
   {
     config_node = YAML::LoadFile(file);
   }
-  catch(const std::exception& e)
+  catch (const std::exception& e)
   {
     std::cerr << "Could not parse the config-file named [" << file
               << "]: " << e.what() << std::endl;
     return Config();
   }
 
-  if(!config_node)
+  if (!config_node)
   {
     std::cerr << "Could not parse the config-file [" << file
               << "]" << std::endl;
@@ -520,11 +545,13 @@ Config Config::from_file(const std::string& file)
 }
 
 //==============================================================================
-bool Config::parse(const YAML::Node& config_node, const std::string& file)
+bool Config::parse(
+    const YAML::Node& config_node,
+    const std::string& file)
 {
   _okay = false;
 
-  if(!config_node.IsMap())
+  if (!config_node.IsMap())
   {
     std::cerr << "The config-file [" << file << "] needs to be a map "
               << "containing [systems], and possibly [routes], [topics], "
@@ -533,7 +560,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
   }
 
   const YAML::Node& systems = config_node["systems"];
-  if(!systems || !systems.IsMap())
+  if (!systems || !systems.IsMap())
   {
     std::cerr << "The config-file [" << file << "] is missing a "
               << "dictionary for [systems]! You must specify at least two "
@@ -541,40 +568,40 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
     return false;
   }
 
-  for(YAML::const_iterator it = systems.begin(); it != systems.end(); ++it)
+  for (YAML::const_iterator it = systems.begin(); it != systems.end(); ++it)
   {
     const std::string middleware_alias = it->first.as<std::string>();
 
     const YAML::Node& config = it->second;
 
     const YAML::Node& type_node = config["type"];
-    const std::string middleware = type_node?
-          type_node.as<std::string>() : middleware_alias;
+    const std::string middleware = type_node ?
+        type_node.as<std::string>() : middleware_alias;
 
     const YAML::Node& types_from_node = config["types-from"];
     std::vector<std::string> types_from;
 
-    if(types_from_node)
+    if (types_from_node)
     {
-        if (types_from_node.IsSequence())
+      if (types_from_node.IsSequence())
+      {
+        for (const YAML::Node& types : types_from_node)
         {
-            for (const YAML::Node& types : types_from_node)
-            {
-                types_from.push_back(types.as<std::string>());
-            }
+          types_from.push_back(types.as<std::string>());
         }
-        else
-        {
-            types_from.push_back(types_from_node.as<std::string>());
-        }
+      }
+      else
+      {
+        types_from.push_back(types_from_node.as<std::string>());
+      }
     }
 
     m_middlewares.insert(
-          std::make_pair(
-            middleware_alias, MiddlewareConfig{middleware, types_from, config}));
+      std::make_pair(
+        middleware_alias, MiddlewareConfig{middleware, types_from, config}));
   }
 
-  if(m_middlewares.size() < 2)
+  if (m_middlewares.size() < 2)
   {
     std::cerr << "The config-file [" << file << "] does not specify enough "
               << "middlewares [" << m_middlewares.size() << "]! The "
@@ -585,33 +612,39 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
   add_types(config_node, file, m_types);
 
   auto read_route = [&](const std::string& key, const YAML::Node& n) -> bool
+      {
+        return add_named_route(key, n, m_topic_routes, m_service_routes);
+      };
+  if (!read_dictionary(config_node, "routes", file, read_route))
   {
-    return add_named_route(key, n, m_topic_routes, m_service_routes);
-  };
-  if(!read_dictionary(config_node, "routes", file, read_route))
     return false;
+  }
 
   auto read_topic = [&](const std::string& key, const YAML::Node& n) -> bool
+      {
+        return add_topic_config(key, n, m_topic_routes, m_topic_configs);
+      };
+  if (!read_dictionary(config_node, "topics", file, read_topic))
   {
-    return add_topic_config(key, n, m_topic_routes, m_topic_configs);
-  };
-  if(!read_dictionary(config_node, "topics", file, read_topic))
     return false;
+  }
 
   auto read_service = [&](const std::string& key, const YAML::Node& n) -> bool
+      {
+        return add_service_config(key, n, m_service_routes, m_service_configs);
+      };
+  if (!read_dictionary(config_node, "services", file, read_service))
   {
-    return add_service_config(key, n, m_service_routes, m_service_configs);
-  };
-  if(!read_dictionary(config_node, "services", file, read_service))
     return false;
+  }
 
-  for(const auto& entry : m_topic_configs)
+  for (const auto& entry : m_topic_configs)
   {
     const TopicConfig& config = entry.second;
     const std::set<std::string>& middlewares = config.route.all();
-    for(const std::string& mw : middlewares)
+    for (const std::string& mw : middlewares)
     {
-      if(m_middlewares.find(mw) == m_middlewares.end())
+      if (m_middlewares.find(mw) == m_middlewares.end())
       {
         std::cerr << "Unrecognized system [" << mw << "] requested for topic ["
                   << entry.first << "]" << std::endl;
@@ -619,7 +652,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
       }
 
       auto it_mw_remap = config.remap.find(mw);
-      if(it_mw_remap == config.remap.end() || it_mw_remap->second.type == "")
+      if (it_mw_remap == config.remap.end() || it_mw_remap->second.type == "")
       {
         m_required_types[mw].messages.insert(config.message_type);
       }
@@ -627,9 +660,9 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
 
     for (auto&& it_remap: config.remap)
     {
-      if(m_middlewares.find(it_remap.first) == m_middlewares.end())
+      if (m_middlewares.find(it_remap.first) == m_middlewares.end())
       {
-         std::cerr << "Unrecognized system [" << it_remap.first << "] requested for mapping topic "
+        std::cerr << "Unrecognized system [" << it_remap.first << "] requested for mapping topic "
                   << "[" << entry.first << "]" << std::endl;
         return false;
       }
@@ -637,13 +670,13 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
     }
   }
 
-  for(const auto& entry : m_service_configs)
+  for (const auto& entry : m_service_configs)
   {
     const ServiceConfig& config = entry.second;
     const std::set<std::string>& middlewares = config.route.all();
-    for(const std::string& mw : middlewares)
+    for (const std::string& mw : middlewares)
     {
-      if(m_middlewares.find(mw) == m_middlewares.end())
+      if (m_middlewares.find(mw) == m_middlewares.end())
       {
         std::cerr << "Unrecognized system [" << mw << "] requested for service "
                   << "[" << entry.first << "]" << std::endl;
@@ -651,7 +684,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
       }
 
       auto it_mw_remap = config.remap.find(mw);
-      if(it_mw_remap == config.remap.end() || it_mw_remap->second.type == "")
+      if (it_mw_remap == config.remap.end() || it_mw_remap->second.type == "")
       {
         m_required_types[mw].services.insert(config.service_type);
       }
@@ -659,7 +692,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
 
     for (auto&& it_remap: config.remap)
     {
-      if(m_middlewares.find(it_remap.first) == m_middlewares.end())
+      if (m_middlewares.find(it_remap.first) == m_middlewares.end())
       {
         std::cerr << "Unrecognized system [" << it_remap.first << "] requested for mapping service "
                   << "[" << entry.first << "]" << std::endl;
@@ -670,11 +703,11 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
   }
 
   std::size_t active_mw_count = 0;
-  for(const auto& mw_entry : m_middlewares)
+  for (const auto& mw_entry : m_middlewares)
   {
     const std::string& mw_name = mw_entry.first;
     const auto it = m_required_types.find(mw_name);
-    if(it == m_required_types.end())
+    if (it == m_required_types.end())
     {
       std::cout << "WARNING: The middleware [" << mw_name << "] of type ["
                 << mw_entry.second.type << "] is not being used in any topics "
@@ -686,7 +719,7 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
     }
   }
 
-  if(active_mw_count < 2)
+  if (active_mw_count < 2)
   {
     std::cerr << "Fewer than 2 middlewares [" << active_mw_count << "] are "
               << "being used in this current configuration! This means that "
@@ -699,9 +732,10 @@ bool Config::parse(const YAML::Node& config_node, const std::string& file)
 }
 
 //==============================================================================
-bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
+bool Config::load_middlewares(
+    SystemHandleInfoMap& info_map) const
 {
-  for(const auto& mw_entry : m_middlewares)
+  for (const auto& mw_entry : m_middlewares)
   {
     const std::string& mw_name = mw_entry.first;
     const MiddlewareConfig& mw_config = mw_entry.second;
@@ -711,13 +745,15 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
 
     std::vector<std::string> checked_paths;
     const std::string path = search.find_middleware_mix(checked_paths);
-    if(path.empty())
+    if (path.empty())
     {
       std::string message =
           "Unable to find .mix file for middleware [" + middleware_type + "].\n"
           "The following locations were checked unsucessfully: ";
-      for(const std::string& checked : checked_paths)
+      for (const std::string& checked : checked_paths)
+      {
         message += "\n - " + checked;
+      }
 
       message +=
           "\nTry adding your middleware's install path to SOSS_PREFIX_PATH "
@@ -728,34 +764,38 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
       return false;
     }
 
-    if(!Mix::from_file(path).load())
+    if (!Mix::from_file(path).load())
+    {
       return false;
+    }
 
     // After loading the mix file, the middleware's plugin library should be
     // loaded, and it should be possible to find the middleware info in the
     // internal Register.
     internal::SystemHandleInfo info = internal::Register::get(middleware_type);
 
-    if(!info)
+    if (!info)
+    {
       return false;
+    }
 
     bool configured = true;
     const auto requirements = m_required_types.find(mw_name);
-    if(requirements != m_required_types.end())
+    if (requirements != m_required_types.end())
     {
-      for(const std::string& required_type: requirements->second.messages)
+      for (const std::string& required_type: requirements->second.messages)
       {
         auto type_it = m_types.find(required_type);
-        if(type_it != m_types.end())
+        if (type_it != m_types.end())
         {
           info.types.emplace(*type_it);
         }
       }
 
-      for(const std::string& required_type: requirements->second.services)
+      for (const std::string& required_type: requirements->second.services)
       {
         auto type_it = m_types.find(required_type);
-        if(type_it != m_types.end())
+        if (type_it != m_types.end())
         {
           info.types.emplace(*type_it);
         }
@@ -764,53 +804,55 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
       configured = info.handle->configure(requirements->second, mw_config.config_node, info.types);
     }
 
-    if(configured)
+    if (configured)
     {
       info_map.insert(std::make_pair(mw_name, std::move(info)));
     }
     else
+    {
       return false;
+    }
   }
 
-  for(const auto& mw_entry : m_middlewares)
+  for (const auto& mw_entry : m_middlewares)
   {
     const std::string& mw_name = mw_entry.first;
     const MiddlewareConfig& mw_config = mw_entry.second;
     auto& types = info_map.at(mw_name).types;
 
-    if(!mw_config.types_from.empty())
+    if (!mw_config.types_from.empty())
     {
       for (const std::string& type : mw_config.types_from)
       {
         const auto it = info_map.find(type);
-        if(it == info_map.end())
+        if (it == info_map.end())
         {
           std::cerr << "'types-from' references to a non-existant middleware" << std::endl;
           return false;
         }
 
-        for(auto&& it_type: info_map.at(type).types)
+        for (auto&& it_type: info_map.at(type).types)
         {
           types.emplace(it_type.second->name(), it_type.second);
         }
       }
 
       const auto requirements = m_required_types.find(mw_name);
-      for(const std::string& required_type: requirements->second.messages)
+      for (const std::string& required_type: requirements->second.messages)
       {
-        if(!types.count(required_type))
+        if (!types.count(required_type))
         {
-          std::cerr << "The middleware '" << mw_name<< "' must satisfy the required "
+          std::cerr << "The middleware '" << mw_name << "' must satisfy the required "
                     << "type '" << required_type << "'"
                     << std::endl;
         }
       }
 
-      for(const std::string& required_type: requirements->second.services)
+      for (const std::string& required_type: requirements->second.services)
       {
-        if(!types.count(required_type))
+        if (!types.count(required_type))
         {
-          std::cerr << "The middleware '" << mw_name<< "' must satisfy the required "
+          std::cerr << "The middleware '" << mw_name << "' must satisfy the required "
                     << "type '" << required_type << "'"
                     << std::endl;
         }
@@ -822,15 +864,16 @@ bool Config::load_middlewares(SystemHandleInfoMap& info_map) const
 }
 
 //==============================================================================
-bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
+bool Config::configure_topics(
+    const SystemHandleInfoMap& info_map) const
 {
   bool valid = true;
-  for(const auto& entry : m_topic_configs)
+  for (const auto& entry : m_topic_configs)
   {
     const std::string& topic_name = entry.first;
     const TopicConfig& config = entry.second;
 
-    if(!check_topic_compatibility(info_map, topic_name, config))
+    if (!check_topic_compatibility(info_map, topic_name, config))
     {
       valid = false;
       continue;
@@ -838,16 +881,16 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
 
     struct PublisherData
     {
-        std::shared_ptr<TopicPublisher> publisher;
-        const xtypes::DynamicType& type;
+      std::shared_ptr<TopicPublisher> publisher;
+      const xtypes::DynamicType& type;
     };
     std::vector<PublisherData> publishers;
 
     publishers.reserve(config.route.to.size());
-    for(const std::string& to : config.route.to)
+    for (const std::string& to : config.route.to)
     {
       const auto it_to = info_map.find(to);
-      if(it_to == info_map.end() || !it_to->second.topic_publisher)
+      if (it_to == info_map.end() || !it_to->second.topic_publisher)
       {
         std::cerr << "Could not find topic publishing capabilities for system "
                   << "named [" << to << "], requested for topic ["
@@ -864,7 +907,7 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
             pub_type,
             config_or_empty_node(to, config.middleware_configs));
 
-      if(!publisher)
+      if (!publisher)
       {
         std::cerr << "The system [" << to << "] failed to produce a publisher "
                   << "for the topic [" << topic_name << "] and message type ["
@@ -877,10 +920,10 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
       }
     }
 
-    for(const std::string& from : config.route.from)
+    for (const std::string& from : config.route.from)
     {
       const auto it_from = info_map.find(from);
-      if(it_from == info_map.end() || !it_from->second.topic_subscriber)
+      if (it_from == info_map.end() || !it_from->second.topic_subscriber)
       {
         std::cerr << "Could not find topic subscribing capabilities for system "
                   << "named [" << from << "], requested for topic ["
@@ -901,33 +944,33 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
 
       std::vector<Publication> publications;
       publications.reserve(publishers.size());
-      for(const auto& pub : publishers)
+      for (const auto& pub : publishers)
       {
-          publications.push_back({pub.publisher, pub.type, pub.type.is_compatible(sub_type)});
+        publications.push_back({pub.publisher, pub.type, pub.type.is_compatible(sub_type)});
       }
 
       TopicSubscriberSystem::SubscriptionCallback callback =
-          [=](const xtypes::DynamicData& message)
-      {
-        for(const Publication& publication : publications)
-        {
-          if(publication.consistency == xtypes::TypeConsistency::EQUALS)
+          [ = ](const xtypes::DynamicData& message)
           {
-            publication.publisher->publish(message);
-          }
-          else //previously ensured that TypeConsistency is not NONE
-          {
-            xtypes::DynamicData compatible_message(message, publication.type);
-            publication.publisher->publish(compatible_message);
-          }
-        }
-      };
+            for (const Publication& publication : publications)
+            {
+              if (publication.consistency == xtypes::TypeConsistency::EQUALS)
+              {
+                publication.publisher->publish(message);
+              }
+              else               //previously ensured that TypeConsistency is not NONE
+              {
+                xtypes::DynamicData compatible_message(message, publication.type);
+                publication.publisher->publish(compatible_message);
+              }
+            }
+          };
 
       valid &= it_from->second.topic_subscriber->subscribe(
-            topic_info.name,
-            sub_type,
-            callback,
-            config_or_empty_node(from, config.middleware_configs));
+        topic_info.name,
+        sub_type,
+        callback,
+        config_or_empty_node(from, config.middleware_configs));
     }
   }
 
@@ -935,15 +978,16 @@ bool Config::configure_topics(const SystemHandleInfoMap& info_map) const
 }
 
 //==============================================================================
-bool Config::configure_services(const SystemHandleInfoMap& info_map) const
+bool Config::configure_services(
+    const SystemHandleInfoMap& info_map) const
 {
   bool valid = true;
-  for(const auto& entry : m_service_configs)
+  for (const auto& entry : m_service_configs)
   {
     const std::string& service_name = entry.first;
     const ServiceConfig& config = entry.second;
 
-    if(!check_service_compatibility(info_map, service_name, config))
+    if (!check_service_compatibility(info_map, service_name, config))
     {
       valid = false;
       continue;
@@ -951,7 +995,7 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
 
     const std::string& server = config.route.server;
     const auto it = info_map.find(server);
-    if(it == info_map.end() || !it->second.service_provider)
+    if (it == info_map.end() || !it->second.service_provider)
     {
       std::cerr << "Could not find service providing capabilities for system "
                 << "named [" << server << "], requested for service ["
@@ -964,11 +1008,11 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
     const xtypes::DynamicType& server_type = *it->second.types.find(server_info.type)->second;
     std::shared_ptr<ServiceProvider> provider =
         it->second.service_provider->create_service_proxy(
-          server_info.name,
-          server_type,
-          config_or_empty_node(server, config.middleware_configs));
+      server_info.name,
+      server_type,
+      config_or_empty_node(server, config.middleware_configs));
 
-    if(!provider)
+    if (!provider)
     {
       std::cerr << "Failed to create a service provider in middleware ["
                 << server << "] for service type [" << config.service_type
@@ -976,10 +1020,10 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
       return false;
     }
 
-    for(const std::string& client : config.route.clients)
+    for (const std::string& client : config.route.clients)
     {
       const auto it = info_map.find(client);
-      if(it == info_map.end() || !it->second.service_client)
+      if (it == info_map.end() || !it->second.service_client)
       {
         std::cerr << "Could not find service client capabilities for system "
                   << "named [" << client << "], requested for service ["
@@ -993,26 +1037,26 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
       xtypes::TypeConsistency consistency = client_type.is_compatible(server_type);
 
       ServiceClientSystem::RequestCallback callback =
-          [=, &server_type](const xtypes::DynamicData& request,
+          [ =, &server_type](const xtypes::DynamicData& request,
               ServiceClient& client,
               const std::shared_ptr<void>& call_handle)
-      {
-        if(consistency == xtypes::TypeConsistency::EQUALS)
-        {
-          provider->call_service(request, client, call_handle);
-        }
-        else //previously ensured that TypeConsistency is not NONE
-        {
-          xtypes::DynamicData compatible_request(request, server_type);
-          provider->call_service(compatible_request, client, call_handle);
-        }
-      };
+          {
+            if (consistency == xtypes::TypeConsistency::EQUALS)
+            {
+              provider->call_service(request, client, call_handle);
+            }
+            else             //previously ensured that TypeConsistency is not NONE
+            {
+              xtypes::DynamicData compatible_request(request, server_type);
+              provider->call_service(compatible_request, client, call_handle);
+            }
+          };
 
       valid &= it->second.service_client->create_client_proxy(
-            client_info.name,
-            client_type,
-            callback,
-            config_or_empty_node(client, config.middleware_configs));
+        client_info.name,
+        client_type,
+        callback,
+        config_or_empty_node(client, config.middleware_configs));
     }
   }
 
@@ -1020,30 +1064,31 @@ bool Config::configure_services(const SystemHandleInfoMap& info_map) const
 }
 
 //==============================================================================
-bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
-                                       const std::string& topic_name,
-                                       const TopicConfig& config) const
+bool Config::check_topic_compatibility(
+    const SystemHandleInfoMap& info_map,
+    const std::string& topic_name,
+    const TopicConfig& config) const
 {
   bool valid = true;
-  for(const std::string& from : config.route.from)
+  for (const std::string& from : config.route.from)
   {
     const auto it_from = info_map.find(from);
     TopicInfo topic_info_from = remap_if_needed(from, config.remap, {topic_name, config.message_type});
     const auto from_type = it_from->second.types.find(topic_info_from.type);
-    if(from_type == it_from->second.types.end())
+    if (from_type == it_from->second.types.end())
     {
       std::cerr << "Type [" << topic_info_from.type << "] not defined in middleware ["
-                  << it_from->first << "]" << std::endl;
+                << it_from->first << "]" << std::endl;
       valid = false;
       continue;
     }
 
-    for(const std::string& to : config.route.to)
+    for (const std::string& to : config.route.to)
     {
       const auto it_to = info_map.find(to);
       TopicInfo topic_info_to = remap_if_needed(to, config.remap, {topic_name, config.message_type});
       const auto to_type = it_to->second.types.find(topic_info_to.type);
-      if(to_type == it_to->second.types.end())
+      if (to_type == it_to->second.types.end())
       {
         std::cerr << "Type [" << topic_info_to.type << "] not defined in middleware ["
                   << it_to->first << "]" << std::endl;
@@ -1052,7 +1097,7 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
       }
 
       xtypes::TypeConsistency consistency = from_type->second->is_compatible(*to_type->second);
-      if(consistency == xtypes::TypeConsistency::NONE)
+      if (consistency == xtypes::TypeConsistency::NONE)
       {
         std::cerr << "Remapping error: message type ["
                   << topic_info_from.type << "] from [" << it_from->first << "] is not compatible with ["
@@ -1060,15 +1105,15 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
         valid = false;
         continue;
       }
-      else if(consistency != xtypes::TypeConsistency::EQUALS)
+      else if (consistency != xtypes::TypeConsistency::EQUALS)
       {
         std::cout << "The conversion between [" << topic_info_from.type << "] and ["
                   << topic_info_to.type << "] has been allowed by adding the following QoS policies: ";
 
         auto policy_name = [&](xtypes::TypeConsistency to_check, const std::string& name) -> std::string
-        {
-            return (consistency & to_check) == to_check ? "'" + name + "' " : "";
-        };
+            {
+              return (consistency & to_check) == to_check ? "'" + name + "' " : "";
+            };
 
         std::cout << policy_name(xtypes::TypeConsistency::IGNORE_TYPE_SIGN, "ignore type sign");
         std::cout << policy_name(xtypes::TypeConsistency::IGNORE_TYPE_WIDTH, "ignore type width");
@@ -1087,17 +1132,18 @@ bool Config::check_topic_compatibility(const SystemHandleInfoMap& info_map,
 }
 
 //==============================================================================
-bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
-                                         const std::string& service_name,
-                                         const ServiceConfig& config) const
+bool Config::check_service_compatibility(
+    const SystemHandleInfoMap& info_map,
+    const std::string& service_name,
+    const ServiceConfig& config) const
 {
   bool valid = true;
-  for(const std::string& client : config.route.clients)
+  for (const std::string& client : config.route.clients)
   {
     const auto it_client = info_map.find(client);
     TopicInfo topic_info_client = remap_if_needed(client, config.remap, {service_name, config.service_type});
     const auto client_type = it_client->second.types.find(topic_info_client.type);
-    if(client_type == it_client->second.types.end())
+    if (client_type == it_client->second.types.end())
     {
       std::cerr << "Type [" << topic_info_client.type << "] not defined in middleware ["
                 << it_client->first << "]" << std::endl;
@@ -1106,9 +1152,10 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
     }
 
     const auto it_server = info_map.find(config.route.server);
-    TopicInfo topic_info_server = remap_if_needed(config.route.server, config.remap, {service_name, config.service_type});
+    TopicInfo topic_info_server = remap_if_needed(config.route.server, config.remap, {service_name,
+                                                                                      config.service_type});
     const auto server_type = it_server->second.types.find(topic_info_server.type);
-    if(server_type == it_server->second.types.end())
+    if (server_type == it_server->second.types.end())
     {
       std::cerr << "Type [" << topic_info_server.type << "] not defined in middleware ["
                 << it_server->first << "]" << std::endl;
@@ -1116,7 +1163,7 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
       continue;
     }
 
-    if(client_type->second->is_compatible(*server_type->second) == xtypes::TypeConsistency::NONE)
+    if (client_type->second->is_compatible(*server_type->second) == xtypes::TypeConsistency::NONE)
     {
       std::cerr << "Remapping error: service type ["
                 << topic_info_client.type << "] from [" + it_client->first + "] can not be read as type ["
@@ -1128,7 +1175,6 @@ bool Config::check_service_compatibility(const SystemHandleInfoMap& info_map,
 
   return valid;
 }
-
 
 } // namespace internal
 } // namespace soss
