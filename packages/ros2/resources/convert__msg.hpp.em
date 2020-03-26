@@ -52,6 +52,8 @@ alphabetical_fields = sorted(spec.fields, key=lambda x: x.name)
 #ifndef @(header_guard_variable)
 #define @(header_guard_variable)
 
+#include <stdexcept>
+
 // Include the header for the generic message type
 #include <soss/Message.hpp>
 
@@ -87,6 +89,10 @@ inline const xtypes::StructType& type()
   context.allow_keyword_identifiers = true;
   context.ignore_redefinition = true;
   xtypes::idl::parse(g_idl, context);
+  if (!context.success)
+  {
+    throw std::runtime_error("Failed while parsing type @(cpp_msg_type)");
+  }
   static xtypes::StructType type(context.module().structure("@(cpp_msg_type)"));
   type.name(g_msg_name);
   return type;

@@ -45,6 +45,8 @@ alphabetical_request_fields = sorted(spec.request.fields, key=lambda x: x.name)
 alphabetical_response_fields = sorted(spec.response.fields, key=lambda x: x.name)
 }@
 
+#include <stdexcept>
+
 // Include the header for the generic message type
 #include <soss/Message.hpp>
 
@@ -85,6 +87,10 @@ const xtypes::StructType& request_type() {
   context.allow_keyword_identifiers = true;
   context.ignore_redefinition = true;
   xtypes::idl::parse(g_idl, context);
+  if (!context.success)
+  {
+    throw std::runtime_error("Failed while parsing request type @(cpp_srv_type)_Request");
+  }
   static xtypes::StructType type(context.module().structure("@(cpp_srv_type)_Request"));
   type.name(g_request_name);
   return type;
@@ -97,6 +103,10 @@ const xtypes::StructType& response_type() {
   context.allow_keyword_identifiers = true;
   context.ignore_redefinition = true;
   xtypes::idl::parse(g_idl, context);
+  if (!context.success)
+  {
+    throw std::runtime_error("Failed while parsing response type @(cpp_srv_type)_Response");
+  }
   static xtypes::StructType type(context.module().structure("@(cpp_srv_type)_Response"));
   type.name(g_response_name);
   return type;
