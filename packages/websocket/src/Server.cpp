@@ -337,12 +337,12 @@ public:
       const std::string& id,
       const YAML::Node& configuration) override
   {
-    const std::string advertise_msg =
+    auto advertise_msg =
         get_encoding().encode_advertise_msg(
           topic, message_type, id, configuration);
 
     for(const WsCppConnectionPtr& connection : _open_connections)
-      connection->send(advertise_msg);
+      connection->send(advertise_msg.data(), advertise_msg.size());
   }
 
 private:

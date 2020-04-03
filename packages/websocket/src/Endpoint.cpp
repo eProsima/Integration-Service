@@ -16,6 +16,8 @@
 */
 
 #include "Endpoint.hpp"
+#include "BsonSerializer.hpp"
+#include "RosbridgeV2Encoding.hpp"
 
 #include <cstdlib>
 
@@ -45,6 +47,15 @@ inline std::shared_ptr<CallHandle> make_call_handle(
                std::move(connection_handle)});
 }
 
+static EncodingPtr make_rosbridge_v2_0(const std::string& serialization) {
+  if (serialization == YamlSerializationJson)
+    return std::make_shared<RosbridgeV2Encoding<JsonSerializer>>();
+  else if (serialization == YamlSerializationBson)
+    return std::make_shared<RosbridgeV2Encoding<BsonSerializer>>();
+  else
+    return std::shared_ptr<Encoding>(nullptr);
+}
+
 //==============================================================================
 Endpoint::Endpoint()
   : _next_service_call_id(1)
@@ -57,6 +68,17 @@ bool Endpoint::configure(
     const RequiredTypes& types,
     const YAML::Node& configuration)
 {
+  const std::string serialization_str = [&]() -> std::string
+  {
+    if (const YAML::Node serialization_node = configuration[YamlSerializationKey])
+    {
+      std::string serialization = serialization_node.as<std::string>();
+      std::transform(serialization.begin(), serialization.end(), serialization.begin(), ::tolower);
+      return serialization;
+    }
+    return "json";
+  }();
+
   if(const YAML::Node encode_node = configuration[YamlEncodingKey])
   {
     const std::string encoding_str = [&]() -> std::string
@@ -69,7 +91,7 @@ bool Endpoint::configure(
 
     if(encoding_str == YamlEncoding_Rosbridge_v2_0)
     {
-      _encoding = make_rosbridge_v2_0();
+      _encoding = make_rosbridge_v2_0(serialization_str);
     }
     else
     {
@@ -81,7 +103,7 @@ bool Endpoint::configure(
   }
   else
   {
-    _encoding = make_rosbridge_v2_0();
+    _encoding = make_rosbridge_v2_0(serialization_str);
   }
 
   if(!_encoding)
@@ -182,8 +204,8 @@ bool Endpoint::publish(
   {
     auto connection_handle = _endpoint->get_con_from_hdl(v_handle.first);
 
-    auto ec = connection_handle->send(
-          _encoding->encode_publication_msg(topic, info.type, "", message));
+    auto msg = _encoding->encode_publication_msg(topic, info.type, "", message);
+    auto ec = connection_handle->send(msg.data(), msg.size(), _encoding->opcode());
 
     if(ec)
     {
@@ -208,11 +230,12 @@ void Endpoint::call_service(
 
   ServiceProviderInfo& provider_info = _service_provider_info.at(service);
 
-  const std::string payload = _encoding->encode_call_service_msg(
+  auto payload = _encoding->encode_call_service_msg(
         service, provider_info.type, request,
         id_str, provider_info.configuration);
 
-  _endpoint->get_con_from_hdl(provider_info.connection_handle)->send(payload);
+  _endpoint->get_con_from_hdl(provider_info.connection_handle)->send(
+    payload.data(), payload.size(), _encoding->opcode());
 }
 
 //==============================================================================
@@ -226,12 +249,12 @@ void Endpoint::receive_response(
   auto connection_handle = _endpoint->get_con_from_hdl(
         call_handle.connection_handle);
 
-  connection_handle->send(
-        _encoding->encode_service_response_msg(
-          call_handle.service_name,
-          call_handle.service_type,
-          call_handle.id,
-          response, true));
+  auto payload = _encoding->encode_service_response_msg(
+    call_handle.service_name,
+    call_handle.service_type,
+    call_handle.id,
+    response, true);
+  connection_handle->send(payload.data(), payload.size(), _encoding->opcode());
 }
 
 //==============================================================================
@@ -442,8 +465,9 @@ const Encoding& Endpoint::get_encoding() const
 void Endpoint::notify_connection_opened(
     const WsCppConnectionPtr& connection_handle)
 {
-  for(const std::string& msg : _startup_messages)
-    connection_handle->send(msg);
+  for(const auto& msg : _startup_messages) {
+    connection_handle->send(msg.data(), msg.size(), _encoding->opcode());
+  }
 }
 
 //==============================================================================

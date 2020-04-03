@@ -1,15 +1,5 @@
-/* 
- *  This is the default license template.
- *  
- *  File: main.cpp
- *  Author: teokp
- *  Copyright (c) 2019-2020 teokp
- *  
- *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
- */
-
 /*
- * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +15,18 @@
  *
 */
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include "BsonSerializer.hpp"
 
-// This will create the main(int argc, char* argv[]) entry point for testing
+namespace soss {
+namespace websocket {
+
+std::vector<uint8_t> BsonSerializer::serialize(const nlohmann::json& msg) const {
+  return nlohmann::json::to_bson(msg);
+}
+
+nlohmann::json BsonSerializer::deserialize(const std::vector<uint8_t>& data) const {
+  return nlohmann::json::from_bson(data);
+}
+
+} // namespace websocket
+} // namespace soss

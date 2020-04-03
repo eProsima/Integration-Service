@@ -1,15 +1,5 @@
-/* 
- *  This is the default license template.
- *  
- *  File: main.cpp
- *  Author: teokp
- *  Copyright (c) 2019-2020 teokp
- *  
- *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
- */
-
 /*
- * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +15,21 @@
  *
 */
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include "JsonSerializer.hpp"
+#include <soss/json/conversion.hpp>
+#include <iostream>
 
-// This will create the main(int argc, char* argv[]) entry point for testing
+namespace soss {
+namespace websocket {
+
+std::vector<uint8_t> JsonSerializer::serialize(const nlohmann::json& msg) const {
+  auto str = msg.dump();
+  return std::vector<uint8_t>(str.begin(), str.end());
+}
+
+nlohmann::json JsonSerializer::deserialize(const std::vector<uint8_t>& data) const {
+  return json::Json::parse(data.begin(), data.end());
+}
+
+} // namespace websocket
+} // namespace soss

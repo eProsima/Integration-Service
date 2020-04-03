@@ -23,6 +23,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <memory>
+#include <websocketpp/frame.hpp>
 
 namespace soss {
 namespace websocket {
@@ -33,45 +34,46 @@ class Endpoint;
 class Encoding
 {
 public:
+  virtual websocketpp::frame::opcode::value opcode() const = 0;
 
   virtual void interpret_websocket_msg(
       const std::string& msg,
       Endpoint& endpoint,
       std::shared_ptr<void> connection_handle) const = 0;
 
-  virtual std::string encode_publication_msg(
+  virtual std::vector<uint8_t> encode_publication_msg(
       const std::string& topic_name,
       const std::string& topic_type,
       const std::string& id,
       const soss::Message& msg) const = 0;
 
-  virtual std::string encode_service_response_msg(
+  virtual std::vector<uint8_t> encode_service_response_msg(
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,
       const soss::Message& response,
       bool result) const = 0;
 
-  virtual std::string encode_subscribe_msg(
+  virtual std::vector<uint8_t> encode_subscribe_msg(
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
       const YAML::Node& configuration) const = 0;
 
-  virtual std::string encode_advertise_msg(
+  virtual std::vector<uint8_t> encode_advertise_msg(
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
       const YAML::Node& configuration) const = 0;
 
-  virtual std::string encode_call_service_msg(
+  virtual std::vector<uint8_t> encode_call_service_msg(
       const std::string& service_name,
       const std::string& service_type,
       const soss::Message& service_request,
       const std::string& id,
       const YAML::Node& configuration) const = 0;
 
-  virtual std::string encode_advertise_service_msg(
+  virtual std::vector<uint8_t> encode_advertise_service_msg(
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,
@@ -79,9 +81,6 @@ public:
 };
 
 using EncodingPtr = std::shared_ptr<Encoding>;
-
-//==============================================================================
-EncodingPtr make_rosbridge_v2_0();
 
 } // namespace websocket
 } // namespace soss
