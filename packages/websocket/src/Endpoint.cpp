@@ -205,7 +205,7 @@ bool Endpoint::publish(
     auto connection_handle = _endpoint->get_con_from_hdl(v_handle.first);
 
     auto msg = _encoding->encode_publication_msg(topic, info.type, "", message);
-    auto ec = connection_handle->send(msg.data(), msg.size(), _encoding->opcode());
+    auto ec = connection_handle->send(msg.data, msg.len, msg.opcode);
 
     if(ec)
     {
@@ -235,7 +235,7 @@ void Endpoint::call_service(
         id_str, provider_info.configuration);
 
   _endpoint->get_con_from_hdl(provider_info.connection_handle)->send(
-    payload.data(), payload.size(), _encoding->opcode());
+    payload.data, payload.len, payload.opcode);
 }
 
 //==============================================================================
@@ -254,7 +254,7 @@ void Endpoint::receive_response(
     call_handle.service_type,
     call_handle.id,
     response, true);
-  connection_handle->send(payload.data(), payload.size(), _encoding->opcode());
+  connection_handle->send(payload.data, payload.len, payload.opcode);
 }
 
 //==============================================================================
@@ -466,7 +466,7 @@ void Endpoint::notify_connection_opened(
     const WsCppConnectionPtr& connection_handle)
 {
   for(const auto& msg : _startup_messages) {
-    connection_handle->send(msg.data(), msg.size(), _encoding->opcode());
+    connection_handle->send(msg.data, msg.len, msg.opcode);
   }
 }
 

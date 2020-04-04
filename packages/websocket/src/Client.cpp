@@ -297,7 +297,7 @@ public:
     {
       auto msg = get_encoding().encode_advertise_msg(
         topic, message_type, id, configuration);
-      _connection->send(msg.data(), msg.size());
+      _connection->send(msg.data, msg.len, msg.opcode);
     }
   }
 

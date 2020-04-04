@@ -18,6 +18,8 @@
 #ifndef SOSS_WEBSOCKET__BSONSERIALIZER_HPP
 #define SOSS_WEBSOCKET__BSONSERIALIZER_HPP
 
+#include "SharedBuffer.hpp"
+
 #include <soss/json/json.hpp>
 #include <websocketpp/frame.hpp>
 
@@ -28,7 +30,7 @@ class BsonSerializer {
 public:
   static constexpr websocketpp::frame::opcode::value opcode = websocketpp::frame::opcode::value::BINARY;
 
-  std::vector<uint8_t> serialize(const nlohmann::json& msg) const;
+  SharedBuffer serialize(const nlohmann::json& msg) const;
   nlohmann::json deserialize(const std::vector<uint8_t>& data) const;
 };
 

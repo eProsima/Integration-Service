@@ -20,8 +20,14 @@
 namespace soss {
 namespace websocket {
 
-std::vector<uint8_t> BsonSerializer::serialize(const nlohmann::json& msg) const {
-  return nlohmann::json::to_bson(msg);
+SharedBuffer BsonSerializer::serialize(const nlohmann::json& msg) const {
+  auto payload = nlohmann::json::to_bson(msg);
+  return SharedBuffer{
+    payload.data(),
+    payload.size(),
+    websocketpp::frame::opcode::value::BINARY,
+    std::make_shared<decltype(payload)>(std::move(payload))
+  };
 }
 
 nlohmann::json BsonSerializer::deserialize(const std::vector<uint8_t>& data) const {

@@ -175,7 +175,7 @@ public:
     }
   }
 
-  std::vector<uint8_t> encode_publication_msg(
+  SharedBuffer encode_publication_msg(
     const std::string& topic_name,
     const std::string& /*topic_type*/,
     const std::string& id,
@@ -191,7 +191,7 @@ public:
     return _serializer.serialize(output);
   }
 
-  std::vector<uint8_t> encode_service_response_msg(
+  SharedBuffer encode_service_response_msg(
     const std::string& service_name,
     const std::string& /*service_type*/,
     const std::string& id,
@@ -209,7 +209,7 @@ public:
     return _serializer.serialize(output);
   }
 
-  std::vector<uint8_t> encode_subscribe_msg(
+  SharedBuffer encode_subscribe_msg(
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
@@ -227,7 +227,7 @@ public:
     return _serializer.serialize(output);
   }
 
-  std::vector<uint8_t> encode_advertise_msg(
+  SharedBuffer encode_advertise_msg(
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
@@ -243,7 +243,7 @@ public:
     return _serializer.serialize(output);
   }
 
-  std::vector<uint8_t> encode_call_service_msg(
+  SharedBuffer encode_call_service_msg(
     const std::string& service_name,
     const std::string& /*service_type*/,
     const soss::Message& service_request,
@@ -262,7 +262,7 @@ public:
     return _serializer.serialize(output);
   }
 
-  std::vector<uint8_t> encode_advertise_service_msg(
+  SharedBuffer encode_advertise_service_msg(
     const std::string& service_name,
     const std::string& service_type,
     const std::string& /*id*/,

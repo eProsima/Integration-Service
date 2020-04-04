@@ -18,6 +18,8 @@
 #ifndef SOSS__WEBSOCKET__SRC__ENCODING_HPP
 #define SOSS__WEBSOCKET__SRC__ENCODING_HPP
 
+#include "SharedBuffer.hpp"
+
 #include <soss/Message.hpp>
 
 #include <yaml-cpp/yaml.h>
@@ -41,39 +43,39 @@ public:
       Endpoint& endpoint,
       std::shared_ptr<void> connection_handle) const = 0;
 
-  virtual std::vector<uint8_t> encode_publication_msg(
+  virtual SharedBuffer encode_publication_msg(
       const std::string& topic_name,
       const std::string& topic_type,
       const std::string& id,
       const soss::Message& msg) const = 0;
 
-  virtual std::vector<uint8_t> encode_service_response_msg(
+  virtual SharedBuffer encode_service_response_msg(
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,
       const soss::Message& response,
       bool result) const = 0;
 
-  virtual std::vector<uint8_t> encode_subscribe_msg(
+  virtual SharedBuffer encode_subscribe_msg(
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
       const YAML::Node& configuration) const = 0;
 
-  virtual std::vector<uint8_t> encode_advertise_msg(
+  virtual SharedBuffer encode_advertise_msg(
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
       const YAML::Node& configuration) const = 0;
 
-  virtual std::vector<uint8_t> encode_call_service_msg(
+  virtual SharedBuffer encode_call_service_msg(
       const std::string& service_name,
       const std::string& service_type,
       const soss::Message& service_request,
       const std::string& id,
       const YAML::Node& configuration) const = 0;
 
-  virtual std::vector<uint8_t> encode_advertise_service_msg(
+  virtual SharedBuffer encode_advertise_service_msg(
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,

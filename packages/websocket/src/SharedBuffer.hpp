@@ -15,25 +15,26 @@
  *
 */
 
-#include "JsonSerializer.hpp"
-#include <soss/json/conversion.hpp>
+#ifndef SOSS_WEBSOCKET__BUFFERVIEW_HPP
+#define SOSS_WEBSOCKET__BUFFERVIEW_HPP
+
+#include <websocketpp/frame.hpp>
+#include <memory>
 
 namespace soss {
 namespace websocket {
 
-SharedBuffer JsonSerializer::serialize(const nlohmann::json& msg) const {
-  auto str = msg.dump();
-  return SharedBuffer {
-    str.data(),
-    str.size(),
-    JsonSerializer::opcode,
-    std::make_shared<std::string>(std::move(str))
-  };
-}
-
-nlohmann::json JsonSerializer::deserialize(const std::vector<uint8_t>& data) const {
-  return json::Json::parse(data.begin(), data.end());
-}
+/**
+ * A simple <i>data owning</i> buffer.
+ */
+struct SharedBuffer {
+  const void* data;
+  const size_t len;
+  const websocketpp::frame::opcode::value opcode;
+  std::shared_ptr<const void> ref;
+};
 
 } // namespace websocket
 } // namespace soss
+
+#endif //SOSS_WEBSOCKET__BUFFERVIEW_HPP
