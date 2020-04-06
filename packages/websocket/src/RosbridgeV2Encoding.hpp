@@ -78,205 +78,255 @@ public:
   void interpret_websocket_msg(
     const std::string& msg_str,
     Endpoint& endpoint,
-    std::shared_ptr<void> connection_handle) override
-  {
-    const auto msg = SerializerT::deserialize(msg_str);
-
-    const auto op_it = msg.find(JsonOpKey);
-    if (op_it == msg.end()) {
-      throw std::runtime_error(
-        "[soss::websocket::rosbridge_v2] Incoming message was missing "
-        "the required op code: " + msg_str);
-    }
-
-    const std::string& op_str = op_it.value().template get<std::string>();
-
-    // Publish is the most likely type of message to be received, so we'll check
-    // for that type first.
-    if (op_str == JsonOpPublishKey) {
-      endpoint.receive_publication_ws(
-        get_required_string(msg, JsonTopicNameKey),
-        get_required_msg(msg, JsonMsgKey),
-        std::move(connection_handle));
-      return;
-    }
-
-    // A service request is the roughly the second/third most likely type of
-    // message to be received, so we'll check for that type next.
-    if (op_str == JsonOpServiceRequestKey) {
-      endpoint.receive_service_request_ws(
-        get_required_string(msg, JsonServiceKey),
-        get_required_msg(msg, JsonArgsKey),
-        get_optional_string(msg, JsonIdKey),
-        std::move(connection_handle));
-      return;
-    }
-
-    // A service response is the roughly the second/third most likely type of
-    // message to be received, so we'll check for that type next.
-    if (op_str == JsonOpServiceResponseKey) {
-      endpoint.receive_service_response_ws(
-        get_required_string(msg, JsonServiceKey),
-        get_required_msg(msg, JsonValuesKey),
-        get_optional_string(msg, JsonIdKey),
-        std::move(connection_handle));
-      return;
-    }
-
-    if (op_str == JsonOpAdvertiseTopicKey) {
-      endpoint.receive_topic_advertisement_ws(
-        get_required_string(msg, JsonTopicNameKey),
-        get_required_string(msg, JsonTypeNameKey),
-        get_optional_string(msg, JsonIdKey),
-        std::move(connection_handle));
-      return;
-    }
-
-    if (op_str == JsonOpUnadvertiseTopicKey) {
-      endpoint.receive_topic_unadvertisement_ws(
-        get_required_string(msg, JsonTopicNameKey),
-        get_optional_string(msg, JsonIdKey),
-        std::move(connection_handle));
-      return;
-    }
-
-    if (op_str == JsonOpSubscribeKey) {
-      endpoint.receive_subscribe_request_ws(
-        get_required_string(msg, JsonTopicNameKey),
-        get_optional_string(msg, JsonTypeNameKey),
-        get_optional_string(msg, JsonIdKey),
-        std::move(connection_handle));
-      return;
-    }
-
-    if (op_str == JsonOpUnsubscribeKey) {
-      endpoint.receive_unsubscribe_request_ws(
-        get_required_string(msg, JsonTopicNameKey),
-        get_optional_string(msg, JsonIdKey),
-        std::move(connection_handle));
-      return;
-    }
-
-    if (op_str == JsonOpAdvertiseServiceKey) {
-      endpoint.receive_service_advertisement_ws(
-        get_required_string(msg, JsonServiceKey),
-        get_required_string(msg, JsonTypeNameKey),
-        std::move(connection_handle));
-      return;
-    }
-
-    if (op_str == JsonOpUnadvertiseServiceKey) {
-      endpoint.receive_service_unadvertisement_ws(
-        get_required_string(msg, JsonServiceKey),
-        get_optional_string(msg, JsonTypeNameKey),
-        std::move(connection_handle));
-    }
-  }
+    std::shared_ptr<void> connection_handle) override;
 
   MessagePtrT encode_publication_msg(
     const std::string& topic_name,
     const std::string& /*topic_type*/,
     const std::string& id,
-    const soss::Message& msg) override
-  {
-    json::Json output;
-    output[JsonOpKey] = JsonOpPublishKey;
-    output[JsonTopicNameKey] = topic_name;
-    output[JsonMsgKey] = json::convert(msg);
-    if (!id.empty())
-      output[JsonIdKey] = id;
-
-    return SerializerT::serialize(_con_msg_manager, output);
-  }
+    const soss::Message& msg) override;
 
   MessagePtrT encode_service_response_msg(
     const std::string& service_name,
     const std::string& /*service_type*/,
     const std::string& id,
     const soss::Message& response,
-    const bool result) override
-  {
-    json::Json output;
-    output[JsonOpKey] = JsonOpServiceResponseKey;
-    output[JsonServiceKey] = service_name;
-    output[JsonValuesKey] = json::convert(response);
-    output[JsonResultKey] = result;
-    if (!id.empty())
-      output[JsonIdKey] = id;
-
-    return SerializerT::serialize(_con_msg_manager, output);
-  }
+    const bool result) override;
 
   MessagePtrT encode_subscribe_msg(
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
-    const YAML::Node& /*configuration*/) override
-  {
-    // TODO(MXG): Consider parsing the `configuration` for details like
-    // throttle_rate, queue_length, fragment_size, and compression
-    json::Json output;
-    output[JsonOpKey] = JsonOpSubscribeKey;
-    output[JsonTopicNameKey] = topic_name;
-    output[JsonTypeNameKey] = message_type;
-    if (!id.empty())
-      output[JsonIdKey] = id;
-
-    return SerializerT::serialize(_con_msg_manager, output);
-  }
+    const YAML::Node& /*configuration*/) override;
 
   MessagePtrT encode_advertise_msg(
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
-    const YAML::Node& /*configuration*/) override
-  {
-    json::Json output;
-    output[JsonOpKey] = JsonOpAdvertiseTopicKey;
-    output[JsonTopicNameKey] = topic_name;
-    output[JsonTypeNameKey] = message_type;
-    if (!id.empty())
-      output[JsonIdKey] = id;
-
-    return SerializerT::serialize(_con_msg_manager, output);
-  }
+    const YAML::Node& /*configuration*/) override;
 
   MessagePtrT encode_call_service_msg(
     const std::string& service_name,
     const std::string& /*service_type*/,
     const soss::Message& service_request,
     const std::string& id,
-    const YAML::Node& /*configuration*/) override
-  {
-    // TODO(MXG): Consider parsing the `configuration` for details like
-    // fragment_size and compression
-    json::Json output;
-    output[JsonOpKey] = JsonOpServiceRequestKey;
-    output[JsonServiceKey] = service_name;
-    output[JsonArgsKey] = json::convert(service_request);
-    if (!id.empty())
-      output[JsonIdKey] = id;
-
-    return SerializerT::serialize(_con_msg_manager, output);
-  }
+    const YAML::Node& /*configuration*/) override;
 
   MessagePtrT encode_advertise_service_msg(
     const std::string& service_name,
     const std::string& service_type,
     const std::string& /*id*/,
-    const YAML::Node& /*configuration*/) override
-  {
-    json::Json output;
-    output[JsonOpKey] = JsonOpAdvertiseServiceKey;
-    output[JsonTypeNameKey] = service_type;
-    output[JsonServiceKey] = service_name;
-
-    return SerializerT::serialize(_con_msg_manager, output);
-  }
+    const YAML::Node& /*configuration*/) override;
 
 private:
   ConMsgManagerPtrT _con_msg_manager = std::make_shared<ConMsgManagerT>();
 };
+
+template<class SerializerT>
+void RosbridgeV2Encoding<SerializerT>::interpret_websocket_msg(
+  const std::string& msg_str,
+  Endpoint& endpoint,
+  std::shared_ptr<void> connection_handle)
+{
+  const auto msg = SerializerT::deserialize(msg_str);
+
+  const auto op_it = msg.find(JsonOpKey);
+  if (op_it == msg.end()) {
+    throw std::runtime_error(
+      "[soss::websocket::rosbridge_v2] Incoming message was missing "
+      "the required op code: " + msg_str);
+  }
+
+  const std::string& op_str = op_it.value().template get<std::string>();
+
+  // Publish is the most likely type of message to be received, so we'll check
+  // for that type first.
+  if (op_str == JsonOpPublishKey) {
+    endpoint.receive_publication_ws(
+      get_required_string(msg, JsonTopicNameKey),
+      get_required_msg(msg, JsonMsgKey),
+      std::move(connection_handle));
+    return;
+  }
+
+  // A service request is the roughly the second/third most likely type of
+  // message to be received, so we'll check for that type next.
+  if (op_str == JsonOpServiceRequestKey) {
+    endpoint.receive_service_request_ws(
+      get_required_string(msg, JsonServiceKey),
+      get_required_msg(msg, JsonArgsKey),
+      get_optional_string(msg, JsonIdKey),
+      std::move(connection_handle));
+    return;
+  }
+
+  // A service response is the roughly the second/third most likely type of
+  // message to be received, so we'll check for that type next.
+  if (op_str == JsonOpServiceResponseKey) {
+    endpoint.receive_service_response_ws(
+      get_required_string(msg, JsonServiceKey),
+      get_required_msg(msg, JsonValuesKey),
+      get_optional_string(msg, JsonIdKey),
+      std::move(connection_handle));
+    return;
+  }
+
+  if (op_str == JsonOpAdvertiseTopicKey) {
+    endpoint.receive_topic_advertisement_ws(
+      get_required_string(msg, JsonTopicNameKey),
+      get_required_string(msg, JsonTypeNameKey),
+      get_optional_string(msg, JsonIdKey),
+      std::move(connection_handle));
+    return;
+  }
+
+  if (op_str == JsonOpUnadvertiseTopicKey) {
+    endpoint.receive_topic_unadvertisement_ws(
+      get_required_string(msg, JsonTopicNameKey),
+      get_optional_string(msg, JsonIdKey),
+      std::move(connection_handle));
+    return;
+  }
+
+  if (op_str == JsonOpSubscribeKey) {
+    endpoint.receive_subscribe_request_ws(
+      get_required_string(msg, JsonTopicNameKey),
+      get_optional_string(msg, JsonTypeNameKey),
+      get_optional_string(msg, JsonIdKey),
+      std::move(connection_handle));
+    return;
+  }
+
+  if (op_str == JsonOpUnsubscribeKey) {
+    endpoint.receive_unsubscribe_request_ws(
+      get_required_string(msg, JsonTopicNameKey),
+      get_optional_string(msg, JsonIdKey),
+      std::move(connection_handle));
+    return;
+  }
+
+  if (op_str == JsonOpAdvertiseServiceKey) {
+    endpoint.receive_service_advertisement_ws(
+      get_required_string(msg, JsonServiceKey),
+      get_required_string(msg, JsonTypeNameKey),
+      std::move(connection_handle));
+    return;
+  }
+
+  if (op_str == JsonOpUnadvertiseServiceKey) {
+    endpoint.receive_service_unadvertisement_ws(
+      get_required_string(msg, JsonServiceKey),
+      get_optional_string(msg, JsonTypeNameKey),
+      std::move(connection_handle));
+  }
+}
+
+template<class SerializerT>
+Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_publication_msg(
+  const std::string& topic_name,
+  const std::string& /*topic_type*/,
+  const std::string& id,
+  const soss::Message& msg)
+{
+  json::Json output;
+  output[JsonOpKey] = JsonOpPublishKey;
+  output[JsonTopicNameKey] = topic_name;
+  output[JsonMsgKey] = json::convert(msg);
+  if (!id.empty())
+    output[JsonIdKey] = id;
+
+  return SerializerT::serialize(_con_msg_manager, output);
+}
+
+template<class SerializerT>
+Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_service_response_msg(
+  const std::string& service_name,
+  const std::string& /*service_type*/,
+  const std::string& id,
+  const soss::Message& response,
+  const bool result)
+{
+  json::Json output;
+  output[JsonOpKey] = JsonOpServiceResponseKey;
+  output[JsonServiceKey] = service_name;
+  output[JsonValuesKey] = json::convert(response);
+  output[JsonResultKey] = result;
+  if (!id.empty())
+    output[JsonIdKey] = id;
+
+  return SerializerT::serialize(_con_msg_manager, output);
+}
+
+template<class SerializerT>
+Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_subscribe_msg(
+  const std::string& topic_name,
+  const std::string& message_type,
+  const std::string& id,
+  const YAML::Node& /*configuration*/)
+{
+  // TODO(MXG): Consider parsing the `configuration` for details like
+  // throttle_rate, queue_length, fragment_size, and compression
+  json::Json output;
+  output[JsonOpKey] = JsonOpSubscribeKey;
+  output[JsonTopicNameKey] = topic_name;
+  output[JsonTypeNameKey] = message_type;
+  if (!id.empty())
+    output[JsonIdKey] = id;
+
+  return SerializerT::serialize(_con_msg_manager, output);
+}
+
+template<class SerializerT>
+Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_msg(
+  const std::string& topic_name,
+  const std::string& message_type,
+  const std::string& id,
+  const YAML::Node& /*configuration*/)
+{
+  json::Json output;
+  output[JsonOpKey] = JsonOpAdvertiseTopicKey;
+  output[JsonTopicNameKey] = topic_name;
+  output[JsonTypeNameKey] = message_type;
+  if (!id.empty())
+    output[JsonIdKey] = id;
+
+  return SerializerT::serialize(_con_msg_manager, output);
+}
+
+template<class SerializerT>
+Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_call_service_msg(
+  const std::string& service_name,
+  const std::string& /*service_type*/,
+  const soss::Message& service_request,
+  const std::string& id,
+  const YAML::Node& /*configuration*/)
+{
+  // TODO(MXG): Consider parsing the `configuration` for details like
+  // fragment_size and compression
+  json::Json output;
+  output[JsonOpKey] = JsonOpServiceRequestKey;
+  output[JsonServiceKey] = service_name;
+  output[JsonArgsKey] = json::convert(service_request);
+  if (!id.empty())
+    output[JsonIdKey] = id;
+
+  return SerializerT::serialize(_con_msg_manager, output);
+}
+
+template<class SerializerT>
+Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_service_msg(
+  const std::string& service_name,
+  const std::string& service_type,
+  const std::string& /*id*/,
+  const YAML::Node& /*configuration*/)
+{
+  json::Json output;
+  output[JsonOpKey] = JsonOpAdvertiseServiceKey;
+  output[JsonTypeNameKey] = service_type;
+  output[JsonServiceKey] = service_name;
+
+  return SerializerT::serialize(_con_msg_manager, output);
+}
 
 } // namespace websocket
 } // namespace soss
