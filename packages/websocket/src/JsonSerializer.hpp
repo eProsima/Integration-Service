@@ -30,7 +30,7 @@ public:
   static constexpr websocketpp::frame::opcode::value opcode = websocketpp::frame::opcode::value::TEXT;
 
   static Encoding::MessagePtrT serialize(Encoding::ConMsgManagerPtrT& con_msg_mgr, nlohmann::json& msg);
-  static nlohmann::json deserialize(const std::vector<uint8_t>& data);
+  static nlohmann::json deserialize(const std::string& data);
 };
 
 } // namespace websocket

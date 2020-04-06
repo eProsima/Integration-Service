@@ -28,7 +28,7 @@ Encoding::MessagePtrT BsonSerializer::serialize(Encoding::ConMsgManagerPtrT& con
   return ws_msg;
 }
 
-nlohmann::json BsonSerializer::deserialize(const std::vector<uint8_t>& data) {
+nlohmann::json BsonSerializer::deserialize(const std::string& data) {
   return nlohmann::json::from_bson(data);
 }
 

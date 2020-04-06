@@ -80,7 +80,7 @@ public:
     Endpoint& endpoint,
     std::shared_ptr<void> connection_handle) override
   {
-    const auto msg = json::Json::parse(msg_str);
+    const auto msg = SerializerT::deserialize(msg_str);
 
     const auto op_it = msg.find(JsonOpKey);
     if (op_it == msg.end()) {
@@ -89,7 +89,7 @@ public:
         "the required op code: " + msg_str);
     }
 
-    const std::string& op_str = op_it.value().get<std::string>();
+    const std::string& op_str = op_it.value().template get<std::string>();
 
     // Publish is the most likely type of message to be received, so we'll check
     // for that type first.

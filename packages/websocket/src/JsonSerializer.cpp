@@ -16,7 +16,6 @@
 */
 
 #include "JsonSerializer.hpp"
-#include <soss/json/conversion.hpp>
 
 namespace soss {
 namespace websocket {
@@ -30,8 +29,8 @@ Encoding::MessagePtrT JsonSerializer::serialize(Encoding::ConMsgManagerPtrT& con
   return ws_msg;
 }
 
-nlohmann::json JsonSerializer::deserialize(const std::vector<uint8_t>& data) {
-  return json::Json::parse(data.begin(), data.end());
+nlohmann::json JsonSerializer::deserialize(const std::string& data) {
+  return nlohmann::json::parse(data);
 }
 
 } // namespace websocket
