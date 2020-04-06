@@ -342,7 +342,7 @@ public:
           topic, message_type, id, configuration);
 
     for(const WsCppConnectionPtr& connection : _open_connections)
-      connection->send(advertise_msg.data, advertise_msg.len, advertise_msg.opcode);
+      connection->send(advertise_msg);
   }
 
 private:

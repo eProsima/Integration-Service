@@ -18,14 +18,14 @@
 #ifndef SOSS__WEBSOCKET__SRC__ENCODING_HPP
 #define SOSS__WEBSOCKET__SRC__ENCODING_HPP
 
-#include "SharedBuffer.hpp"
-
 #include <soss/Message.hpp>
 
 #include <yaml-cpp/yaml.h>
 
 #include <memory>
 #include <websocketpp/frame.hpp>
+#include <websocketpp/message_buffer/message.hpp>
+#include <websocketpp/message_buffer/alloc.hpp>
 
 namespace soss {
 namespace websocket {
@@ -35,51 +35,61 @@ class Endpoint;
 //==============================================================================
 class Encoding
 {
+private:
+  template<class T>
+  using _ConMsgManagerT = websocketpp::message_buffer::alloc::con_msg_manager<T>;
+
 public:
-  virtual websocketpp::frame::opcode::value opcode() const = 0;
+
+  using MessageT = websocketpp::message_buffer::message<_ConMsgManagerT>;
+  using MessagePtrT = MessageT::ptr;
+  using ConMsgManagerT = _ConMsgManagerT<MessageT>;
+  using ConMsgManagerPtrT = ConMsgManagerT::ptr;
+
+  virtual websocketpp::frame::opcode::value opcode() = 0;
 
   virtual void interpret_websocket_msg(
       const std::string& msg,
       Endpoint& endpoint,
-      std::shared_ptr<void> connection_handle) const = 0;
+      std::shared_ptr<void> connection_handle) = 0;
 
-  virtual SharedBuffer encode_publication_msg(
+  virtual MessagePtrT encode_publication_msg(
       const std::string& topic_name,
       const std::string& topic_type,
       const std::string& id,
-      const soss::Message& msg) const = 0;
+      const soss::Message& msg) = 0;
 
-  virtual SharedBuffer encode_service_response_msg(
+  virtual MessagePtrT encode_service_response_msg(
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,
       const soss::Message& response,
-      bool result) const = 0;
+      bool result) = 0;
 
-  virtual SharedBuffer encode_subscribe_msg(
+  virtual MessagePtrT encode_subscribe_msg(
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
-      const YAML::Node& configuration) const = 0;
+      const YAML::Node& configuration) = 0;
 
-  virtual SharedBuffer encode_advertise_msg(
+  virtual MessagePtrT encode_advertise_msg(
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
-      const YAML::Node& configuration) const = 0;
+      const YAML::Node& configuration) = 0;
 
-  virtual SharedBuffer encode_call_service_msg(
+  virtual MessagePtrT encode_call_service_msg(
       const std::string& service_name,
       const std::string& service_type,
       const soss::Message& service_request,
       const std::string& id,
-      const YAML::Node& configuration) const = 0;
+      const YAML::Node& configuration) = 0;
 
-  virtual SharedBuffer encode_advertise_service_msg(
+  virtual MessagePtrT encode_advertise_service_msg(
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,
-      const YAML::Node& configuration) const = 0;
+      const YAML::Node& configuration) = 0;
 };
 
 using EncodingPtr = std::shared_ptr<Encoding>;

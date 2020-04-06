@@ -172,7 +172,7 @@ public:
 
 protected:
 
-  const Encoding& get_encoding() const;
+  Encoding& get_encoding();
 
   void notify_connection_opened(
       const WsCppConnectionPtr& connection_handle);
@@ -230,7 +230,7 @@ private:
     std::shared_ptr<void> call_handle;
   };
 
-  std::vector<SharedBuffer> _startup_messages;
+  std::vector<Encoding::MessagePtrT> _startup_messages;
   std::unordered_map<std::string, TopicSubscribeInfo> _topic_subscribe_info;
   std::unordered_map<std::string, TopicPublishInfo> _topic_publish_info;
   std::unordered_map<std::string, ClientProxyInfo> _client_proxy_info;

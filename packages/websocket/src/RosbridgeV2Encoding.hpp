@@ -68,19 +68,17 @@ soss::Message get_required_msg(const json::Json& object, const std::string& key)
 
 //==============================================================================
 
-template<typename Serializer = JsonSerializer>
+template<class SerializerT = JsonSerializer>
 class RosbridgeV2Encoding : public Encoding {
 public:
-  explicit RosbridgeV2Encoding(Serializer&& serializer = Serializer()) : _serializer(std::move(serializer)) {}
-
-  inline websocketpp::frame::opcode::value opcode() const override {
-    return Serializer::opcode;
+  inline websocketpp::frame::opcode::value opcode() override {
+    return SerializerT::opcode;
   }
 
   void interpret_websocket_msg(
     const std::string& msg_str,
     Endpoint& endpoint,
-    std::shared_ptr<void> connection_handle) const override
+    std::shared_ptr<void> connection_handle) override
   {
     const auto msg = json::Json::parse(msg_str);
 
@@ -175,11 +173,11 @@ public:
     }
   }
 
-  SharedBuffer encode_publication_msg(
+  MessagePtrT encode_publication_msg(
     const std::string& topic_name,
     const std::string& /*topic_type*/,
     const std::string& id,
-    const soss::Message& msg) const override
+    const soss::Message& msg) override
   {
     json::Json output;
     output[JsonOpKey] = JsonOpPublishKey;
@@ -188,15 +186,15 @@ public:
     if (!id.empty())
       output[JsonIdKey] = id;
 
-    return _serializer.serialize(output);
+    return SerializerT::serialize(_con_msg_manager, output);
   }
 
-  SharedBuffer encode_service_response_msg(
+  MessagePtrT encode_service_response_msg(
     const std::string& service_name,
     const std::string& /*service_type*/,
     const std::string& id,
     const soss::Message& response,
-    const bool result) const override
+    const bool result) override
   {
     json::Json output;
     output[JsonOpKey] = JsonOpServiceResponseKey;
@@ -206,14 +204,14 @@ public:
     if (!id.empty())
       output[JsonIdKey] = id;
 
-    return _serializer.serialize(output);
+    return SerializerT::serialize(_con_msg_manager, output);
   }
 
-  SharedBuffer encode_subscribe_msg(
+  MessagePtrT encode_subscribe_msg(
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
-    const YAML::Node& /*configuration*/) const override
+    const YAML::Node& /*configuration*/) override
   {
     // TODO(MXG): Consider parsing the `configuration` for details like
     // throttle_rate, queue_length, fragment_size, and compression
@@ -224,14 +222,14 @@ public:
     if (!id.empty())
       output[JsonIdKey] = id;
 
-    return _serializer.serialize(output);
+    return SerializerT::serialize(_con_msg_manager, output);
   }
 
-  SharedBuffer encode_advertise_msg(
+  MessagePtrT encode_advertise_msg(
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
-    const YAML::Node& /*configuration*/) const override
+    const YAML::Node& /*configuration*/) override
   {
     json::Json output;
     output[JsonOpKey] = JsonOpAdvertiseTopicKey;
@@ -240,15 +238,15 @@ public:
     if (!id.empty())
       output[JsonIdKey] = id;
 
-    return _serializer.serialize(output);
+    return SerializerT::serialize(_con_msg_manager, output);
   }
 
-  SharedBuffer encode_call_service_msg(
+  MessagePtrT encode_call_service_msg(
     const std::string& service_name,
     const std::string& /*service_type*/,
     const soss::Message& service_request,
     const std::string& id,
-    const YAML::Node& /*configuration*/) const override
+    const YAML::Node& /*configuration*/) override
   {
     // TODO(MXG): Consider parsing the `configuration` for details like
     // fragment_size and compression
@@ -259,25 +257,25 @@ public:
     if (!id.empty())
       output[JsonIdKey] = id;
 
-    return _serializer.serialize(output);
+    return SerializerT::serialize(_con_msg_manager, output);
   }
 
-  SharedBuffer encode_advertise_service_msg(
+  MessagePtrT encode_advertise_service_msg(
     const std::string& service_name,
     const std::string& service_type,
     const std::string& /*id*/,
-    const YAML::Node& /*configuration*/) const override
+    const YAML::Node& /*configuration*/) override
   {
     json::Json output;
     output[JsonOpKey] = JsonOpAdvertiseServiceKey;
     output[JsonTypeNameKey] = service_type;
     output[JsonServiceKey] = service_name;
 
-    return _serializer.serialize(output);
+    return SerializerT::serialize(_con_msg_manager, output);
   }
 
 private:
-  Serializer _serializer;
+  ConMsgManagerPtrT _con_msg_manager = std::make_shared<ConMsgManagerT>();
 };
 
 } // namespace websocket

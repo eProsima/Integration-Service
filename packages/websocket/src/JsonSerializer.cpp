@@ -21,17 +21,16 @@
 namespace soss {
 namespace websocket {
 
-SharedBuffer JsonSerializer::serialize(const nlohmann::json& msg) const {
-  auto str = msg.dump();
-  return SharedBuffer {
-    str.data(),
-    str.size(),
-    JsonSerializer::opcode,
-    std::make_shared<std::string>(std::move(str))
-  };
+Encoding::MessagePtrT JsonSerializer::serialize(Encoding::ConMsgManagerPtrT& con_msg_mgr, nlohmann::json& msg) {
+  auto out = msg.dump();
+  auto ws_msg = con_msg_mgr->get_message();
+  ws_msg->set_payload(out.data(), out.size());
+  ws_msg->set_compressed(true);
+  ws_msg->set_opcode(opcode);
+  return ws_msg;
 }
 
-nlohmann::json JsonSerializer::deserialize(const std::vector<uint8_t>& data) const {
+nlohmann::json JsonSerializer::deserialize(const std::vector<uint8_t>& data) {
   return json::Json::parse(data.begin(), data.end());
 }
 
