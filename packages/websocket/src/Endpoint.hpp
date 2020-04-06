@@ -180,6 +180,8 @@ protected:
   void notify_connection_closed(
       const std::shared_ptr<void>& connection_handle);
 
+  ConMsgManagerPtrT _con_msg_manager = std::make_shared<ConMsgManagerT>();
+
 private:
 
   virtual WsCppEndpoint* configure_endpoint(
@@ -230,7 +232,7 @@ private:
     std::shared_ptr<void> call_handle;
   };
 
-  std::vector<Encoding::MessagePtrT> _startup_messages;
+  std::vector<MessagePtrT> _startup_messages;
   std::unordered_map<std::string, TopicSubscribeInfo> _topic_subscribe_info;
   std::unordered_map<std::string, TopicPublishInfo> _topic_publish_info;
   std::unordered_map<std::string, ClientProxyInfo> _client_proxy_info;
@@ -238,7 +240,6 @@ private:
   std::unordered_map<std::string, ServiceRequestInfo> _service_request_info;
 
   std::size_t _next_service_call_id;
-
 };
 
 using EndpointPtr = std::unique_ptr<Endpoint>;

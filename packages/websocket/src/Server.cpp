@@ -339,7 +339,7 @@ public:
   {
     auto advertise_msg =
         get_encoding().encode_advertise_msg(
-          topic, message_type, id, configuration);
+          _con_msg_manager, topic, message_type, id, configuration);
 
     for(const WsCppConnectionPtr& connection : _open_connections)
       connection->send(advertise_msg);

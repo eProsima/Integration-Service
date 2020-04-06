@@ -20,7 +20,7 @@
 namespace soss {
 namespace websocket {
 
-Encoding::MessagePtrT JsonSerializer::serialize(Encoding::ConMsgManagerPtrT& con_msg_mgr, nlohmann::json& msg) {
+MessagePtrT JsonSerializer::serialize(ConMsgManagerPtrT& con_msg_mgr, nlohmann::json& msg) {
   auto out = msg.dump();
   auto ws_msg = con_msg_mgr->get_message();
   ws_msg->set_payload(out.data(), out.size());

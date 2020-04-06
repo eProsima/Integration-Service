@@ -81,12 +81,14 @@ public:
     std::shared_ptr<void> connection_handle) override;
 
   MessagePtrT encode_publication_msg(
+    ConMsgManagerPtrT& con_msg_mgr,
     const std::string& topic_name,
     const std::string& /*topic_type*/,
     const std::string& id,
     const soss::Message& msg) override;
 
   MessagePtrT encode_service_response_msg(
+    ConMsgManagerPtrT& con_msg_mgr,
     const std::string& service_name,
     const std::string& /*service_type*/,
     const std::string& id,
@@ -94,18 +96,21 @@ public:
     const bool result) override;
 
   MessagePtrT encode_subscribe_msg(
+    ConMsgManagerPtrT& con_msg_mgr,
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
     const YAML::Node& /*configuration*/) override;
 
   MessagePtrT encode_advertise_msg(
+    ConMsgManagerPtrT& con_msg_mgr,
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
     const YAML::Node& /*configuration*/) override;
 
   MessagePtrT encode_call_service_msg(
+    ConMsgManagerPtrT& con_msg_mgr,
     const std::string& service_name,
     const std::string& /*service_type*/,
     const soss::Message& service_request,
@@ -113,13 +118,11 @@ public:
     const YAML::Node& /*configuration*/) override;
 
   MessagePtrT encode_advertise_service_msg(
+    ConMsgManagerPtrT& con_msg_mgr,
     const std::string& service_name,
     const std::string& service_type,
     const std::string& /*id*/,
     const YAML::Node& /*configuration*/) override;
-
-private:
-  ConMsgManagerPtrT _con_msg_manager = std::make_shared<ConMsgManagerT>();
 };
 
 template<class SerializerT>
@@ -222,7 +225,8 @@ void RosbridgeV2Encoding<SerializerT>::interpret_websocket_msg(
 }
 
 template<class SerializerT>
-Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_publication_msg(
+MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_publication_msg(
+  ConMsgManagerPtrT& con_msg_mgr,
   const std::string& topic_name,
   const std::string& /*topic_type*/,
   const std::string& id,
@@ -235,11 +239,12 @@ Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_publication_msg(
   if (!id.empty())
     output[JsonIdKey] = id;
 
-  return SerializerT::serialize(_con_msg_manager, output);
+  return SerializerT::serialize(con_msg_mgr, output);
 }
 
 template<class SerializerT>
-Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_service_response_msg(
+MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_service_response_msg(
+  ConMsgManagerPtrT& con_msg_mgr,
   const std::string& service_name,
   const std::string& /*service_type*/,
   const std::string& id,
@@ -254,11 +259,12 @@ Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_service_response_
   if (!id.empty())
     output[JsonIdKey] = id;
 
-  return SerializerT::serialize(_con_msg_manager, output);
+  return SerializerT::serialize(con_msg_mgr, output);
 }
 
 template<class SerializerT>
-Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_subscribe_msg(
+MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_subscribe_msg(
+  ConMsgManagerPtrT& con_msg_mgr,
   const std::string& topic_name,
   const std::string& message_type,
   const std::string& id,
@@ -273,11 +279,12 @@ Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_subscribe_msg(
   if (!id.empty())
     output[JsonIdKey] = id;
 
-  return SerializerT::serialize(_con_msg_manager, output);
+  return SerializerT::serialize(con_msg_mgr, output);
 }
 
 template<class SerializerT>
-Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_msg(
+MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_msg(
+  ConMsgManagerPtrT& con_msg_mgr,
   const std::string& topic_name,
   const std::string& message_type,
   const std::string& id,
@@ -290,11 +297,12 @@ Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_msg(
   if (!id.empty())
     output[JsonIdKey] = id;
 
-  return SerializerT::serialize(_con_msg_manager, output);
+  return SerializerT::serialize(con_msg_mgr, output);
 }
 
 template<class SerializerT>
-Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_call_service_msg(
+MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_call_service_msg(
+  ConMsgManagerPtrT& con_msg_mgr,
   const std::string& service_name,
   const std::string& /*service_type*/,
   const soss::Message& service_request,
@@ -310,11 +318,12 @@ Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_call_service_msg(
   if (!id.empty())
     output[JsonIdKey] = id;
 
-  return SerializerT::serialize(_con_msg_manager, output);
+  return SerializerT::serialize(con_msg_mgr, output);
 }
 
 template<class SerializerT>
-Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_service_msg(
+MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_service_msg(
+  ConMsgManagerPtrT& con_msg_mgr,
   const std::string& service_name,
   const std::string& service_type,
   const std::string& /*id*/,
@@ -325,7 +334,7 @@ Encoding::MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_service
   output[JsonTypeNameKey] = service_type;
   output[JsonServiceKey] = service_name;
 
-  return SerializerT::serialize(_con_msg_manager, output);
+  return SerializerT::serialize(con_msg_mgr, output);
 }
 
 } // namespace websocket

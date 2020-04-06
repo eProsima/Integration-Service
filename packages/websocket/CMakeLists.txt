@@ -25,19 +25,17 @@ endif()
 include(GNUInstallDirs)
 message(STATUS "Configuring [soss-websocket]")
 
-add_library(
-  soss-websocket
-  SHARED
-    src/Client.cpp
-    src/Endpoint.cpp
-    src/JwtValidator.cpp
-    src/RosbridgeV2Encoding.cpp
-    src/Server.cpp
-    src/ServerConfig.cpp
-    src/ServiceProvider.cpp
-    src/TopicPublisher.cpp
-    src/JsonSerializer.cpp
-    src/BsonSerializer.cpp
+add_library(soss-websocket SHARED
+  src/Client.cpp
+  src/Endpoint.cpp
+  src/JwtValidator.cpp
+  src/RosbridgeV2Encoding.cpp
+  src/Server.cpp
+  src/ServerConfig.cpp
+  src/ServiceProvider.cpp
+  src/TopicPublisher.cpp
+  src/JsonSerializer.cpp
+  src/BsonSerializer.cpp
 )
 
 target_link_libraries(soss-websocket

@@ -128,7 +128,7 @@ bool Endpoint::subscribe(
 {
   _startup_messages.emplace_back(
         _encoding->encode_subscribe_msg(
-          topic_name, message_type, "", configuration));
+          _con_msg_manager, topic_name, message_type, "", configuration));
 
   TopicSubscribeInfo& info = _topic_subscribe_info[topic_name];
   info.type = message_type;
@@ -186,7 +186,7 @@ void Endpoint::startup_advertisement(
 
   _startup_messages.emplace_back(
         _encoding->encode_advertise_msg(
-          topic, message_type, id, configuration));
+          _con_msg_manager, topic, message_type, id, configuration));
 }
 
 //==============================================================================
@@ -204,8 +204,8 @@ bool Endpoint::publish(
   {
     auto connection_handle = _endpoint->get_con_from_hdl(v_handle.first);
 
-    auto msg = _encoding->encode_publication_msg(topic, info.type, "", message);
-    auto ec = connection_handle->send(msg);
+    auto ec = connection_handle->send(
+          _encoding->encode_publication_msg(_con_msg_manager, topic, info.type, "", message));
 
     if(ec)
     {
@@ -231,6 +231,7 @@ void Endpoint::call_service(
   ServiceProviderInfo& provider_info = _service_provider_info.at(service);
 
   auto payload = _encoding->encode_call_service_msg(
+        _con_msg_manager,
         service, provider_info.type, request,
         id_str, provider_info.configuration);
 
@@ -248,12 +249,13 @@ void Endpoint::receive_response(
   auto connection_handle = _endpoint->get_con_from_hdl(
         call_handle.connection_handle);
 
-  auto payload = _encoding->encode_service_response_msg(
-    call_handle.service_name,
-    call_handle.service_type,
-    call_handle.id,
-    response, true);
-  connection_handle->send(payload);
+  connection_handle->send(
+        _encoding->encode_service_response_msg(
+          _con_msg_manager,
+          call_handle.service_name,
+          call_handle.service_type,
+          call_handle.id,
+          response, true));
 }
 
 //==============================================================================

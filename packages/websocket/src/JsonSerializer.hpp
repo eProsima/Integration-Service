@@ -29,7 +29,7 @@ class JsonSerializer {
 public:
   static constexpr websocketpp::frame::opcode::value opcode = websocketpp::frame::opcode::value::TEXT;
 
-  static Encoding::MessagePtrT serialize(Encoding::ConMsgManagerPtrT& con_msg_mgr, nlohmann::json& msg);
+  static MessagePtrT serialize(ConMsgManagerPtrT& con_msg_mgr, nlohmann::json& msg);
   static nlohmann::json deserialize(const std::string& data);
 };
 

@@ -295,9 +295,9 @@ public:
   {
     if(_connection)
     {
-      auto msg = get_encoding().encode_advertise_msg(
-        topic, message_type, id, configuration);
-      _connection->send(msg);
+      _connection->send(
+            get_encoding().encode_advertise_msg(
+              _con_msg_manager, topic, message_type, id, configuration));
     }
   }
 

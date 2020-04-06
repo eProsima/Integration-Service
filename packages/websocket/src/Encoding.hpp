@@ -18,6 +18,8 @@
 #ifndef SOSS__WEBSOCKET__SRC__ENCODING_HPP
 #define SOSS__WEBSOCKET__SRC__ENCODING_HPP
 
+#include "websocket_types.hpp"
+
 #include <soss/Message.hpp>
 
 #include <yaml-cpp/yaml.h>
@@ -35,16 +37,7 @@ class Endpoint;
 //==============================================================================
 class Encoding
 {
-private:
-  template<class T>
-  using _ConMsgManagerT = websocketpp::message_buffer::alloc::con_msg_manager<T>;
-
 public:
-
-  using MessageT = websocketpp::message_buffer::message<_ConMsgManagerT>;
-  using MessagePtrT = MessageT::ptr;
-  using ConMsgManagerT = _ConMsgManagerT<MessageT>;
-  using ConMsgManagerPtrT = ConMsgManagerT::ptr;
 
   virtual websocketpp::frame::opcode::value opcode() = 0;
 
@@ -54,12 +47,14 @@ public:
       std::shared_ptr<void> connection_handle) = 0;
 
   virtual MessagePtrT encode_publication_msg(
+      ConMsgManagerPtrT& con_msg_mgr,
       const std::string& topic_name,
       const std::string& topic_type,
       const std::string& id,
       const soss::Message& msg) = 0;
 
   virtual MessagePtrT encode_service_response_msg(
+      ConMsgManagerPtrT& con_msg_mgr,
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,
@@ -67,18 +62,21 @@ public:
       bool result) = 0;
 
   virtual MessagePtrT encode_subscribe_msg(
+      ConMsgManagerPtrT& con_msg_mgr,
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
       const YAML::Node& configuration) = 0;
 
   virtual MessagePtrT encode_advertise_msg(
+      ConMsgManagerPtrT& con_msg_mgr,
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
       const YAML::Node& configuration) = 0;
 
   virtual MessagePtrT encode_call_service_msg(
+      ConMsgManagerPtrT& con_msg_mgr,
       const std::string& service_name,
       const std::string& service_type,
       const soss::Message& service_request,
@@ -86,6 +84,7 @@ public:
       const YAML::Node& configuration) = 0;
 
   virtual MessagePtrT encode_advertise_service_msg(
+      ConMsgManagerPtrT& con_msg_mgr,
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,

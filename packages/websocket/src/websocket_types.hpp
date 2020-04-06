@@ -42,6 +42,14 @@ using WsCppConnectionPtr = WsCppEndpoint::connection_ptr;
 using WsCppSslContext = boost::asio::ssl::context;
 using WsCppSslContextPtr = std::shared_ptr<WsCppSslContext>;
 
+template<class T>
+using _ConMsgManagerT = websocketpp::message_buffer::alloc::con_msg_manager<T>;
+
+using MessageT = websocketpp::message_buffer::message<_ConMsgManagerT>;
+using MessagePtrT = MessageT::ptr;
+using ConMsgManagerT = _ConMsgManagerT<MessageT>;
+using ConMsgManagerPtrT = ConMsgManagerT::ptr;
+
 } // namespace websocket
 } // namespace soss
 
