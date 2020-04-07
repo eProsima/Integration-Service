@@ -23,7 +23,6 @@
 #include "JsonSerializer.hpp"
 
 #include <soss/json/conversion.hpp>
-#include <soss/json/json.hpp>
 
 #include <unordered_set>
 
@@ -71,7 +70,7 @@ soss::Message get_required_msg(const json::Json& object, const std::string& key)
 template<class SerializerT = JsonSerializer>
 class RosbridgeV2Encoding : public Encoding {
 public:
-  inline websocketpp::frame::opcode::value opcode() const override {
+  inline WsOpcode opcode() const override {
     return SerializerT::opcode;
   }
 

@@ -25,9 +25,6 @@
 #include <yaml-cpp/yaml.h>
 
 #include <memory>
-#include <websocketpp/frame.hpp>
-#include <websocketpp/message_buffer/message.hpp>
-#include <websocketpp/message_buffer/alloc.hpp>
 
 namespace soss {
 namespace websocket {
@@ -39,7 +36,7 @@ class Encoding
 {
 public:
 
-  virtual websocketpp::frame::opcode::value opcode() const = 0;
+  virtual WsOpcode opcode() const = 0;
 
   virtual void interpret_websocket_msg(
       const std::string& msg,

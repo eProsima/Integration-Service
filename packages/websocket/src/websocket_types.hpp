@@ -50,6 +50,8 @@ using MessagePtrT = MessageT::ptr;
 using ConMsgManagerT = _ConMsgManagerT<MessageT>;
 using ConMsgManagerPtrT = ConMsgManagerT::ptr;
 
+using WsOpcode = websocketpp::frame::opcode::value;
+
 } // namespace websocket
 } // namespace soss
 

@@ -1,13 +1,3 @@
-/* 
- *  This is the default license template.
- *  
- *  File: websocket__jwt.cpp
- *  Author: teokp
- *  Copyright (c) 2019-2020 teokp
- *  
- *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
- */
-
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
  *
