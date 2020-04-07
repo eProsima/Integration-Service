@@ -71,21 +71,21 @@ soss::Message get_required_msg(const json::Json& object, const std::string& key)
 template<class SerializerT = JsonSerializer>
 class RosbridgeV2Encoding : public Encoding {
 public:
-  inline websocketpp::frame::opcode::value opcode() override {
+  inline websocketpp::frame::opcode::value opcode() const override {
     return SerializerT::opcode;
   }
 
   void interpret_websocket_msg(
     const std::string& msg_str,
     Endpoint& endpoint,
-    std::shared_ptr<void> connection_handle) override;
+    std::shared_ptr<void> connection_handle) const override;
 
   MessagePtrT encode_publication_msg(
     ConMsgManagerPtrT& con_msg_mgr,
     const std::string& topic_name,
     const std::string& /*topic_type*/,
     const std::string& id,
-    const soss::Message& msg) override;
+    const soss::Message& msg) const override;
 
   MessagePtrT encode_service_response_msg(
     ConMsgManagerPtrT& con_msg_mgr,
@@ -93,21 +93,21 @@ public:
     const std::string& /*service_type*/,
     const std::string& id,
     const soss::Message& response,
-    const bool result) override;
+    const bool result) const override;
 
   MessagePtrT encode_subscribe_msg(
     ConMsgManagerPtrT& con_msg_mgr,
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
-    const YAML::Node& /*configuration*/) override;
+    const YAML::Node& /*configuration*/) const override;
 
   MessagePtrT encode_advertise_msg(
     ConMsgManagerPtrT& con_msg_mgr,
     const std::string& topic_name,
     const std::string& message_type,
     const std::string& id,
-    const YAML::Node& /*configuration*/) override;
+    const YAML::Node& /*configuration*/) const override;
 
   MessagePtrT encode_call_service_msg(
     ConMsgManagerPtrT& con_msg_mgr,
@@ -115,21 +115,21 @@ public:
     const std::string& /*service_type*/,
     const soss::Message& service_request,
     const std::string& id,
-    const YAML::Node& /*configuration*/) override;
+    const YAML::Node& /*configuration*/) const override;
 
   MessagePtrT encode_advertise_service_msg(
     ConMsgManagerPtrT& con_msg_mgr,
     const std::string& service_name,
     const std::string& service_type,
     const std::string& /*id*/,
-    const YAML::Node& /*configuration*/) override;
+    const YAML::Node& /*configuration*/) const override;
 };
 
 template<class SerializerT>
 void RosbridgeV2Encoding<SerializerT>::interpret_websocket_msg(
   const std::string& msg_str,
   Endpoint& endpoint,
-  std::shared_ptr<void> connection_handle)
+  std::shared_ptr<void> connection_handle) const
 {
   const auto msg = SerializerT::deserialize(msg_str);
 
@@ -230,7 +230,7 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_publication_msg(
   const std::string& topic_name,
   const std::string& /*topic_type*/,
   const std::string& id,
-  const soss::Message& msg)
+  const soss::Message& msg) const
 {
   json::Json output;
   output[JsonOpKey] = JsonOpPublishKey;
@@ -249,7 +249,7 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_service_response_msg(
   const std::string& /*service_type*/,
   const std::string& id,
   const soss::Message& response,
-  const bool result)
+  const bool result) const
 {
   json::Json output;
   output[JsonOpKey] = JsonOpServiceResponseKey;
@@ -268,7 +268,7 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_subscribe_msg(
   const std::string& topic_name,
   const std::string& message_type,
   const std::string& id,
-  const YAML::Node& /*configuration*/)
+  const YAML::Node& /*configuration*/) const
 {
   // TODO(MXG): Consider parsing the `configuration` for details like
   // throttle_rate, queue_length, fragment_size, and compression
@@ -288,7 +288,7 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_msg(
   const std::string& topic_name,
   const std::string& message_type,
   const std::string& id,
-  const YAML::Node& /*configuration*/)
+  const YAML::Node& /*configuration*/) const
 {
   json::Json output;
   output[JsonOpKey] = JsonOpAdvertiseTopicKey;
@@ -307,7 +307,7 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_call_service_msg(
   const std::string& /*service_type*/,
   const soss::Message& service_request,
   const std::string& id,
-  const YAML::Node& /*configuration*/)
+  const YAML::Node& /*configuration*/) const
 {
   // TODO(MXG): Consider parsing the `configuration` for details like
   // fragment_size and compression
@@ -327,7 +327,7 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_service_msg(
   const std::string& service_name,
   const std::string& service_type,
   const std::string& /*id*/,
-  const YAML::Node& /*configuration*/)
+  const YAML::Node& /*configuration*/) const
 {
   json::Json output;
   output[JsonOpKey] = JsonOpAdvertiseServiceKey;

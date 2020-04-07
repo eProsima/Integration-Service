@@ -39,19 +39,19 @@ class Encoding
 {
 public:
 
-  virtual websocketpp::frame::opcode::value opcode() = 0;
+  virtual websocketpp::frame::opcode::value opcode() const = 0;
 
   virtual void interpret_websocket_msg(
       const std::string& msg,
       Endpoint& endpoint,
-      std::shared_ptr<void> connection_handle) = 0;
+      std::shared_ptr<void> connection_handle) const = 0;
 
   virtual MessagePtrT encode_publication_msg(
       ConMsgManagerPtrT& con_msg_mgr,
       const std::string& topic_name,
       const std::string& topic_type,
       const std::string& id,
-      const soss::Message& msg) = 0;
+      const soss::Message& msg) const = 0;
 
   virtual MessagePtrT encode_service_response_msg(
       ConMsgManagerPtrT& con_msg_mgr,
@@ -59,21 +59,21 @@ public:
       const std::string& service_type,
       const std::string& id,
       const soss::Message& response,
-      bool result) = 0;
+      bool result) const = 0;
 
   virtual MessagePtrT encode_subscribe_msg(
       ConMsgManagerPtrT& con_msg_mgr,
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
-      const YAML::Node& configuration) = 0;
+      const YAML::Node& configuration) const = 0;
 
   virtual MessagePtrT encode_advertise_msg(
       ConMsgManagerPtrT& con_msg_mgr,
       const std::string& topic_name,
       const std::string& message_type,
       const std::string& id,
-      const YAML::Node& configuration) = 0;
+      const YAML::Node& configuration) const = 0;
 
   virtual MessagePtrT encode_call_service_msg(
       ConMsgManagerPtrT& con_msg_mgr,
@@ -81,14 +81,14 @@ public:
       const std::string& service_type,
       const soss::Message& service_request,
       const std::string& id,
-      const YAML::Node& configuration) = 0;
+      const YAML::Node& configuration) const = 0;
 
   virtual MessagePtrT encode_advertise_service_msg(
       ConMsgManagerPtrT& con_msg_mgr,
       const std::string& service_name,
       const std::string& service_type,
       const std::string& id,
-      const YAML::Node& configuration) = 0;
+      const YAML::Node& configuration) const = 0;
 };
 
 using EncodingPtr = std::shared_ptr<Encoding>;
