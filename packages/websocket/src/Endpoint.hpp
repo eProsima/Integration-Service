@@ -35,6 +35,7 @@ const std::string YamlEncoding_Rosbridge_v2_0 = "rosbridge_v2.0";
 const std::string YamlSerializationKey = "serialization";
 const std::string YamlSerializationJson = "json";
 const std::string YamlSerializationBson = "bson";
+const std::string YamlSerializationMsgpack = "msgpack";
 const std::string YamlPortKey = "port";
 const std::string YamlHostKey = "host";
 

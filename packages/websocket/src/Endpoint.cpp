@@ -16,7 +16,8 @@
 */
 
 #include "Endpoint.hpp"
-#include "BsonSerializer.hpp"
+#include "BsonSerialization.hpp"
+#include "MsgpackSerialization.hpp"
 #include "RosbridgeV2Encoding.hpp"
 
 #include <cstdlib>
@@ -48,10 +49,22 @@ inline std::shared_ptr<CallHandle> make_call_handle(
 }
 
 static EncodingPtr make_rosbridge_v2_0(const std::string& serialization) {
-  if (serialization == YamlSerializationJson)
-    return std::make_shared<RosbridgeV2Encoding<JsonSerializer>>();
-  else if (serialization == YamlSerializationBson)
-    return std::make_shared<RosbridgeV2Encoding<BsonSerializer>>();
+  const auto lower = [&serialization]()
+  {
+    std::string out = serialization;
+    std::transform(out.begin(), out.end(), out.begin(), [](auto c)
+    {
+      return std::tolower(c);
+    });
+    return out;
+  }();
+
+  if (lower == YamlSerializationJson)
+    return std::make_shared<RosbridgeV2Encoding<JsonSerialization>>();
+  else if (lower == YamlSerializationBson)
+    return std::make_shared<RosbridgeV2Encoding<BsonSerialization>>();
+  else if (lower == YamlSerializationMsgpack)
+    return std::make_shared<RosbridgeV2Encoding<MsgpackSerialization>>();
   else
     return std::shared_ptr<Encoding>(nullptr);
 }

@@ -24,74 +24,27 @@ using json::Json;
 
 //==============================================================================
 // message fields
-std::string JsonOpKey = "op";
-std::string JsonIdKey = "id";
-std::string JsonTopicNameKey = "topic";
-std::string JsonTypeNameKey = "type";
-std::string JsonMsgKey = "msg";
-std::string JsonServiceKey = "service";
-std::string JsonArgsKey = "args";
-std::string JsonValuesKey = "values";
-std::string JsonResultKey = "result";
+const std::string JsonOpKey = "op";
+const std::string JsonIdKey = "id";
+const std::string JsonTopicNameKey = "topic";
+const std::string JsonTypeNameKey = "type";
+const std::string JsonMsgKey = "msg";
+const std::string JsonServiceKey = "service";
+const std::string JsonArgsKey = "args";
+const std::string JsonValuesKey = "values";
+const std::string JsonResultKey = "result";
 
 
 // op codes
-std::string JsonOpAdvertiseTopicKey = "advertise";
-std::string JsonOpUnadvertiseTopicKey = "unadvertise";
-std::string JsonOpPublishKey = "publish";
-std::string JsonOpSubscribeKey = "subscribe";
-std::string JsonOpUnsubscribeKey = "unsubscribe";
-std::string JsonOpServiceRequestKey = "call_service";
-std::string JsonOpAdvertiseServiceKey = "advertise_service";
-std::string JsonOpUnadvertiseServiceKey = "unadvertise_service";
-std::string JsonOpServiceResponseKey = "service_response";
-
-//==============================================================================
-void throw_missing_key(
-    const Json& object,
-    const std::string& key)
-{
-  const std::string op_code = object.at("op").get<std::string>();
-  throw std::runtime_error(
-        "[soss::websocket::rosbridge_v2] Incoming websocket message with op "
-        "code [" + op_code + "] is missing the required field [" + key
-        + "]:\n" + object.dump());
-}
-
-//==============================================================================
-std::string get_optional_string(
-    const Json& object,
-    const std::string& key)
-{
-  const auto it = object.find(key);
-  return it == object.end()? "" : json::to_string(it.value());
-}
-
-//==============================================================================
-std::string get_required_string(
-    const Json& object,
-    const std::string& key)
-{
-  const auto it = object.find(key);
-  if(it == object.end())
-    throw_missing_key(object, key);
-
-  return json::to_string(it.value());
-}
-
-//==============================================================================
-Message get_required_msg(
-    const Json& object,
-    const std::string& key)
-{
-  const auto it = object.find(key);
-  if(it == object.end())
-    throw_missing_key(object, key);
-
-  return json::convert("", it.value());
-}
-
-//==============================================================================
+const std::string JsonOpAdvertiseTopicKey = "advertise";
+const std::string JsonOpUnadvertiseTopicKey = "unadvertise";
+const std::string JsonOpPublishKey = "publish";
+const std::string JsonOpSubscribeKey = "subscribe";
+const std::string JsonOpUnsubscribeKey = "unsubscribe";
+const std::string JsonOpServiceRequestKey = "call_service";
+const std::string JsonOpAdvertiseServiceKey = "advertise_service";
+const std::string JsonOpUnadvertiseServiceKey = "unadvertise_service";
+const std::string JsonOpServiceResponseKey = "service_response";
 
 } // namespace websocket
 } // namespace soss

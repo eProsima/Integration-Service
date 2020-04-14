@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(soss-websocket)
 
+add_subdirectory(msgpack-3.2.1)
+
 if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
@@ -36,6 +38,7 @@ add_library(soss-websocket SHARED
   src/TopicPublisher.cpp
   src/JsonSerializer.cpp
   src/BsonSerializer.cpp
+  src/MsgpackSerializer.cpp
 )
 
 target_link_libraries(soss-websocket
@@ -53,6 +56,7 @@ target_link_libraries(soss-websocket
 target_include_directories(soss-websocket
   PRIVATE
     OpenSSL::SSL
+    msgpack-3.2.1/include
   PUBLIC
     ${WEBSOCKETPP_INCLUDE_DIR}
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cpp-jwt-v1.1.1/include>

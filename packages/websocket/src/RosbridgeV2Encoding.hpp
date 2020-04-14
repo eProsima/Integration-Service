@@ -20,58 +20,46 @@
 
 #include "Encoding.hpp"
 #include "Endpoint.hpp"
-#include "JsonSerializer.hpp"
+#include "JsonSerialization.hpp"
 
 #include <soss/json/conversion.hpp>
 
 #include <unordered_set>
+
+#include <iostream>
 
 namespace soss {
 namespace websocket {
 
 //==============================================================================
 // message fields
-extern std::string JsonIdKey;
-extern std::string JsonOpKey;
-extern std::string JsonTopicNameKey;
-extern std::string JsonTypeNameKey;
-extern std::string JsonMsgKey;
-extern std::string JsonServiceKey;
-extern std::string JsonArgsKey;
-extern std::string JsonValuesKey;
-extern std::string JsonResultKey;
+extern const std::string JsonIdKey;
+extern const std::string JsonOpKey;
+extern const std::string JsonTopicNameKey;
+extern const std::string JsonTypeNameKey;
+extern const std::string JsonMsgKey;
+extern const std::string JsonServiceKey;
+extern const std::string JsonArgsKey;
+extern const std::string JsonValuesKey;
+extern const std::string JsonResultKey;
 
 
 // op codes
-extern std::string JsonOpAdvertiseTopicKey;
-extern std::string JsonOpUnadvertiseTopicKey;
-extern std::string JsonOpPublishKey;
-extern std::string JsonOpSubscribeKey;
-extern std::string JsonOpUnsubscribeKey;
-extern std::string JsonOpServiceRequestKey;
-extern std::string JsonOpAdvertiseServiceKey;
-extern std::string JsonOpUnadvertiseServiceKey;
-extern std::string JsonOpServiceResponseKey;
+extern const std::string JsonOpAdvertiseTopicKey;
+extern const std::string JsonOpUnadvertiseTopicKey;
+extern const std::string JsonOpPublishKey;
+extern const std::string JsonOpSubscribeKey;
+extern const std::string JsonOpUnsubscribeKey;
+extern const std::string JsonOpServiceRequestKey;
+extern const std::string JsonOpAdvertiseServiceKey;
+extern const std::string JsonOpUnadvertiseServiceKey;
+extern const std::string JsonOpServiceResponseKey;
 
-//==============================================================================
-void throw_missing_key(const json::Json& object, const std::string& key);
-
-//==============================================================================
-std::string get_optional_string(const json::Json& object, const std::string& key);
-
-//==============================================================================
-std::string get_required_string(const json::Json& object, const std::string& key);
-
-//==============================================================================
-soss::Message get_required_msg(const json::Json& object, const std::string& key);
-
-//==============================================================================
-
-template<class SerializerT = JsonSerializer>
+template<typename SerializationT = JsonSerialization>
 class RosbridgeV2Encoding : public Encoding {
 public:
   inline WsOpcode opcode() const override {
-    return SerializerT::opcode;
+    return SerializationT::Serializer::opcode;
   }
 
   void interpret_websocket_msg(
@@ -122,24 +110,38 @@ public:
     const std::string& service_type,
     const std::string& /*id*/,
     const YAML::Node& /*configuration*/) const override;
+
+  [[noreturn]] void throw_missing_key(const typename SerializationT::Message& object, const std::string& key) const;
+
+  std::string get_optional_string(const typename SerializationT::Message& object, const std::string& key) const;
+
+  std::string get_required_string(const typename SerializationT::Message& object, const std::string& key) const;
+
+  soss::Message get_required_msg(const typename SerializationT::Message& object, const std::string& key) const;
 };
 
-template<class SerializerT>
-void RosbridgeV2Encoding<SerializerT>::interpret_websocket_msg(
+//==============================================================================
+template<typename SerializationT>
+void RosbridgeV2Encoding<SerializationT>::interpret_websocket_msg(
   const std::string& msg_str,
   Endpoint& endpoint,
   std::shared_ptr<void> connection_handle) const
 {
-  const auto msg = SerializerT::deserialize(msg_str);
+  const auto msg = SerializationT::Serializer::deserialize(msg_str);
 
-  const auto op_it = msg.find(JsonOpKey);
-  if (op_it == msg.end()) {
-    throw std::runtime_error(
-      "[soss::websocket::rosbridge_v2] Incoming message was missing "
-      "the required op code: " + msg_str);
-  }
-
-  const std::string& op_str = op_it.value().template get<std::string>();
+  const std::string op_str = [&msg, &msg_str]() -> std::string
+  {
+    try
+    {
+      return SerializationT::Accessor::template get<std::string>(msg, JsonOpKey);
+    }
+    catch (const std::out_of_range&)
+    {
+      throw std::runtime_error(
+        "[soss::websocket::rosbridge_v2] Incoming message was missing "
+        "the required op code: " + msg_str);
+    }
+  }();
 
   // Publish is the most likely type of message to be received, so we'll check
   // for that type first.
@@ -223,26 +225,29 @@ void RosbridgeV2Encoding<SerializerT>::interpret_websocket_msg(
   }
 }
 
-template<class SerializerT>
-MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_publication_msg(
+//==============================================================================
+template<typename SerializationT>
+MessagePtrT RosbridgeV2Encoding<SerializationT>::encode_publication_msg(
   ConMsgManagerPtrT& con_msg_mgr,
   const std::string& topic_name,
   const std::string& /*topic_type*/,
   const std::string& id,
   const soss::Message& msg) const
 {
-  json::Json output;
-  output[JsonOpKey] = JsonOpPublishKey;
-  output[JsonTopicNameKey] = topic_name;
-  output[JsonMsgKey] = json::convert(msg);
+  typename SerializationT::Builder builder;
+  builder
+    .add(JsonOpKey, JsonOpPublishKey)
+    .add(JsonTopicNameKey, topic_name)
+    .add(JsonMsgKey, msg);
   if (!id.empty())
-    output[JsonIdKey] = id;
+    builder.add(JsonIdKey, id);
 
-  return SerializerT::serialize(con_msg_mgr, output);
+  return builder.serialize(con_msg_mgr);
 }
 
-template<class SerializerT>
-MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_service_response_msg(
+//==============================================================================
+template<typename SerializationT>
+MessagePtrT RosbridgeV2Encoding<SerializationT>::encode_service_response_msg(
   ConMsgManagerPtrT& con_msg_mgr,
   const std::string& service_name,
   const std::string& /*service_type*/,
@@ -250,19 +255,21 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_service_response_msg(
   const soss::Message& response,
   const bool result) const
 {
-  json::Json output;
-  output[JsonOpKey] = JsonOpServiceResponseKey;
-  output[JsonServiceKey] = service_name;
-  output[JsonValuesKey] = json::convert(response);
-  output[JsonResultKey] = result;
+  typename SerializationT::Builder builder;
+  builder
+    .add(JsonOpKey, JsonOpServiceResponseKey)
+    .add(JsonServiceKey, service_name)
+    .add(JsonValuesKey, response)
+    .add(JsonResultKey, result);
   if (!id.empty())
-    output[JsonIdKey] = id;
+    builder.add(JsonIdKey, id);
 
-  return SerializerT::serialize(con_msg_mgr, output);
+  return builder.serialize(con_msg_mgr);
 }
 
-template<class SerializerT>
-MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_subscribe_msg(
+//==============================================================================
+template<typename SerializationT>
+MessagePtrT RosbridgeV2Encoding<SerializationT>::encode_subscribe_msg(
   ConMsgManagerPtrT& con_msg_mgr,
   const std::string& topic_name,
   const std::string& message_type,
@@ -271,36 +278,40 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_subscribe_msg(
 {
   // TODO(MXG): Consider parsing the `configuration` for details like
   // throttle_rate, queue_length, fragment_size, and compression
-  json::Json output;
-  output[JsonOpKey] = JsonOpSubscribeKey;
-  output[JsonTopicNameKey] = topic_name;
-  output[JsonTypeNameKey] = message_type;
+  typename SerializationT::Builder builder;
+  builder
+    .add(JsonOpKey, JsonOpSubscribeKey)
+    .add(JsonTopicNameKey, topic_name)
+    .add(JsonTypeNameKey, message_type);
   if (!id.empty())
-    output[JsonIdKey] = id;
+    builder.add(JsonIdKey, id);
 
-  return SerializerT::serialize(con_msg_mgr, output);
+  return builder.serialize(con_msg_mgr);
 }
 
-template<class SerializerT>
-MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_msg(
+//==============================================================================
+template<typename SerializationT>
+MessagePtrT RosbridgeV2Encoding<SerializationT>::encode_advertise_msg(
   ConMsgManagerPtrT& con_msg_mgr,
   const std::string& topic_name,
   const std::string& message_type,
   const std::string& id,
   const YAML::Node& /*configuration*/) const
 {
-  json::Json output;
-  output[JsonOpKey] = JsonOpAdvertiseTopicKey;
-  output[JsonTopicNameKey] = topic_name;
-  output[JsonTypeNameKey] = message_type;
+  typename SerializationT::Builder builder;
+  builder
+    .add(JsonOpKey, JsonOpAdvertiseTopicKey)
+    .add(JsonTopicNameKey, topic_name)
+    .add(JsonTypeNameKey, message_type);
   if (!id.empty())
-    output[JsonIdKey] = id;
+    builder.add(JsonIdKey, id);
 
-  return SerializerT::serialize(con_msg_mgr, output);
+  return builder.serialize(con_msg_mgr);
 }
 
-template<class SerializerT>
-MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_call_service_msg(
+//==============================================================================
+template<typename SerializationT>
+MessagePtrT RosbridgeV2Encoding<SerializationT>::encode_call_service_msg(
   ConMsgManagerPtrT& con_msg_mgr,
   const std::string& service_name,
   const std::string& /*service_type*/,
@@ -310,31 +321,101 @@ MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_call_service_msg(
 {
   // TODO(MXG): Consider parsing the `configuration` for details like
   // fragment_size and compression
-  json::Json output;
-  output[JsonOpKey] = JsonOpServiceRequestKey;
-  output[JsonServiceKey] = service_name;
-  output[JsonArgsKey] = json::convert(service_request);
+  typename SerializationT::Builder builder;
+  builder
+    .add(JsonOpKey, JsonOpServiceRequestKey)
+    .add(JsonServiceKey, service_name)
+    .add(JsonArgsKey, service_request);
   if (!id.empty())
-    output[JsonIdKey] = id;
+    builder.add(JsonIdKey, id);
 
-  return SerializerT::serialize(con_msg_mgr, output);
+  return builder.serialize(con_msg_mgr);
 }
 
-template<class SerializerT>
-MessagePtrT RosbridgeV2Encoding<SerializerT>::encode_advertise_service_msg(
+//==============================================================================
+template<typename SerializationT>
+MessagePtrT RosbridgeV2Encoding<SerializationT>::encode_advertise_service_msg(
   ConMsgManagerPtrT& con_msg_mgr,
   const std::string& service_name,
   const std::string& service_type,
   const std::string& /*id*/,
   const YAML::Node& /*configuration*/) const
 {
-  json::Json output;
-  output[JsonOpKey] = JsonOpAdvertiseServiceKey;
-  output[JsonTypeNameKey] = service_type;
-  output[JsonServiceKey] = service_name;
+  typename SerializationT::Builder builder;
+  builder
+    .add(JsonOpKey, JsonOpAdvertiseServiceKey)
+    .add(JsonTypeNameKey, service_type)
+    .add(JsonServiceKey, service_name);
 
-  return SerializerT::serialize(con_msg_mgr, output);
+  return builder.serialize(con_msg_mgr);
 }
+
+//==============================================================================
+template<typename SerializationT>
+void RosbridgeV2Encoding<SerializationT>::throw_missing_key(
+    const typename SerializationT::Message& object,
+    const std::string& key) const
+{
+  const std::string op_code = get_optional_string(object, JsonOpKey);
+  throw std::runtime_error(
+        "[soss::websocket::rosbridge_v2] Incoming websocket message with op "
+        "code [" + op_code + "] is missing the required field [" + key
+        + "]:\n");
+}
+
+//==============================================================================
+template<typename SerializationT>
+std::string RosbridgeV2Encoding<SerializationT>::get_optional_string(
+    const typename SerializationT::Message& object,
+    const std::string& key) const
+{
+  try
+  {
+    return SerializationT::Accessor::template get<std::string>(object, key);
+  }
+  catch (const std::out_of_range&)
+  {
+    return "";
+  }
+  catch (const std::bad_cast&)
+  {
+    return "";
+  }
+}
+
+//==============================================================================
+template<typename SerializationT>
+std::string RosbridgeV2Encoding<SerializationT>::get_required_string(
+    const typename SerializationT::Message& object,
+    const std::string& key) const
+{
+  try
+  {
+    return SerializationT::Accessor::template get<std::string>(object, key);
+  }
+  catch (const std::out_of_range&)
+  {
+    throw_missing_key(object, key);
+  }
+}
+
+//==============================================================================
+template<typename SerializationT>
+Message RosbridgeV2Encoding<SerializationT>::get_required_msg(
+    const typename SerializationT::Message& object,
+    const std::string& key) const
+{
+  try
+  {
+    return SerializationT::Accessor::template get<Message>(object, key);
+  }
+  catch (const std::out_of_range&)
+  {
+    throw_missing_key(object, key);
+  }
+}
+
+//==============================================================================
 
 } // namespace websocket
 } // namespace soss
