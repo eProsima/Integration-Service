@@ -3,6 +3,7 @@ find_package(OpenSSL REQUIRED)
 add_executable(soss-websocket-unit-test
   main.cpp
   websocket__jwt.cpp
+  MsgpackSerialization.cpp
 )
 
 target_link_libraries(soss-websocket-unit-test

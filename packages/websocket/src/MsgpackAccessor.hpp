@@ -18,6 +18,8 @@
 #ifndef SOSS_WEBSOCKET__MSGPACKACCESSOR_HPP
 #define SOSS_WEBSOCKET__MSGPACKACCESSOR_HPP
 
+#include <soss/Message.hpp>
+
 namespace soss {
 namespace websocket {
 
@@ -37,12 +39,6 @@ public:
     }
   }
 };
-
-template<>
-inline Message MsgpackAccessor::get<Message>(const MsgpackMessage& msg, const std::string& key)
-{
-  throw std::runtime_error("not implemented");
-}
 
 } // namespace websocket
 } // namespace soss

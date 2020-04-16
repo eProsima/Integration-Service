@@ -39,15 +39,16 @@ add_library(soss-websocket SHARED
   src/JsonSerializer.cpp
   src/BsonSerializer.cpp
   src/MsgpackSerializer.cpp
+  src/MsgpackAdaptor.cpp
 )
 
 target_link_libraries(soss-websocket
   PUBLIC
     soss::core
-  PRIVATE
     soss::json
-    OpenSSL::SSL
     Boost::system
+  PRIVATE
+    OpenSSL::SSL
     Boost::date_time
     Boost::regex
     Boost::random
@@ -56,10 +57,10 @@ target_link_libraries(soss-websocket
 target_include_directories(soss-websocket
   PRIVATE
     OpenSSL::SSL
-    msgpack-3.2.1/include
   PUBLIC
     ${WEBSOCKETPP_INCLUDE_DIR}
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cpp-jwt-v1.1.1/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/msgpack-3.2.1/include>
   INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 )

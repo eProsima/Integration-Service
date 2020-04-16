@@ -20,7 +20,7 @@
 namespace soss {
 namespace websocket {
 
-MessagePtrT MsgpackSerializer::serialize(ConMsgManagerPtrT& con_msg_mgr, const std::map<std::string, msgpack::object>& msg) {
+MessagePtrT MsgpackSerializer::serialize(ConMsgManagerPtrT& con_msg_mgr, const MsgpackMessage& msg) {
   msgpack::sbuffer buffer;
   msgpack::pack(buffer, msg);
 

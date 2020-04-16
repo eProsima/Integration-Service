@@ -15,38 +15,32 @@
  *
 */
 
-#ifndef SOSS_WEBSOCKET__MSGPACKBUILDER_HPP
-#define SOSS_WEBSOCKET__MSGPACKBUILDER_HPP
-
 #include "MsgpackAdaptor.hpp"
-#include "MsgpackTypes.hpp"
-#include <soss/Message.hpp>
-#include <map>
 
 namespace soss {
 namespace websocket {
 
-class MsgpackBuilder {
-public:
+void MsgpackConverter::convert(const soss::Field& from, msgpack::object::with_zone& to)
+{
+  static _ConvertFuncMap _convert_map = _make_convert_map();
+  _convert_map.at(from.type())(from, to);
+}
 
-  inline MessagePtrT serialize(ConMsgManagerPtrT& con_msg_mgr) const
-  {
-    return MsgpackSerializer::serialize(con_msg_mgr, _msg);
-  }
-
-  template<typename T>
-  inline MsgpackBuilder& add(const std::string& key, const T& val)
-  {
-    _msg.emplace(key, msgpack::object(val, _zone));
-    return *this;
-  }
-
-private:
-  MsgpackMessage _msg;
-  msgpack::zone _zone;
-};
+MsgpackConverter::_ConvertFuncMap MsgpackConverter::_make_convert_map()
+{
+  _ConvertFuncMap map{};
+  _add_native_conversion<int8_t>(map);
+  _add_native_conversion<int16_t>(map);
+  _add_native_conversion<int32_t>(map);
+  _add_native_conversion<int64_t>(map);
+  _add_native_conversion<uint8_t>(map);
+  _add_native_conversion<uint16_t>(map);
+  _add_native_conversion<uint32_t>(map);
+  _add_native_conversion<uint64_t>(map);
+  _add_native_conversion<bool>(map);
+  _add_native_conversion<std::string>(map);
+  return map;
+}
 
 } // namespace websocket
 } // namespace soss
-
-#endif //SOSS_WEBSOCKET__MSGPACKBUILDER_HPP
