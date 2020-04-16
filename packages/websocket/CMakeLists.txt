@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(soss-websocket)
 
-add_subdirectory(msgpack-3.2.1)
-
 if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
