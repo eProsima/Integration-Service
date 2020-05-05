@@ -12,7 +12,7 @@ find_package(soss-ros2 REQUIRED)
 # Get message dependencies
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(test_msgs REQUIRED)
+find_package(soss_ros2_test_msg REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -21,7 +21,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 soss_rosidl_mix(
-  PACKAGES geometry_msgs nav_msgs test_msgs
+  PACKAGES geometry_msgs nav_msgs soss_ros2_test_msg
   MIDDLEWARES ros2
 )
 
@@ -46,7 +46,7 @@ target_link_libraries(soss-ros2-test
     soss::ros2
     ${geometry_msgs_LIBRARIES}
     ${nav_msgs_LIBRARIES}
-    ${test_msgs_LIBRARIES}
+    ${soss_ros2_test_msg_LIBRARIES}
 )
 
 target_include_directories(soss-ros2-test
@@ -54,14 +54,10 @@ target_include_directories(soss-ros2-test
     "${thirdparty_dir}/catch2/include"
     ${geometry_msgs_INCLUDE_DIRS}
     ${nav_msgs_INCLUDE_DIRS}
-    ${test_msgs_INCLUDE_DIRS}
+    ${soss_ros2_test_msg_INCLUDE_DIRS}
 )
 
-if($ENV{ROS_DISTRO} STREQUAL dashing)
-  set(test_msgs_config_file "ros2__test_msgs_dashing.yaml")
-else()
-  set(test_msgs_config_file "ros2__test_msgs_crystal.yaml")
-endif()
+set(test_msgs_config_file "ros2__test_msgs.yaml")
 
 target_compile_definitions(soss-ros2-test
   PRIVATE

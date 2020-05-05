@@ -260,7 +260,42 @@ public:
       const std::string& service_name,
       const xtypes::DynamicType& service_type,
       RequestCallback callback,
-      const YAML::Node& configuration) = 0;
+      const YAML::Node& configuration)
+  {
+    (void)service_name, (void)service_type, (void)callback, (void)configuration;
+    return false;
+  }
+
+  /// \brief Create a proxy for a client
+  ///
+  /// \param[in] service_name
+  ///   Name of the service for this client to listen to
+  ///
+  /// \param[in] request_type
+  ///   Type of service request to expect
+  ///
+  /// \param[in] reply_type
+  ///   Type of service reply to expect
+  ///
+  /// \param[in] callback
+  ///   The callback that should be used when a request comes in from the
+  ///   middleware
+  ///
+  /// \param[in] configuration
+  ///   A yaml node containing any middleware-specific configuration information
+  ///   for this service client. This may be an empty node.
+  ///
+  /// \returns true if a client proxy could be made
+  virtual bool create_client_proxy(
+      const std::string& service_name,
+      const xtypes::DynamicType& request_type,
+      const xtypes::DynamicType& reply_type,
+      RequestCallback callback,
+      const YAML::Node& configuration)
+  {
+    (void)reply_type;
+    return create_client_proxy(service_name, request_type, callback, configuration);
+  }
 };
 
 //==============================================================================
@@ -315,7 +350,37 @@ public:
   virtual std::shared_ptr<ServiceProvider> create_service_proxy(
       const std::string& service_name,
       const xtypes::DynamicType& service_type,
-      const YAML::Node& configuration) = 0;
+      const YAML::Node& configuration)
+  {
+    (void)service_name, (void)service_type, (void)configuration;
+    return nullptr;
+  }
+
+  /// \brief Create a proxy for a service
+  ///
+  /// \param[in] service_name
+  ///   Name of the service to offer
+  ///
+  /// \param[in] request_type
+  ///   Type of service request being offered
+  ///
+  /// \param[in] reply_type
+  ///   Type of service reply being offered
+  ///
+  /// \param[in] configuration
+  ///   A yaml node containing any middleware-specific configuration information
+  ///   for this service provider. This may be an empty node.
+  ///
+  /// \returns true if the node can offer this service
+  virtual std::shared_ptr<ServiceProvider> create_service_proxy(
+      const std::string& service_name,
+      const xtypes::DynamicType& request_type,
+      const xtypes::DynamicType& reply_type,
+      const YAML::Node& configuration)
+  {
+    (void)request_type;
+    return create_service_proxy(service_name, reply_type, configuration);
+  }
 };
 
 //==============================================================================

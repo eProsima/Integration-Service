@@ -173,6 +173,12 @@ bool add_types(
       {
         types.insert(type);
       }
+      if (types.empty())
+      {
+          std::cout << "Parsing the idl '" << idl_index << "' placed in the yaml config. "
+                    << "The parsing was successful but no types were found."
+                    << std::endl;
+      }
     }
     else
     {
@@ -276,6 +282,7 @@ bool add_topic_or_service_config(
     const std::map<std::string, RouteType>& predefined_routes,
     std::map<std::string, ConfigType>& config_map,
     std::function<void(ConfigType&, std::string)> set_type,
+    std::function<void(ConfigType&, std::string)> set_reply_type,
     std::function<void(ConfigType&, RouteType)> set_route,
     std::function<std::unique_ptr<RouteType>(const YAML::Node&)> parse_route)
 {
@@ -285,9 +292,29 @@ bool add_topic_or_service_config(
   const YAML::Node& type = node["type"];
   if (!type)
   {
-    std::cerr << channel_type << " configuration [" << name
-              << "] is missing its [type] field!" << std::endl;
-    valid = false;
+    if (channel_type == "service")
+    {
+      const YAML::Node& request_type = node["request_type"];
+      const YAML::Node& reply_type = node["reply_type"];
+
+      if (!request_type && !reply_type)
+      {
+        std::cerr << channel_type << " configuration [" << name
+                  << "] is missing its [type], or [request_type] and [reply_type] fields!" << std::endl;
+        valid = false;
+      }
+      else
+      {
+        set_type(config, request_type.as<std::string>());
+        set_reply_type(config, reply_type.as<std::string>());
+      }
+    }
+    else
+    {
+      std::cerr << channel_type << " configuration [" << name
+                << "] is missing its [type] field!" << std::endl;
+      valid = false;
+    }
   }
   else
   {
@@ -359,6 +386,14 @@ bool add_topic_or_service_config(
         {
           remap.type = it->second["type"].as<std::string>();
         }
+        if (it->second["request_type"])
+        {
+          remap.type = it->second["request_type"].as<std::string>();
+        }
+        if (it->second["reply_type"])
+        {
+          remap.reply_type = it->second["reply_type"].as<std::string>();
+        }
       }
     }
   }
@@ -398,6 +433,7 @@ bool add_topic_config(
     [](TopicConfig& c, std::string s){
           c.message_type = std::move(s);
         },
+    [](TopicConfig&, std::string){},
     [](TopicConfig& c, TopicRoute r){
           c.route = std::move(r);
         },
@@ -416,7 +452,10 @@ bool add_service_config(
   return add_topic_or_service_config<ServiceConfig, ServiceRoute>(
     "service", name, node, service_routes, service_configs,
     [](ServiceConfig& c, std::string s){
-          c.service_type = std::move(s);
+          c.request_type = std::move(s);
+        },
+    [](ServiceConfig& c, std::string s){
+          c.reply_type = std::move(s);
         },
     [](ServiceConfig& c, ServiceRoute r){
           c.route = std::move(r);
@@ -501,6 +540,10 @@ TopicInfo remap_if_needed(
   if (!it->second.type.empty())
   {
     config.type = it->second.type;
+  }
+  if (!it->second.reply_type.empty())
+  {
+    config.reply_type = it->second.reply_type;
   }
   return config;
 }
@@ -686,7 +729,11 @@ bool Config::parse(
       auto it_mw_remap = config.remap.find(mw);
       if (it_mw_remap == config.remap.end() || it_mw_remap->second.type == "")
       {
-        m_required_types[mw].services.insert(config.service_type);
+        m_required_types[mw].services.insert(config.request_type);
+      }
+      if (it_mw_remap == config.remap.end() || it_mw_remap->second.reply_type == "")
+      {
+        m_required_types[mw].services.insert(config.reply_type);
       }
     }
 
@@ -699,6 +746,10 @@ bool Config::parse(
         return false;
       }
       m_required_types[it_remap.first].services.insert(it_remap.second.type);
+      if (!it_remap.second.reply_type.empty())
+      {
+        m_required_types[it_remap.first].services.insert(it_remap.second.reply_type);
+      }
     }
   }
 
@@ -899,12 +950,16 @@ bool Config::configure_topics(
         continue;
       }
 
-      TopicInfo topic_info = remap_if_needed(to, config.remap, {topic_name, config.message_type});
-      const xtypes::DynamicType& pub_type = *it_to->second.types.find(topic_info.type)->second;
+      TopicInfo topic_info = remap_if_needed(to, config.remap, {topic_name, config.message_type, ""});
+      const xtypes::DynamicType* pub_type = resolve_type(it_to->second.types, topic_info.type);
+      //const xtypes::DynamicType& pub_type = *it_to->second.types.find(topic_info.type)->second;
       std::shared_ptr<TopicPublisher> publisher =
           it_to->second.topic_publisher->advertise(
             topic_info.name,
-            pub_type,
+            //*pub_type,
+            (topic_info.type.find(".") == std::string::npos
+                       ? *pub_type
+                       : *m_types.at(topic_info.type.substr(0, topic_info.type.find(".")))),
             config_or_empty_node(to, config.middleware_configs));
 
       if (!publisher)
@@ -916,7 +971,7 @@ bool Config::configure_topics(
       }
       else
       {
-        publishers.push_back({publisher, pub_type});
+        publishers.push_back({publisher, *pub_type});
       }
     }
 
@@ -932,8 +987,9 @@ bool Config::configure_topics(
         continue;
       }
 
-      TopicInfo topic_info = remap_if_needed(from, config.remap, {topic_name, config.message_type});
-      const xtypes::DynamicType& sub_type = *it_from->second.types.find(topic_info.type)->second;
+      TopicInfo topic_info = remap_if_needed(from, config.remap, {topic_name, config.message_type, ""});
+      const xtypes::DynamicType* sub_type = resolve_type(it_from->second.types, topic_info.type);
+      //const xtypes::DynamicType& sub_type = *it_from->second.types.find(topic_info.type)->second;
 
       struct Publication
       {
@@ -946,7 +1002,7 @@ bool Config::configure_topics(
       publications.reserve(publishers.size());
       for (const auto& pub : publishers)
       {
-        publications.push_back({pub.publisher, pub.type, pub.type.is_compatible(sub_type)});
+        publications.push_back({pub.publisher, pub.type, pub.type.is_compatible(*sub_type)});
       }
 
       TopicSubscriberSystem::SubscriptionCallback callback =
@@ -968,7 +1024,10 @@ bool Config::configure_topics(
 
       valid &= it_from->second.topic_subscriber->subscribe(
         topic_info.name,
-        sub_type,
+        //*sub_type,
+        (topic_info.type.find(".") == std::string::npos
+                   ? *sub_type
+                   : *m_types.at(topic_info.type.substr(0, topic_info.type.find(".")))),
         callback,
         config_or_empty_node(from, config.middleware_configs));
     }
@@ -1004,19 +1063,46 @@ bool Config::configure_services(
       continue;
     }
 
-    TopicInfo server_info = remap_if_needed(server, config.remap, {service_name, config.service_type});
-    const xtypes::DynamicType& server_type = *it->second.types.find(server_info.type)->second;
-    std::shared_ptr<ServiceProvider> provider =
-        it->second.service_provider->create_service_proxy(
-      server_info.name,
-      server_type,
-      config_or_empty_node(server, config.middleware_configs));
+    TopicInfo server_info = remap_if_needed(server, config.remap, {service_name, config.request_type, config.reply_type});
+    const xtypes::DynamicType* server_type = resolve_type(it->second.types, server_info.type);
+    //const xtypes::DynamicType& server_type = *it->second.types.find(server_info.type)->second;
+
+    std::shared_ptr<ServiceProvider> provider = nullptr;
+    if (!config.reply_type.empty())
+    {
+      const xtypes::DynamicType* server_reply_type = resolve_type(it->second.types, server_info.reply_type);
+
+      provider =
+          it->second.service_provider->create_service_proxy(
+        server_info.name,
+        (server_info.type.find(".") == std::string::npos
+                   ? *server_type
+                   : *m_types.at(server_info.type.substr(0, server_info.type.find(".")))),
+        (server_info.reply_type.find(".") == std::string::npos
+                   ? *server_reply_type
+                   : *m_types.at(server_info.reply_type.substr(0, server_info.reply_type.find(".")))),
+        config_or_empty_node(server, config.middleware_configs));
+    }
+    else
+    {
+      provider =
+          it->second.service_provider->create_service_proxy(
+        server_info.name,
+        (server_info.type.find(".") == std::string::npos
+                   ? *server_type
+                   : *m_types.at(server_info.type.substr(0, server_info.type.find(".")))),
+        config_or_empty_node(server, config.middleware_configs));
+    }
 
     if (!provider)
     {
       std::cerr << "Failed to create a service provider in middleware ["
-                << server << "] for service type [" << config.service_type
-                << "]" << std::endl;
+                << server << "] for service type [" << config.request_type << "]";
+      if (!config.reply_type.empty())
+      {
+          std::cerr << " reply type [" << config.reply_type << "]";
+      }
+      std::cerr << std::endl;
       return false;
     }
 
@@ -1032,12 +1118,14 @@ bool Config::configure_services(
         continue;
       }
 
-      TopicInfo client_info = remap_if_needed(client, config.remap, {service_name, config.service_type});
-      const xtypes::DynamicType& client_type = *it->second.types.find(client_info.type)->second;
-      xtypes::TypeConsistency consistency = client_type.is_compatible(server_type);
+      TopicInfo client_info = remap_if_needed(client, config.remap,
+                                              {service_name, config.request_type, config.reply_type});
+      const xtypes::DynamicType* client_type = resolve_type(it->second.types, client_info.type);
+      //const xtypes::DynamicType& client_type = *it->second.types.find(client_info.type)->second;
+      xtypes::TypeConsistency consistency = client_type->is_compatible(*server_type);
 
       ServiceClientSystem::RequestCallback callback =
-          [ =, &server_type](const xtypes::DynamicData& request,
+          [ = ](const xtypes::DynamicData& request,
               ServiceClient& client,
               const std::shared_ptr<void>& call_handle)
           {
@@ -1047,16 +1135,38 @@ bool Config::configure_services(
             }
             else             //previously ensured that TypeConsistency is not NONE
             {
-              xtypes::DynamicData compatible_request(request, server_type);
+              xtypes::DynamicData compatible_request(request, *server_type);
               provider->call_service(compatible_request, client, call_handle);
             }
           };
 
-      valid &= it->second.service_client->create_client_proxy(
-        client_info.name,
-        client_type,
-        callback,
-        config_or_empty_node(client, config.middleware_configs));
+      if (client_info.reply_type.empty())
+      {
+        valid &= it->second.service_client->create_client_proxy(
+          client_info.name,
+          //*client_type,
+          (client_info.type.find(".") == std::string::npos
+                     ? *client_type
+                     : *m_types.at(client_info.type.substr(0, client_info.type.find(".")))),
+          callback,
+          config_or_empty_node(client, config.middleware_configs));
+      }
+      else
+      {
+        const xtypes::DynamicType* client_reply_type = resolve_type(it->second.types, client_info.reply_type);
+
+        valid &= it->second.service_client->create_client_proxy(
+          client_info.name,
+          //*client_type,
+          (client_info.type.find(".") == std::string::npos
+                     ? *client_type
+                     : *m_types.at(client_info.type.substr(0, client_info.type.find(".")))),
+          (client_info.reply_type.find(".") == std::string::npos
+                     ? *client_reply_type
+                     : *m_types.at(client_info.reply_type.substr(0, client_info.reply_type.find(".")))),
+          callback,
+          config_or_empty_node(client, config.middleware_configs));
+      }
     }
   }
 
@@ -1073,8 +1183,10 @@ bool Config::check_topic_compatibility(
   for (const std::string& from : config.route.from)
   {
     const auto it_from = info_map.find(from);
-    TopicInfo topic_info_from = remap_if_needed(from, config.remap, {topic_name, config.message_type});
-    const auto from_type = it_from->second.types.find(topic_info_from.type);
+    TopicInfo topic_info_from = remap_if_needed(from, config.remap, {topic_name, config.message_type, ""});
+    const xtypes::DynamicType* from_type = resolve_type(it_from->second.types, topic_info_from.type);
+    //const auto from_type = it_from->second.types.find(topic_info_from.type);
+    /*
     if (from_type == it_from->second.types.end())
     {
       std::cerr << "Type [" << topic_info_from.type << "] not defined in middleware ["
@@ -1082,11 +1194,14 @@ bool Config::check_topic_compatibility(
       valid = false;
       continue;
     }
+    */
 
     for (const std::string& to : config.route.to)
     {
       const auto it_to = info_map.find(to);
-      TopicInfo topic_info_to = remap_if_needed(to, config.remap, {topic_name, config.message_type});
+      TopicInfo topic_info_to = remap_if_needed(to, config.remap, {topic_name, config.message_type, ""});
+      const xtypes::DynamicType* to_type = resolve_type(it_from->second.types, topic_info_from.type);
+      /*
       const auto to_type = it_to->second.types.find(topic_info_to.type);
       if (to_type == it_to->second.types.end())
       {
@@ -1095,8 +1210,10 @@ bool Config::check_topic_compatibility(
         valid = false;
         continue;
       }
+      */
 
-      xtypes::TypeConsistency consistency = from_type->second->is_compatible(*to_type->second);
+      //xtypes::TypeConsistency consistency = from_type->second->is_compatible(*to_type->second);
+      xtypes::TypeConsistency consistency = from_type->is_compatible(*to_type);
       if (consistency == xtypes::TypeConsistency::NONE)
       {
         std::cerr << "Remapping error: message type ["
@@ -1141,7 +1258,10 @@ bool Config::check_service_compatibility(
   for (const std::string& client : config.route.clients)
   {
     const auto it_client = info_map.find(client);
-    TopicInfo topic_info_client = remap_if_needed(client, config.remap, {service_name, config.service_type});
+    TopicInfo topic_info_client = remap_if_needed(client, config.remap,
+                                                  {service_name, config.request_type, config.reply_type});
+    const xtypes::DynamicType* client_type = resolve_type(it_client->second.types, topic_info_client.type);
+    /*
     const auto client_type = it_client->second.types.find(topic_info_client.type);
     if (client_type == it_client->second.types.end())
     {
@@ -1150,10 +1270,13 @@ bool Config::check_service_compatibility(
       valid = false;
       continue;
     }
+    */
 
     const auto it_server = info_map.find(config.route.server);
-    TopicInfo topic_info_server = remap_if_needed(config.route.server, config.remap, {service_name,
-                                                                                      config.service_type});
+    TopicInfo topic_info_server = remap_if_needed(config.route.server, config.remap,
+                                                  {service_name, config.request_type, config.reply_type});
+    const xtypes::DynamicType* server_type = resolve_type(it_server->second.types, topic_info_server.type);
+    /*
     const auto server_type = it_server->second.types.find(topic_info_server.type);
     if (server_type == it_server->second.types.end())
     {
@@ -1162,8 +1285,10 @@ bool Config::check_service_compatibility(
       valid = false;
       continue;
     }
+    */
 
-    if (client_type->second->is_compatible(*server_type->second) == xtypes::TypeConsistency::NONE)
+    //if (client_type->second->is_compatible(*server_type->second) == xtypes::TypeConsistency::NONE)
+    if (client_type->is_compatible(*server_type) == xtypes::TypeConsistency::NONE)
     {
       std::cerr << "Remapping error: service type ["
                 << topic_info_client.type << "] from [" + it_client->first + "] can not be read as type ["
@@ -1171,9 +1296,50 @@ bool Config::check_service_compatibility(
       valid = false;
       continue;
     }
+
+    if (!topic_info_client.reply_type.empty() && !topic_info_server.reply_type.empty())
+    {
+      const xtypes::DynamicType* client_reply = resolve_type(it_client->second.types, topic_info_client.reply_type);
+      const xtypes::DynamicType* server_reply = resolve_type(it_server->second.types, topic_info_server.reply_type);
+
+      if (client_reply->is_compatible(*server_reply) == xtypes::TypeConsistency::NONE)
+      {
+          std::cerr << "Remapping error: service reply type ["
+                    << topic_info_client.reply_type << "] from [" + it_client->first + "] can not be read as type ["
+                    << topic_info_server.reply_type << "] in [" + it_server->first + "]" << std::endl;
+      }
+    }
   }
 
   return valid;
+}
+
+const xtypes::DynamicType* Config::resolve_type(
+        const TypeRegistry& types,
+        const std::string& path) const
+{
+  if (path.find(".") == std::string::npos)
+  {
+    return types.find(path)->second.get();
+  }
+
+  std::string path_aux = path;
+  const xtypes::DynamicType* type_ptr;
+  std::string type = path_aux.substr(0, path_aux.find("."));
+  std::string member;
+  type_ptr = m_types.at(type).get();
+  while (path_aux.find(".") != std::string::npos)
+  {
+    path_aux = path_aux.substr(path_aux.find(".") + 1);
+    member = path_aux.substr(0, path_aux.find("."));
+    if (type_ptr->is_aggregation_type())
+    {
+       const xtypes::AggregationType& aggregation = static_cast<const xtypes::AggregationType&>(*type_ptr);
+       type_ptr = &aggregation.member(member).type();
+    }
+  }
+
+  return type_ptr;
 }
 
 } // namespace internal

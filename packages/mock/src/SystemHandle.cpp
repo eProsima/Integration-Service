@@ -131,7 +131,12 @@ public:
       ServiceClient& client,
       std::shared_ptr<void> call_handle) override
   {
-    const auto it = impl().mock_services.find(_service);
+    bool only_service = impl().mock_services.count(_service) > 0;
+    const auto it =
+      (only_service
+        ? impl().mock_services.find(_service)
+        : impl().mock_services.find(_service + "_" + request.type().name()));
+
     if(it == impl().mock_services.end())
     {
       throw std::runtime_error(
@@ -349,7 +354,7 @@ std::shared_future<xtypes::DynamicData> request(
 }
 
 //==============================================================================
-void serve(const std::string& topic, MockServiceCallback callback)
+void serve(const std::string& topic, MockServiceCallback callback, const std::string& type)
 {
   const auto it = impl().services.find(topic);
   if(it == impl().services.end())
@@ -359,7 +364,11 @@ void serve(const std::string& topic, MockServiceCallback callback)
           "that it is not providing: " + topic);
   }
 
-  const auto sit = impl().mock_services.insert(std::make_pair(topic, callback));
+  const auto sit =
+      impl().mock_services.insert(
+          std::make_pair(
+              (type.empty() ? topic : topic + "_" + type),
+              callback));
   if(!sit.second)
   {
     throw std::runtime_error(
