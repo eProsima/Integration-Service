@@ -312,7 +312,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
           plan_response.plan.poses.back());
 
     auto future_response_msg = soss::mock::request(
-          "get_plan", request_msg, 100ms);
+          "get_plan", request_msg);
 
     // Make sure that we got the expected request message
     auto start_time = std::chrono::steady_clock::now();

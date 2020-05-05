@@ -74,10 +74,31 @@ public:
       const YAML::Node& configuration) override;
 
   // Documentation inherited
+  bool create_client_proxy(
+      const std::string& service_name,
+      const xtypes::DynamicType&,
+      const xtypes::DynamicType& reply_type,
+      RequestCallback callback,
+      const YAML::Node& configuration) override
+  {
+      return create_client_proxy(service_name, reply_type, callback, configuration);
+  }
+
+  // Documentation inherited
   std::shared_ptr<ServiceProvider> create_service_proxy(
       const std::string& service_name,
       const xtypes::DynamicType& service_type,
       const YAML::Node& configuration) override;
+
+  // Documentation inherited
+  std::shared_ptr<ServiceProvider> create_service_proxy(
+      const std::string& service_name,
+      const xtypes::DynamicType& request_type,
+      const xtypes::DynamicType&,
+      const YAML::Node& configuration) override
+  {
+      return create_service_proxy(service_name, request_type, configuration);
+  }
 
 private:
 

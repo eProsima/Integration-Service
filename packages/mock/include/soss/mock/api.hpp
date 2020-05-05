@@ -40,7 +40,8 @@ using MockServiceCallback = std::function<xtypes::DynamicData(const xtypes::Dyna
 
 void SOSS_MOCK_API serve(
     const std::string& topic,
-    MockServiceCallback callback);
+    MockServiceCallback callback,
+    const std::string& type = "");
 
 
 } // namespace mock

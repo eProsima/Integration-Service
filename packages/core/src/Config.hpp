@@ -68,7 +68,8 @@ struct ServiceRoute
 struct TopicInfo
 {
   std::string name;
-  std::string type;
+  std::string type; // AKA request_type for Services with request + reply types.
+  std::string reply_type; // Only used for Services with reply_type.
 };
 
 //==============================================================================
@@ -86,7 +87,8 @@ struct TopicConfig
 //==============================================================================
 struct ServiceConfig
 {
-  std::string service_type;
+  std::string request_type;
+  std::string reply_type; // Optional
   ServiceRoute route;
 
   /// key: middleware alias
@@ -124,6 +126,9 @@ public:
   bool check_service_compatibility(const SystemHandleInfoMap& info_map,
                                    const std::string& service_name,
                                    const ServiceConfig& config) const;
+
+  const xtypes::DynamicType* resolve_type(const TypeRegistry& types,
+                                          const std::string& path) const;
 
   std::map<std::string, MiddlewareConfig> m_middlewares;
   std::map<std::string, TopicRoute> m_topic_routes;

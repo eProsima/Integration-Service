@@ -269,6 +269,11 @@ public:
       ServiceClient& soss_client,
       std::shared_ptr<void> call_handle) override
   {
+    if (!_ros2_client->wait_for_service(std::chrono::milliseconds(10)))
+    {
+      return;
+    }
+
     // This helps the lambda to value-capture the address of the soss client.
     // TODO(MXG): Would it be dangerous for the lambda to reference-capture the
     // soss client? The lambda might be called after this reference has left
