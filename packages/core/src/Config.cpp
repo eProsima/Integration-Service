@@ -172,6 +172,16 @@ bool add_types(
       for (auto& type: context.get_all_scoped_types())
       {
         types.insert(type);
+        // Some SH expect the types without the initial "::", and others with it,
+        // so we must add both of them.
+        if (type.first.find("::") == 0)
+        {
+            types.emplace(std::make_pair(type.first.substr(2), type.second));
+        }
+        else
+        {
+            types.emplace(std::make_pair("::" + type.first, type.second));
+        }
       }
       if (types.empty())
       {
