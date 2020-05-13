@@ -67,6 +67,8 @@ alphabetical_response_fields = sorted(spec.response.fields, key=lambda x: x.name
 // Include the Node API so we can provide and request services
 #include <rclcpp/node.hpp>
 
+#include <chrono>
+
 namespace soss {
 namespace ros2 {
 namespace @(namespace_variable_srv) {
@@ -213,9 +215,14 @@ private:
     std::future<Ros2_Response> future_response = response_promise.get_future();
     _callback(_request_data, *this, _handle);
 
-    future_response.wait();
-
-    *response = future_response.get();
+    if (std::future_status::ready == future_response.wait_for(std::chrono::milliseconds(5000))) // TODO: Make waiting time configurable.
+    {
+      *response = future_response.get();
+    }
+    else
+    {
+      std::cout << "Request timeout." << std::endl;
+    }
   }
 
   struct PromiseHolder
