@@ -49,12 +49,22 @@ public:
   /// \brief Cast this field to the requested type.
   /// If this field does not contain the requested type, this will be a nullptr.
   template<typename T>
-  T* cast();
+  T* cast(std::enable_if_t<std::is_integral<T>::value>* = 0);
+
+  /// \brief Cast this field to the requested type.
+  /// If this field does not contain the requested type, this will be a nullptr.
+  template<typename T>
+  T* cast(std::enable_if_t<!std::is_integral<T>::value>* = 0);
 
   /// \brief Cast this field to the requested type with const-qualifications.
   /// If this field does not contain the requested type, this will be a nullptr.
   template <typename T>
-  const T* cast() const;
+  const T* cast(std::enable_if_t<std::is_integral<T>::value>* = 0) const;
+
+  /// \brief Cast this field to the requested type.
+  /// If this field does not contain the requested type, this will be a nullptr.
+  template <typename T>
+  const T* cast(std::enable_if_t<!std::is_integral<T>::value>* = 0) const;
 
   /// \brief Get the type of this field
   std::string type() const;
@@ -77,6 +87,10 @@ private:
 
   class Implementation;
   std::unique_ptr<Implementation> _pimpl;
+
+  /// \brief
+  template<typename T, typename InnerT>
+  const T* _integral_cast() const;
 };
 
 //==============================================================================
