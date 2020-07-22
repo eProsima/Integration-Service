@@ -1,5 +1,5 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package soss-websocket
+Changelog for package soss-ros2-test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 2.0.0 (2020-07-23)
