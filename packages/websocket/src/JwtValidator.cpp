@@ -2,9 +2,55 @@
 
 #include <unordered_map>
 #include <regex>
+#include <utility>
 
 namespace soss {
 namespace websocket {
+
+VerificationPolicy::VerificationPolicy(std::vector<Rule> rules,
+  std::vector<Rule> header_rules, std::string secret_or_pubkey)
+: _secret_or_pubkey(std::move(secret_or_pubkey)), _rules(std::move(rules)),
+  _header_rules(std::move(header_rules))
+{
+  // This is so that we don't have to create the regexes everytime the policy is used.
+  for (auto& r : _rules)
+    _matchers[r.first] = std::regex{r.second};
+  for (auto& r : _header_rules)
+    _header_matchers[r.first] = std::regex(r.second);
+}
+
+bool VerificationPolicy::check(const std::string& token,
+  const json_t& header,
+  const json_t& payload)
+{
+  std::error_code ec;
+  jwt::decode(token, jwt::params::algorithms(
+      {header["alg"].get_ref<const std::string&>()}), ec, jwt::params::secret(
+      _secret_or_pubkey));
+  if (ec)
+    return false;
+
+  for (auto& r : _header_rules)
+  {
+    auto it = header.find(r.first);
+    if (it == header.end() || !it->is_string())
+      return false;
+    const auto& s = it->get_ref<const std::string&>();
+    if (!std::regex_match(s, _header_matchers.at(r.first)))
+      return false;
+  }
+
+  for (auto& r : _rules)
+  {
+    auto it = payload.find(r.first);
+    if (it == payload.end() || !it->is_string())
+      return false;
+    const auto& s = it->get_ref<const std::string&>();
+    if (!std::regex_match(s, _matchers.at(r.first)))
+      return false;
+  }
+  return true;
+}
 
 bool JwtValidator::verify(const std::string& token)
 {
@@ -20,68 +66,17 @@ bool JwtValidator::verify(const std::string& token)
   if (payload.is_discarded())
     return false;
 
-  VerificationStrategy vs;
-  bool has_strat = false;
-  for (auto& handler : _verification_policies)
+  for (auto& policy : _verification_policies)
   {
-    has_strat = handler(header, payload, vs);
-    if (has_strat)
-      break;
+    if (policy.check(token, header, payload))
+      return true;
   }
-  if (!has_strat)
-    return false;
-
-  std::error_code ec;
-  jwt::decode(token, algorithms(
-      {header["alg"].get_ref<std::string&>()}), ec, secret(vs.secret_or_pub));
-  return !static_cast<bool>(ec);
+  return false;
 }
 
 void JwtValidator::add_verification_policy(const VerificationPolicy& policy)
 {
   _verification_policies.emplace_back(policy);
-}
-
-VerificationPolicy VerificationPolicies::match_all(
-  const std::vector<Rule>& rules,
-  const std::vector<Rule>& header_rules,
-  const std::string& secret_or_pub)
-{
-  // This is so that we don't have to create the regexes everytime the policy is used.
-  std::unordered_map<std::string, std::regex> header_matchers;
-  for (auto& r : header_rules)
-    header_matchers[r.first] = std::regex(r.second);
-
-  std::unordered_map<std::string, std::regex> matchers;
-  for (auto& r : rules)
-    matchers[r.first] = std::regex{r.second};
-
-  return [=](
-    const json_t& header, const json_t& payload,
-    VerificationStrategy& vs) -> bool
-    {
-      for (auto& r : header_rules)
-      {
-        auto it = header.find(r.first);
-        if (it == header.end() || !it->is_string())
-          return false;
-        const auto& s = it->get_ref<const std::string&>();
-        if (!std::regex_match(s, header_matchers.at(r.first)))
-          return false;
-      }
-
-      for (auto& r : rules)
-      {
-        auto it = payload.find(r.first);
-        if (it == payload.end() || !it->is_string())
-          return false;
-        const auto& s = it->get_ref<const std::string&>();
-        if (!std::regex_match(s, matchers.at(r.first)))
-          return false;
-      }
-      vs.secret_or_pub = secret_or_pub;
-      return true;
-    };
 }
 
 } // namespace websocket

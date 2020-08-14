@@ -25,18 +25,20 @@
 using namespace soss::websocket;
 
 // { "iss": "test" } signed with secret "test" and algo "HS256"
-const std::string test_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiaWF0IjoxNTU1MDQyMjY4fQ.OhPGhQdSQLFBb1K0_jf5CAWOzIy3JfdEaQUeejWHUDs";
+const std::string test_token =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiaWF0IjoxNTU1MDQyMjY4fQ.OhPGhQdSQLFBb1K0_jf5CAWOzIy3JfdEaQUeejWHUDs";
 
 TEST_CASE("validates jwt token", "[Verification]")
 {
   JwtValidator jwt_validator;
-  jwt_validator.add_verification_policy(VerificationPolicies::match_all(
+  jwt_validator.add_verification_policy(VerificationPolicy(
       {}, {}, "test"));
 
   CHECK(jwt_validator.verify(test_token));
 
   // { "iss": "test" } signed with secret "bad_token" and algo "HS256"
-  std::string bad_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiaWF0IjoxNTU1MDQxOTE0fQ.uA-YwAns6NMVl7jgKueJVYSukUTenxaSV_xTxGHpF_E";
+  std::string bad_token =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiaWF0IjoxNTU1MDQxOTE0fQ.uA-YwAns6NMVl7jgKueJVYSukUTenxaSV_xTxGHpF_E";
   CHECK_FALSE(jwt_validator.verify(bad_token));
 
   std::string invalid_token = "xaxaxa.xaxaxa.xaxaxa";
@@ -47,11 +49,11 @@ TEST_CASE("simple verification strategy", "[Verification]")
 {
   JwtValidator jwt_validator;
 
-  jwt_validator.add_verification_policy(VerificationPolicies::match_all(
+  jwt_validator.add_verification_policy(VerificationPolicy(
       {{ "iss", "test" }, { "sub", "test" }}, {}, "test"));
   CHECK_FALSE(jwt_validator.verify(test_token));
 
-  jwt_validator.add_verification_policy(VerificationPolicies::match_all(
+  jwt_validator.add_verification_policy(VerificationPolicy(
       {{ "iss", "test" }}, {}, "test"));
   CHECK(jwt_validator.verify(test_token));
 }
@@ -67,13 +69,14 @@ TEST_CASE("both secret and pubkey", "[Load Config]")
 {
   JwtValidator jwt_validator;
   YAML::Node auth_node = YAML::Load("{ secret: test, pubkey: test }");
-  CHECK(ServerConfig::load_auth_policy(jwt_validator, auth_node));
+  CHECK_FALSE(ServerConfig::load_auth_policy(jwt_validator, auth_node));
 }
 
 TEST_CASE("default policy", "[Load Config]")
 {
   JwtValidator jwt_validator;
-  YAML::Node auth_node = YAML::Load(R"raw(
+  YAML::Node auth_node = YAML::Load(
+    R"raw(
 {
   secret: test,
   algo: HS256,
@@ -98,7 +101,8 @@ TEST_CASE("no alg", "[Load Config]")
 TEST_CASE("custom policy", "[Load Config]")
 {
   JwtValidator jwt_validator;
-  YAML::Node auth_node = YAML::Load(R"raw(
+  YAML::Node auth_node = YAML::Load(
+    R"raw(
 {
   policies: [
     {
@@ -118,7 +122,8 @@ TEST_CASE("custom policy", "[Load Config]")
 TEST_CASE("wildcard pattern rule '*'", "[Load Config]")
 {
   JwtValidator jwt_validator;
-  YAML::Node auth_node = YAML::Load(R"raw(
+  YAML::Node auth_node = YAML::Load(
+    R"raw(
 {
   policies: [
     {
@@ -135,7 +140,8 @@ TEST_CASE("wildcard pattern rule '*'", "[Load Config]")
   CHECK(jwt_validator.verify(test_token));
 
   jwt_validator = JwtValidator{};
-  auth_node = YAML::Load(R"raw(
+  auth_node = YAML::Load(
+    R"raw(
 {
   policies: [
     {
@@ -155,7 +161,8 @@ TEST_CASE("wildcard pattern rule '*'", "[Load Config]")
 TEST_CASE("wildcard pattern rule '?'", "[Load Config]")
 {
   JwtValidator jwt_validator;
-  YAML::Node auth_node = YAML::Load(R"raw(
+  YAML::Node auth_node = YAML::Load(
+    R"raw(
 {
   policies: [
     {
@@ -172,7 +179,8 @@ TEST_CASE("wildcard pattern rule '?'", "[Load Config]")
   CHECK(jwt_validator.verify(test_token));
 
   jwt_validator = JwtValidator{};
-  auth_node = YAML::Load(R"raw(
+  auth_node = YAML::Load(
+    R"raw(
 {
   policies: [
     {
@@ -192,7 +200,8 @@ TEST_CASE("wildcard pattern rule '?'", "[Load Config]")
 TEST_CASE("wildcard pattern rule mixed", "[Load Config]")
 {
   JwtValidator jwt_validator;
-  YAML::Node auth_node = YAML::Load(R"raw(
+  YAML::Node auth_node = YAML::Load(
+    R"raw(
 {
   policies: [
     {

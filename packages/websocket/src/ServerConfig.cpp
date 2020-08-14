@@ -20,6 +20,7 @@
 #include "Errors.hpp"
 
 #include <boost/algorithm/string.hpp>
+#include <fstream>
 #include <iostream>
 
 namespace soss {
@@ -93,14 +94,25 @@ VerificationPolicy ServerConfig::_parse_policy_yaml(
     throw ParseError(ss.str());
   }
 
-  std::string secret_or_pub;
-  if (policy_node[YamlSecretKey])
-    secret_or_pub = policy_node[YamlSecretKey].as<std::string>();
-  else
-    secret_or_pub = policy_node[YamlPubkeyKey].as<std::string>();
+  if (policy_node[YamlSecretKey] && policy_node[YamlPubkeyKey])
+  {
+    throw ParseError(
+            "cannot have both '" + YamlSecretKey + "' and '" + YamlPubkeyKey +
+            "'");
+  }
 
-  std::vector<VerificationPolicies::Rule> rules;
-  std::vector<VerificationPolicies::Rule> header_rules;
+  std::string secret_or_pubkey;
+  if (policy_node[YamlSecretKey])
+    secret_or_pubkey = policy_node[YamlSecretKey].as<std::string>();
+  else
+  {
+    const auto filepath = policy_node[YamlPubkeyKey].as<std::string>();
+    std::ifstream fs(filepath);
+    fs >> secret_or_pubkey;
+  }
+
+  std::vector<VerificationPolicy::Rule> rules;
+  std::vector<VerificationPolicy::Rule> header_rules;
 
   // The "algo" options serve as a way to restrict certain algos,
   // we shouldn't need it in the policy, we should respect the "alg" declared in the jwt header.
@@ -108,20 +120,20 @@ VerificationPolicy ServerConfig::_parse_policy_yaml(
   // For backwards compatibility, if we see an "algo" option, convert it to an "alg" rule.
   if (policy_node[YamlAlgoKey])
   {
-    header_rules.emplace_back(VerificationPolicies::Rule("alg",
+    header_rules.emplace_back(VerificationPolicy::Rule("alg",
       _glob_to_regex(policy_node[YamlAlgoKey].as<std::string>())));
   }
 
   for (const auto& r : policy_node[YamlRulesKey])
   {
     std::string regex_pattern = _glob_to_regex(r.second.as<std::string>());
-    rules.emplace_back(VerificationPolicies::Rule{
+    rules.emplace_back(VerificationPolicy::Rule{
         r.first.as<std::string>(), regex_pattern
       });
   }
 
-  return VerificationPolicies::match_all(
-    rules, header_rules, secret_or_pub);
+  return VerificationPolicy(
+    rules, header_rules, secret_or_pubkey);
 }
 
 } // namespace websocket
