@@ -27,7 +27,6 @@ namespace websocket {
 struct VerificationStrategy
 {
   std::string secret_or_pub;
-  std::string algo;
 };
 
 typedef std::function<
@@ -60,14 +59,20 @@ class VerificationPolicies
 public:
   typedef std::pair<std::string, std::string> Rule;
 
-  /// \brief a verification policy that matches if all of the rules matches.
-  /// \details each rule is a pair of json key and value, the policy is selected with all the keys
-  /// exist in the token payload and their values matches. The value may use wildcards pattern like
-  /// '?' and '*'.
+  /**
+   * A verification policy that matches if all of the rules matches.
+   * @details each rule is a pair of json key and value, the policy is allowed if all the keys
+   * exist in the token payload and their values matches. The value may use wildcards pattern like
+   *  '?' and '*'.
+   * @param rules A set of rules to match on the JWT payload
+   * @param header_rules A set of rules to match on the JWT header
+   * @param secret_or_pub
+   * @return
+   */
   static VerificationPolicy match_all(
     const std::vector<Rule>& rules,
-    const std::string& secret_or_pub,
-    const std::string& algo);
+    const std::vector<Rule>& header_rules,
+    const std::string& secret_or_pub);
 };
 
 } // namespace websocket

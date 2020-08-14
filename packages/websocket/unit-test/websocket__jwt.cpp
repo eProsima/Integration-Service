@@ -17,7 +17,6 @@
 
 #include <catch2/catch.hpp>
 
-#include <jwt/jwt.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include <JwtValidator.hpp>
@@ -32,7 +31,7 @@ TEST_CASE("validates jwt token", "[Verification]")
 {
   JwtValidator jwt_validator;
   jwt_validator.add_verification_policy(VerificationPolicies::match_all(
-      {}, "test", "HS256"));
+      {}, {}, "test"));
 
   CHECK(jwt_validator.verify(test_token));
 
@@ -49,24 +48,48 @@ TEST_CASE("simple verification strategy", "[Verification]")
   JwtValidator jwt_validator;
 
   jwt_validator.add_verification_policy(VerificationPolicies::match_all(
-      {{ "iss", "test" }, { "sub", "test" }}, "test", "HS256"));
+      {{ "iss", "test" }, { "sub", "test" }}, {}, "test"));
   CHECK_FALSE(jwt_validator.verify(test_token));
 
   jwt_validator.add_verification_policy(VerificationPolicies::match_all(
-      {{ "iss", "test" }}, "test", "HS256"));
+      {{ "iss", "test" }}, {}, "test"));
   CHECK(jwt_validator.verify(test_token));
+}
+
+TEST_CASE("no secret or pubkey", "[Load Config]")
+{
+  JwtValidator jwt_validator;
+  YAML::Node auth_node = YAML::Load("");
+  CHECK_FALSE(ServerConfig::load_auth_policy(jwt_validator, auth_node));
+}
+
+TEST_CASE("both secret and pubkey", "[Load Config]")
+{
+  JwtValidator jwt_validator;
+  YAML::Node auth_node = YAML::Load("{ secret: test, pubkey: test }");
+  CHECK(ServerConfig::load_auth_policy(jwt_validator, auth_node));
 }
 
 TEST_CASE("default policy", "[Load Config]")
 {
   JwtValidator jwt_validator;
   YAML::Node auth_node = YAML::Load(R"raw(
-policies: [
-  {
-    secret: test,
-    algo: HS256
-  }
-]
+{
+  secret: test,
+  algo: HS256,
+}
+)raw");
+  ServerConfig::load_auth_policy(jwt_validator, auth_node);
+  CHECK(jwt_validator.verify(test_token));
+}
+
+TEST_CASE("no alg", "[Load Config]")
+{
+  JwtValidator jwt_validator;
+  YAML::Node auth_node = YAML::Load(R"raw(
+{
+  secret: test
+}
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
   CHECK(jwt_validator.verify(test_token));
@@ -76,17 +99,19 @@ TEST_CASE("custom policy", "[Load Config]")
 {
   JwtValidator jwt_validator;
   YAML::Node auth_node = YAML::Load(R"raw(
-policies: [
-  {
-    rules: {
-      iss: test
-    },
-    secret: test,
-    algo: HS256
-  }
-]
+{
+  policies: [
+    {
+      rules: {
+        iss: test
+      },
+      secret: test,
+      algo: HS256
+    }
+  ]
+}
 )raw");
-  ServerConfig::load_auth_policy(jwt_validator, auth_node);
+  REQUIRE(ServerConfig::load_auth_policy(jwt_validator, auth_node));
   CHECK(jwt_validator.verify(test_token));
 }
 
@@ -94,30 +119,34 @@ TEST_CASE("wildcard pattern rule '*'", "[Load Config]")
 {
   JwtValidator jwt_validator;
   YAML::Node auth_node = YAML::Load(R"raw(
-policies: [
-  {
-    rules: {
-      iss: '*e*'
-    },
-    secret: test,
-    algo: HS256
-  }
-]
+{
+  policies: [
+    {
+      rules: {
+        iss: '*e*'
+      },
+      secret: test,
+      algo: HS256
+    }
+  ]
+}
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
   CHECK(jwt_validator.verify(test_token));
 
   jwt_validator = JwtValidator{};
   auth_node = YAML::Load(R"raw(
-policies: [
-  {
-    rules: {
-      iss: '*test*'
-    },
-    secret: test,
-    algo: HS256
-  }
-]
+{
+  policies: [
+    {
+      rules: {
+        iss: '*test*'
+      },
+      secret: test,
+      algo: HS256
+    }
+  ]
+}
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
   CHECK(jwt_validator.verify(test_token));
@@ -127,30 +156,34 @@ TEST_CASE("wildcard pattern rule '?'", "[Load Config]")
 {
   JwtValidator jwt_validator;
   YAML::Node auth_node = YAML::Load(R"raw(
-policies: [
-  {
-    rules: {
-      iss: '?es?'
-    },
-    secret: test,
-    algo: HS256
-  }
-]
+{
+  policies: [
+    {
+      rules: {
+        iss: '?es?'
+      },
+      secret: test,
+      algo: HS256
+    }
+  ]
+}
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
   CHECK(jwt_validator.verify(test_token));
 
   jwt_validator = JwtValidator{};
   auth_node = YAML::Load(R"raw(
-policies: [
-  {
-    rules: {
-      iss: 't?t'
-    },
-    secret: test,
-    algo: HS256
-  }
-]
+{
+  policies: [
+    {
+      rules: {
+        iss: 't?t'
+      },
+      secret: test,
+      algo: HS256
+    }
+  ]
+}
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
   CHECK_FALSE(jwt_validator.verify(test_token));
@@ -160,15 +193,17 @@ TEST_CASE("wildcard pattern rule mixed", "[Load Config]")
 {
   JwtValidator jwt_validator;
   YAML::Node auth_node = YAML::Load(R"raw(
-policies: [
-  {
-    rules: {
-      iss: '*[abt][a-z]s?'
-    },
-    secret: test,
-    algo: HS256
-  }
-]
+{
+  policies: [
+    {
+      rules: {
+        iss: '*[abt][a-z]s?'
+      },
+      secret: test,
+      algo: HS256
+    }
+  ]
+}
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
   CHECK(jwt_validator.verify(test_token));
