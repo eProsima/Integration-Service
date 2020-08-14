@@ -108,7 +108,11 @@ VerificationPolicy ServerConfig::_parse_policy_yaml(
   {
     const auto filepath = policy_node[YamlPubkeyKey].as<std::string>();
     std::ifstream fs(filepath);
-    fs >> secret_or_pubkey;
+    if (fs.fail())
+      throw std::runtime_error(filepath + ": " + strerror(errno));
+    std::stringstream ss;
+    ss << fs.rdbuf();
+    secret_or_pubkey = ss.str();
   }
 
   std::vector<VerificationPolicy::Rule> rules;

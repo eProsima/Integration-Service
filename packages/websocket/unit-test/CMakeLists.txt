@@ -1,8 +1,11 @@
 find_package(OpenSSL REQUIRED)
 
+configure_file(paths.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/paths.cpp)
+
 add_executable(soss-websocket-unit-test
   main.cpp
   websocket__jwt.cpp
+  paths.cpp
 )
 
 target_link_libraries(soss-websocket-unit-test
