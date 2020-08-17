@@ -38,15 +38,15 @@ TEST_CASE("validates jwt token", "[Verification]")
   jwt_validator.add_verification_policy(VerificationPolicy(
       {}, {}, "test"));
 
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 
   // { "iss": "test" } signed with secret "bad_token" and algo "HS256"
   std::string bad_token =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiaWF0IjoxNTU1MDQxOTE0fQ.uA-YwAns6NMVl7jgKueJVYSukUTenxaSV_xTxGHpF_E";
-  CHECK_FALSE(jwt_validator.verify(bad_token));
+  CHECK_THROWS(jwt_validator.verify(bad_token));
 
   std::string invalid_token = "xaxaxa.xaxaxa.xaxaxa";
-  CHECK_FALSE(jwt_validator.verify(invalid_token));
+  CHECK_THROWS(jwt_validator.verify(invalid_token));
 }
 
 TEST_CASE("simple verification strategy", "[Verification]")
@@ -55,11 +55,11 @@ TEST_CASE("simple verification strategy", "[Verification]")
 
   jwt_validator.add_verification_policy(VerificationPolicy(
       {{ "iss", "test" }, { "sub", "test" }}, {}, "test"));
-  CHECK_FALSE(jwt_validator.verify(hs256_token));
+  CHECK_THROWS(jwt_validator.verify(hs256_token));
 
   jwt_validator.add_verification_policy(VerificationPolicy(
       {{ "iss", "test" }}, {}, "test"));
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 }
 
 TEST_CASE("pubkey verification", "[Verification]")
@@ -68,7 +68,7 @@ TEST_CASE("pubkey verification", "[Verification]")
   YAML::Node auth_node = YAML::Load(
     "{ pubkey: " + test::test_dir + "/test.pub }");
   REQUIRE(ServerConfig::load_auth_policy(jwt_validator, auth_node));
-  CHECK(jwt_validator.verify(rs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(rs256_token));
 }
 
 TEST_CASE("no secret or pubkey", "[Load Config]")
@@ -96,7 +96,7 @@ TEST_CASE("default policy", "[Load Config]")
 }
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 }
 
 TEST_CASE("no alg", "[Load Config]")
@@ -108,7 +108,7 @@ TEST_CASE("no alg", "[Load Config]")
 }
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 }
 
 TEST_CASE("custom policy", "[Load Config]")
@@ -129,7 +129,7 @@ TEST_CASE("custom policy", "[Load Config]")
 }
 )raw");
   REQUIRE(ServerConfig::load_auth_policy(jwt_validator, auth_node));
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 }
 
 TEST_CASE("wildcard pattern rule '*'", "[Load Config]")
@@ -150,7 +150,7 @@ TEST_CASE("wildcard pattern rule '*'", "[Load Config]")
 }
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 
   jwt_validator = JwtValidator{};
   auth_node = YAML::Load(
@@ -168,7 +168,7 @@ TEST_CASE("wildcard pattern rule '*'", "[Load Config]")
 }
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 }
 
 TEST_CASE("wildcard pattern rule '?'", "[Load Config]")
@@ -189,7 +189,7 @@ TEST_CASE("wildcard pattern rule '?'", "[Load Config]")
 }
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 
   jwt_validator = JwtValidator{};
   auth_node = YAML::Load(
@@ -207,7 +207,7 @@ TEST_CASE("wildcard pattern rule '?'", "[Load Config]")
 }
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
-  CHECK_FALSE(jwt_validator.verify(hs256_token));
+  CHECK_THROWS(jwt_validator.verify(hs256_token));
 }
 
 TEST_CASE("wildcard pattern rule mixed", "[Load Config]")
@@ -228,5 +228,5 @@ TEST_CASE("wildcard pattern rule mixed", "[Load Config]")
 }
 )raw");
   ServerConfig::load_auth_policy(jwt_validator, auth_node);
-  CHECK(jwt_validator.verify(hs256_token));
+  CHECK_NOTHROW(jwt_validator.verify(hs256_token));
 }

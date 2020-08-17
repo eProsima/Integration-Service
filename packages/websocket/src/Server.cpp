@@ -16,6 +16,7 @@
 */
 
 #include "Endpoint.hpp"
+#include "Errors.hpp"
 #include "ServerConfig.hpp"
 #include "websocket_types.hpp"
 #include "JwtValidator.hpp"
@@ -40,16 +41,16 @@ const std::string YamlAuthKey = "authentication";
 
 //==============================================================================
 static std::string find_websocket_config_file(
-    const YAML::Node& configuration,
-    const std::string& config_key,
-    const std::string& explanation)
+  const YAML::Node& configuration,
+  const std::string& config_key,
+  const std::string& explanation)
 {
   const soss::Search search = soss::Search(WebsocketMiddlewareName)
-      .relative_to_config()
-      .relative_to_home();
+    .relative_to_config()
+    .relative_to_home();
 
   const YAML::Node node = configuration[config_key];
-  if(!node)
+  if (!node)
   {
     std::cerr << "[soss::websocket::Server] websocket_server is missing a "
               << "value for the required parameter [" << config_key
@@ -61,13 +62,13 @@ static std::string find_websocket_config_file(
 
   const std::string& parameter = node.as<std::string>();
   const std::string& result = search.find_file(parameter, "", &checked_paths);
-  if(result.empty())
+  if (result.empty())
   {
     std::string err = std::string()
-        + "[soss::websocket::Server] websocket_server failed to find the "
-        + "specified file for the [" + config_key + "] parameter: [" +parameter
-        + "]. Checked the following paths:\n";
-    for(const std::string& checked_path : checked_paths)
+      + "[soss::websocket::Server] websocket_server failed to find the "
+      + "specified file for the [" + config_key + "] parameter: [" +parameter
+      + "]. Checked the following paths:\n";
+    for (const std::string& checked_path : checked_paths)
       err += " -- " + checked_path + "\n";
     std::cerr << err << std::endl;
   }
@@ -84,46 +85,46 @@ static std::string find_websocket_config_file(
 static std::string find_certificate(const YAML::Node& configuration)
 {
   return find_websocket_config_file(
-        configuration, YamlCertificateKey,
-        "which should point to a TLS server certificate!");
+    configuration, YamlCertificateKey,
+    "which should point to a TLS server certificate!");
 }
 
 //==============================================================================
 static std::string find_private_key(const YAML::Node& configuration)
 {
   return find_websocket_config_file(
-        configuration, YamlPrivateKeyKey,
-        "which should point to the private key for this server!");
+    configuration, YamlPrivateKeyKey,
+    "which should point to the private key for this server!");
 }
 
 //==============================================================================
 static boost::asio::ssl::context::file_format parse_format(
-    const YAML::Node& configuration)
+  const YAML::Node& configuration)
 {
   const YAML::Node format = configuration[YamlFormatKey];
-  if(!format)
+  if (!format)
     return boost::asio::ssl::context::pem;
 
   const std::string& value = format.as<std::string>();
-  if(value == YamlFormatPemValue)
+  if (value == YamlFormatPemValue)
     return boost::asio::ssl::context::pem;
 
-  if(value == YamlFormatAsn1Value)
+  if (value == YamlFormatAsn1Value)
     return boost::asio::ssl::context::asn1;
 
   throw std::runtime_error(
-        "[soss::websocket::Server] Unrecognized file format type: " + value
-        +". Only [" + YamlFormatPemValue + "] and [" + YamlFormatAsn1Value
-        + "] formats are supported.");
+          "[soss::websocket::Server] Unrecognized file format type: " + value
+          +". Only [" + YamlFormatPemValue + "] and [" + YamlFormatAsn1Value
+          + "] formats are supported.");
 }
 
 //==============================================================================
 static bool all_closed(
-    const std::unordered_set<WsCppConnectionPtr>& connections)
+  const std::unordered_set<WsCppConnectionPtr>& connections)
 {
-  for(const auto& connection : connections)
+  for (const auto& connection : connections)
   {
-    if(connection->get_state() != websocketpp::session::state::closed)
+    if (connection->get_state() != websocketpp::session::state::closed)
       return false;
   }
 
@@ -141,24 +142,24 @@ public:
   }
 
   WsCppEndpoint* configure_endpoint(
-      const RequiredTypes& /*types*/,
-      const YAML::Node& configuration) override
+    const RequiredTypes& /*types*/,
+    const YAML::Node& configuration) override
   {
     const int32_t port = parse_port(configuration);
-    if(port < 0)
+    if (port < 0)
       return nullptr;
     const uint16_t uport = static_cast<uint16_t>(port);
 
     const std::string cert_file = find_certificate(configuration);
-    if(cert_file.empty())
+    if (cert_file.empty())
       return nullptr;
 
     const std::string key_file = find_private_key(configuration);
-    if(key_file.empty())
+    if (key_file.empty())
       return nullptr;
 
     const boost::asio::ssl::context::file_format format =
-        parse_format(configuration);
+      parse_format(configuration);
 
     const YAML::Node auth_node = configuration[YamlAuthKey];
     if (auth_node)
@@ -172,29 +173,29 @@ public:
       }
     }
 
-    if(!configure_server(uport, cert_file, key_file, format))
+    if (!configure_server(uport, cert_file, key_file, format))
       return nullptr;
 
     return &_server;
   }
 
   bool configure_server(
-      const uint16_t port,
-      const std::string& cert_file,
-      const std::string& key_file,
-      const boost::asio::ssl::context::file_format format)
+    const uint16_t port,
+    const std::string& cert_file,
+    const std::string& key_file,
+    const boost::asio::ssl::context::file_format format)
   {
     namespace asio = boost::asio;
 
     _context = std::make_shared<WsCppSslContext>(asio::ssl::context::tls);
     _context->set_options(
-          asio::ssl::context::default_workarounds |
-          asio::ssl::context::no_sslv2 |
-          asio::ssl::context::no_sslv3);
+      asio::ssl::context::default_workarounds |
+      asio::ssl::context::no_sslv2 |
+      asio::ssl::context::no_sslv3);
 
     boost::system::error_code ec;
     _context->use_certificate_file(cert_file, format, ec);
-    if(ec)
+    if (ec)
     {
       std::cerr << "[soss::websocket::Server] Failed to load certificate file ["
                 << cert_file << "]: " << ec.message() << std::endl;
@@ -208,7 +209,7 @@ public:
     // keys, but this is probably something we should allow users to
     // configure from the soss config file.
     _context->use_rsa_private_key_file(key_file, format, ec);
-    if(ec)
+    if (ec)
     {
       std::cerr << "[soss::websocket::Server] Failed to load private key file ["
                 << key_file << "]: " << ec.message() << std::endl;
@@ -221,51 +222,51 @@ public:
     _server.set_reuse_addr(true);
 
     _server.clear_access_channels(
-          websocketpp::log::alevel::frame_header |
-          websocketpp::log::alevel::frame_payload);
+      websocketpp::log::alevel::frame_header |
+      websocketpp::log::alevel::frame_payload);
 
     _server.init_asio();
     _server.start_perpetual();
 
     _server.set_message_handler(
-          [&](WsCppWeakConnectPtr handle, WsCppMessagePtr message)
-    {
-      this->_handle_message(handle, message);
-    });
+      [&](WsCppWeakConnectPtr handle, WsCppMessagePtr message)
+      {
+        this->_handle_message(handle, message);
+      });
 
     _server.set_close_handler(
-          [&](WsCppWeakConnectPtr handle)
-    {
-      this->_handle_close(std::move(handle));
-    });
+      [&](WsCppWeakConnectPtr handle)
+      {
+        this->_handle_close(std::move(handle));
+      });
 
     _server.set_open_handler(
-          [&](WsCppWeakConnectPtr handle)
-    {
-      this->_handle_opening(std::move(handle));
-    });
+      [&](WsCppWeakConnectPtr handle)
+      {
+        this->_handle_opening(std::move(handle));
+      });
 
     _server.set_fail_handler(
-          [&](WsCppWeakConnectPtr handle)
-    {
-      this->_handle_failed_connection(std::move(handle));
-    });
+      [&](WsCppWeakConnectPtr handle)
+      {
+        this->_handle_failed_connection(std::move(handle));
+      });
 
     _server.set_tls_init_handler(
-          [&](WsCppWeakConnectPtr /*handle*/) -> WsCppSslContextPtr
-    {
-      return _context;
-    });
+      [&](WsCppWeakConnectPtr /*handle*/) -> WsCppSslContextPtr
+      {
+        return _context;
+      });
 
     _server.set_validate_handler(
-          [&](WsCppWeakConnectPtr handle) -> bool
-    {
-      return this->_handle_validate(std::move(handle));
-    });
+      [&](WsCppWeakConnectPtr handle) -> bool
+      {
+        return this->_handle_validate(std::move(handle));
+      });
 
     _server.listen(port);
 
-    _server_thread = std::thread([&](){ this->_server.run(); });
+    _server_thread = std::thread([&]() { this->_server.run(); });
 
     return true;
   }
@@ -281,7 +282,7 @@ public:
 
     // First instruct all connections to close
     const auto connection_copies = _open_connections;
-    for(const auto& connection : connection_copies)
+    for (const auto& connection : connection_copies)
       connection->close(websocketpp::close::status::normal, "shutdown");
 
     // Then wait for all of them to close
@@ -290,11 +291,11 @@ public:
     const auto start_time = std::chrono::steady_clock::now();
     // TODO(MXG): Make these timeout parameters something that can be
     // configured by users.
-    while(!all_closed(connection_copies))
+    while (!all_closed(connection_copies))
     {
       std::this_thread::sleep_for(200ms);
 
-      if(std::chrono::steady_clock::now() - start_time > 10s)
+      if (std::chrono::steady_clock::now() - start_time > 10s)
       {
         std::cerr << "[soss::websocket::Server] Timed out while waiting for "
                   << "the remote clients to acknowledge the connection "
@@ -303,7 +304,7 @@ public:
       }
     }
 
-    if(_server_thread.joinable())
+    if (_server_thread.joinable())
     {
       _server.stop();
 
@@ -319,7 +320,7 @@ public:
 
   bool spin_once() override
   {
-    if(!_has_spun_once)
+    if (!_has_spun_once)
     {
       _has_spun_once = true;
       _server.start_accept();
@@ -332,27 +333,27 @@ public:
   }
 
   void runtime_advertisement(
-      const std::string& topic,
-      const std::string& message_type,
-      const std::string& id,
-      const YAML::Node& configuration) override
+    const std::string& topic,
+    const std::string& message_type,
+    const std::string& id,
+    const YAML::Node& configuration) override
   {
     const std::string advertise_msg =
-        get_encoding().encode_advertise_msg(
-          topic, message_type, id, configuration);
+      get_encoding().encode_advertise_msg(
+      topic, message_type, id, configuration);
 
-    for(const WsCppConnectionPtr& connection : _open_connections)
+    for (const WsCppConnectionPtr& connection : _open_connections)
       connection->send(advertise_msg);
   }
 
 private:
 
   void _handle_message(
-      const WsCppWeakConnectPtr& handle,
-      const WsCppMessagePtr& message)
+    const WsCppWeakConnectPtr& handle,
+    const WsCppMessagePtr& message)
   {
     get_encoding().interpret_websocket_msg(
-          message->get_payload(), *this, _server.get_con_from_hdl(handle));
+      message->get_payload(), *this, _server.get_con_from_hdl(handle));
   }
 
   void _handle_close(const WsCppWeakConnectPtr& handle)
@@ -369,7 +370,7 @@ private:
   {
     const auto connection = _server.get_con_from_hdl(handle);
 
-    if(_closing_down)
+    if (_closing_down)
     {
       connection->close(websocketpp::close::status::normal, "shutdown");
       return;
@@ -393,8 +394,10 @@ private:
     if (!_jwt_validator)
       return true;
 
-    decltype(_server)::connection_ptr connection_ptr = _server.get_con_from_hdl(handle);
-    std::vector<std::string> requested_sub_protos = connection_ptr->get_requested_subprotocols();
+    decltype(_server)::connection_ptr connection_ptr = _server.get_con_from_hdl(
+      handle);
+    std::vector<std::string> requested_sub_protos =
+      connection_ptr->get_requested_subprotocols();
     if (requested_sub_protos.size() != 1)
     {
       connection_ptr->set_status(websocketpp::http::status_code::unauthorized);
@@ -402,8 +405,13 @@ private:
     }
 
     std::string token = requested_sub_protos[0]; // the subprotocol is the jwt token
-    if (!_jwt_validator->verify(token))
+    try
     {
+      _jwt_validator->verify(token);
+    }
+    catch (const jwt::VerificationError& e)
+    {
+      std::cerr << e.what() << std::endl;
       connection_ptr->set_status(websocketpp::http::status_code::unauthorized);
       return false;
     }

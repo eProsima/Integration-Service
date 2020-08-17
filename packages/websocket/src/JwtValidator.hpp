@@ -40,7 +40,10 @@ public:
     return _secret_or_pubkey;
   }
 
-  bool check(const std::string& token, const json_t& header,
+  /**
+   * @throws VerificationError
+   */
+  void check(const std::string& token, const json_t& header,
     const json_t& payload);
 
 private:
@@ -55,7 +58,10 @@ private:
 class JwtValidator
 {
 public:
-  bool verify(const std::string& token);
+  /**
+   * @throws VerificationError
+   */
+  void verify(const std::string& token);
 
   /// \brief Adds a policy to resolve the verification strategy to use
   /// \details The VerificationPolicy should set the VerificationStrategy and returns true if
