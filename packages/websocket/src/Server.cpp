@@ -20,6 +20,7 @@
 #include "ServerConfig.hpp"
 #include "websocket_types.hpp"
 #include "JwtValidator.hpp"
+#include "FileManager.hpp"
 
 #include <soss/Search.hpp>
 #include <websocketpp/endpoint.hpp>
@@ -28,7 +29,6 @@
 namespace soss {
 namespace websocket {
 
-const std::string WebsocketMiddlewareName = "websocket";
 const std::string HomeEnvVar = "HOME";
 const std::string YamlCertificateKey = "cert";
 const std::string YamlPrivateKeyKey = "key";
@@ -45,10 +45,6 @@ static std::string find_websocket_config_file(
   const std::string& config_key,
   const std::string& explanation)
 {
-  const soss::Search search = soss::Search(WebsocketMiddlewareName)
-    .relative_to_config()
-    .relative_to_home();
-
   const YAML::Node node = configuration[config_key];
   if (!node)
   {
@@ -58,19 +54,14 @@ static std::string find_websocket_config_file(
     return {};
   }
 
-  std::vector<std::string> checked_paths;
-
   const std::string& parameter = node.as<std::string>();
-  const std::string& result = search.find_file(parameter, "", &checked_paths);
+  const std::string& result = FileManager::find_file(parameter);
   if (result.empty())
   {
     std::string err = std::string()
       + "[soss::websocket::Server] websocket_server failed to find the "
       + "specified file for the [" + config_key + "] parameter: [" +parameter
-      + "]. Checked the following paths:\n";
-    for (const std::string& checked_path : checked_paths)
-      err += " -- " + checked_path + "\n";
-    std::cerr << err << std::endl;
+      + "].";
   }
   else
   {

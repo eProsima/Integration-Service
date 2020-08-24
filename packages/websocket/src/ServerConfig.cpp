@@ -18,6 +18,7 @@
 #include "ServerConfig.hpp"
 
 #include "Errors.hpp"
+#include "FileManager.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <fstream>
@@ -106,7 +107,16 @@ VerificationPolicy ServerConfig::_parse_policy_yaml(
     secret_or_pubkey = policy_node[YamlSecretKey].as<std::string>();
   else
   {
-    const auto filepath = policy_node[YamlPubkeyKey].as<std::string>();
+    const auto param = policy_node[YamlPubkeyKey].as<std::string>();
+    const auto filepath = FileManager::find_file(param);
+    if (filepath.empty())
+    {
+      std::string err = std::string()
+        + "[soss::websocket::Server] websocket_server failed to find the "
+        + "specified file for the [" + YamlPubkeyKey + "] parameter: [" + param
+        + "].";
+      throw ParseError(err);
+    }
     std::ifstream fs(filepath);
     if (fs.fail())
       throw std::runtime_error(filepath + ": " + strerror(errno));
