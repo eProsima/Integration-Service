@@ -18,12 +18,14 @@ systems:
   client:
     type: websocket_server
     port: 50001
-    cert: /absolute/path/soss.crt
-    key: /absolute/path/soss.key
+    cert: path/to/soss.crt
+    key: path/to/soss.key
     authentication: { secret: my_secret }
 
 ...other soss options
 ```
+
+Paths for cert and keys can be either absolute, relative to the config file or relative to your home directory.
 
 ### Authentication Options
 
@@ -31,7 +33,7 @@ The authentication option is a map with the following keys:
 
 *secret*: The secret to use for MAC based verification.
 
-*pubkey*: Absolute path to a file containing a PEM encoded public key.
+*pubkey*: Path to a file containing a PEM encoded public key.
 
 Either a *secret* or *pubkey* must be present.
 
