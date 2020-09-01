@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(soss-ros2-test)
 
+find_package(statistics_msgs REQUIRED)
+find_package(libstatistics_collector REQUIRED)
+find_package(rosgraph_msgs REQUIRED)
+
 # Get soss dependencies
 find_package(soss-core REQUIRED)
 find_package(soss-mock REQUIRED)
