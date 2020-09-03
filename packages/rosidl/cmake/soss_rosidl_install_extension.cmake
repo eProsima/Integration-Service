@@ -26,6 +26,7 @@ include(GNUInstallDirs)
 #   [SERVICE
 #     [SOURCES <service-source-templates>]
 #     [HEADERS <service-header-templates>] ]
+#   [DEPENDENCIES <middleware dependencies>]
 # )
 function(soss_rosidl_install_extension)
 

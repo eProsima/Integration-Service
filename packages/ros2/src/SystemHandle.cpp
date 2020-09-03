@@ -102,7 +102,7 @@ bool SystemHandle::configure(
   bool success = true;
   argv[0] = "soss";
 
-  if(!rclcpp::is_initialized())
+  if(!rclcpp::ok())
   {
     rclcpp::init(argc, argv);
   }

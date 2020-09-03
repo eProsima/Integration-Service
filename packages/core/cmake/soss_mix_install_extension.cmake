@@ -27,6 +27,7 @@ include(GNUInstallDirs)
 #   [SERVICE
 #     [SOURCES <service-source-templates>]
 #     [HEADERS <service-header-templates>] ]
+#   [DEPENDENCIES <middleware dependencies>]
 # )
 function(soss_mix_install_extension)
 
@@ -34,7 +35,7 @@ function(soss_mix_install_extension)
     _ARG # prefix
     "" # options
     "IDL_TYPE;MIDDLEWARE" # one-value arguments
-    "MESSAGE;SERVICE" # multi-value arguments
+    "MESSAGE;SERVICE;DEPENDENCIES" # multi-value arguments
     ${ARGN}
   )
 
