@@ -18,8 +18,10 @@ public:
 
 private:
 
-    static std::string glob_to_regex(
+    static std::string _glob_to_regex(
             const std::string& s);
+    static VerificationPolicy _parse_policy_yaml(
+            const YAML::Node& policy_node);
 };
 
 } // namespace websocket
