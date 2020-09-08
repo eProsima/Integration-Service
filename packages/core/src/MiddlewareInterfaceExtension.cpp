@@ -17,6 +17,7 @@
 
 #include <soss/MiddlewareInterfaceExtension.hpp>
 
+#include <cassert>
 #include <experimental/filesystem>
 #include <iostream>
 

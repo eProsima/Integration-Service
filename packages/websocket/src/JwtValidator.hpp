@@ -18,26 +18,52 @@
 #ifndef SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
 #define SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
 
-#include <functional>
 #include <jwt/jwt.hpp>
+
+#include <regex>
 
 namespace soss {
 namespace websocket {
 
-struct VerificationStrategy
+class VerificationPolicy
 {
-  std::string secret_or_pub;
-  std::string algo;
-};
+public:
 
-typedef std::function<
-    bool(const json_t& header, const json_t& payload,
-    VerificationStrategy& vs)> VerificationPolicy;
+  using Rule = std::pair<std::string, std::string>;
+
+  VerificationPolicy(std::vector<Rule> rules,
+    std::vector<Rule> header_rules,
+    std::string secret_or_pubkey);
+
+  inline const std::string& secret_or_pubkey() const
+  {
+    return _secret_or_pubkey;
+  }
+
+  /**
+   * @throws VerificationError
+   */
+  void check(
+    const std::string& token,
+    const json_t& header,
+    const json_t& payload);
+
+private:
+
+  std::string _secret_or_pubkey;
+  std::vector<Rule> _rules;
+  std::vector<Rule> _header_rules;
+  std::unordered_map<std::string, std::regex> _matchers;
+  std::unordered_map<std::string, std::regex> _header_matchers;
+};
 
 class JwtValidator
 {
 public:
-  bool verify(const std::string& token);
+  /**
+   * @throws VerificationError
+   */
+  void verify(const std::string& token);
 
   /// \brief Adds a policy to resolve the verification strategy to use
   /// \details The VerificationPolicy should set the VerificationStrategy and returns true if
@@ -53,21 +79,6 @@ public:
 
 private:
   std::vector<VerificationPolicy> _verification_policies;
-};
-
-class VerificationPolicies
-{
-public:
-  typedef std::pair<std::string, std::string> Rule;
-
-  /// \brief a verification policy that matches if all of the rules matches.
-  /// \details each rule is a pair of json key and value, the policy is selected with all the keys
-  /// exist in the token payload and their values matches. The value may use wildcards pattern like
-  /// '?' and '*'.
-  static VerificationPolicy match_all(
-    const std::vector<Rule>& rules,
-    const std::string& secret_or_pub,
-    const std::string& algo);
 };
 
 } // namespace websocket
