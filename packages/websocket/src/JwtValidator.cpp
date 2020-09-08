@@ -10,15 +10,19 @@
 namespace soss {
 namespace websocket {
 
-VerificationPolicy::VerificationPolicy(std::vector<Rule> rules,
-  std::vector<Rule> header_rules, std::string secret_or_pubkey)
-: _secret_or_pubkey(std::move(secret_or_pubkey)), _rules(std::move(rules)),
+VerificationPolicy::VerificationPolicy(
+  std::vector<Rule> rules,
+  std::vector<Rule> header_rules,
+  std::string secret_or_pubkey
+)
+: _secret_or_pubkey(std::move(secret_or_pubkey)),
+  _rules(std::move(rules)),
   _header_rules(std::move(header_rules))
 {
   // This is so that we don't have to create the regexes everytime the policy is used.
-  for (auto& r : _rules)
+  for (const auto& r : _rules)
     _matchers[r.first] = std::regex{r.second};
-  for (auto& r : _header_rules)
+  for (const auto& r : _header_rules)
     _header_matchers[r.first] = std::regex(r.second);
 }
 
@@ -30,7 +34,7 @@ void VerificationPolicy::check(const std::string& token,
       {header["alg"].get_ref<const std::string&>()}), jwt::params::secret(
       _secret_or_pubkey));
 
-  for (auto& r : _header_rules)
+  for (const auto& r : _header_rules)
   {
     auto it = header.find(r.first);
     if (it == header.end())
@@ -42,7 +46,7 @@ void VerificationPolicy::check(const std::string& token,
       throw jwt::VerificationError("'" + r.first + "' does not match policy");
   }
 
-  for (auto& r : _rules)
+  for (const auto& r : _rules)
   {
     auto it = payload.find(r.first);
     if (it == payload.end())

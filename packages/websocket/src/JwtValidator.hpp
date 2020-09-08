@@ -43,7 +43,9 @@ public:
   /**
    * @throws VerificationError
    */
-  void check(const std::string& token, const json_t& header,
+  void check(
+    const std::string& token,
+    const json_t& header,
     const json_t& payload);
 
 private:

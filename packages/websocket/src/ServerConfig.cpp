@@ -47,7 +47,7 @@ bool ServerConfig::load_auth_policy(JwtValidator& jwt_validator,
     }
     else
     {
-      for (auto& policy_node : policies_node)
+      for (const auto& policy_node : policies_node)
         jwt_validator.add_verification_policy(_parse_policy_yaml(policy_node));
     }
   }
@@ -64,23 +64,24 @@ std::string ServerConfig::_glob_to_regex(const std::string& s)
 {
   using namespace boost::algorithm;
 
-  return find_format_all_copy(s, token_finder(is_any_of(".*?\\")), [](auto s)
+  return find_format_all_copy(
+    s, token_finder(is_any_of(".*?\\")), [](auto s)
+    {
+      auto c = s.begin();
+      switch (*c)
       {
-        auto c = s.begin();
-        switch (*c)
-        {
-          case '.':
-            return std::string("\\.");
-          case '*':
-            return std::string(".*");
-          case '?':
-            return std::string(".?");
-          case '\\':
-            return std::string("\\\\");
-          default:
-            return std::string(s.begin(), s.end());
-        }
-      });
+        case '.':
+          return std::string("\\.");
+        case '*':
+          return std::string(".*");
+        case '?':
+          return std::string(".?");
+        case '\\':
+          return std::string("\\\\");
+        default:
+          return std::string(s.begin(), s.end());
+      }
+    });
 }
 
 VerificationPolicy ServerConfig::_parse_policy_yaml(
@@ -142,12 +143,12 @@ VerificationPolicy ServerConfig::_parse_policy_yaml(
   {
     std::string regex_pattern = _glob_to_regex(r.second.as<std::string>());
     rules.emplace_back(VerificationPolicy::Rule{
-        r.first.as<std::string>(), regex_pattern
+        r.first.as<std::string>(), std::move(regex_pattern)
       });
   }
 
   return VerificationPolicy(
-    rules, header_rules, secret_or_pubkey);
+    std::move(rules), std::move(header_rules), std::move(secret_or_pubkey));
 }
 
 } // namespace websocket
