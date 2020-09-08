@@ -81,7 +81,12 @@ public:
 private:
 
   std::shared_ptr<rclcpp::Node> _node;
+#ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
   std::unique_ptr<rclcpp::executor::Executor> _executor;
+#else
+  std::unique_ptr<rclcpp::Executor> _executor;
+#endif // SOSS_ROS2_ROSIDL_GENERATOR_CPP
+
   std::vector<std::shared_ptr<void>> _subscriptions;
   std::vector<std::shared_ptr<ServiceClient>> _client_proxies;
 };

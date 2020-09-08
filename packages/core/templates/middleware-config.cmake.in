@@ -27,4 +27,8 @@ foreach(extension @extensions@)
   include(${CMAKE_CURRENT_LIST_DIR}/extensions/${extension})
 endforeach()
 
+foreach(dep @_ARG_DEPENDENCIES@)
+  find_package(${dep} REQUIRED)
+endforeach()
+
 set(soss-@middleware@_FOUND TRUE)

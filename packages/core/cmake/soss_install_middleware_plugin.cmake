@@ -16,12 +16,13 @@
 
 #################################################
 # soss_install_middleware_plugin(
-#   MIDDLEWARE  <middleware_name>
-#   TARGET      <target>
+#   MIDDLEWARE    <middleware_name>
+#   TARGET        <target>
 #   [NO_CONFIG]
-#   [TYPES      <system_types...>]
-#   [EXTENSIONS <files_of_config_extensions>]
-#   [BUILD_DIR  <relative_directory>]
+#   [TYPES        <system_types...>]
+#   [DEPENDENCIES <middleware dependencies>]
+#   [EXTENSIONS   <files_of_config_extensions>]
+#   [BUILD_DIR    <relative_directory>]
 # )
 #
 # MIDDLEWARE: The name of the middleware. The resulting package will be called
@@ -37,6 +38,9 @@
 # NO_CONFIG: Option. Tell the function to not install the installation
 # configuration information for this middleware plugin. This is strongly
 # discouraged for any middlewares that may have downstream dependents.
+#
+# DEPENDENCIES: Optional list of package names that the middleware plugin
+# depends on.
 #
 # EXTENSIONS: Optional list of files that will get included into the config-file
 # that is generated. This can be used for adding calls to find_dependency or
@@ -55,7 +59,7 @@ function(soss_install_middleware_plugin)
     _ARG # prefix
     "NO_CONFIG" # options
     "MIDDLEWARE;TARGET;BUILD_DIR" # one-value arguments
-    "TYPES;EXTENSIONS" # multi-value arguments
+    "TYPES;DEPENDENCIES;EXTENSIONS" # multi-value arguments
     ${ARGN}
   )
 

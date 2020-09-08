@@ -46,7 +46,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
   const int argc = 1;
   const char* argv[argc];
   argv[0] = "soss";
-  if (rclcpp::is_initialized())
+  if (rclcpp::ok())
   {
     std::cout << "Skipping rclcpp init. rcl already initialized." << std::endl;
   }
