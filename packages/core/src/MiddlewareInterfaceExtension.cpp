@@ -25,6 +25,7 @@
 #include <Windows.h>
 #include <assert.h>
 #else
+#include <cassert>
 #include <dlfcn.h>
 #endif
 
