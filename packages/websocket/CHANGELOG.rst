@@ -2,6 +2,11 @@
 Changelog for package soss-websocket
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2020-09-24)
+------------------
+* feat: verify token with public key (`#42 <https://github.com/osrf/soss/issues/42>`_)
+* Contributors: Marco A. Gutiérrez, Teo Koon Peng
+
 2.0.0 (2020-07-23)
 ------------------
 * Add Windows compatibility (`#18 <https://github.com/osrf/soss/pull/18>`_)

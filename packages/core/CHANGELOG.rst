@@ -2,6 +2,12 @@
 Changelog for package soss-core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2020-09-24)
+------------------
+* feat: verify token with public key (`#42 <https://github.com/osrf/soss/issues/42>`_)
+* Cross-compatibility with eloquent and foxy (`#44 <https://github.com/osrf/soss/issues/44>`_)
+* Contributors: Grey, Marco A. Gutiérrez, Teo Koon Peng
+
 2.0.0 (2020-07-23)
 ------------------
 * Fix/int segfault (`#36 <https://github.com/osrf/soss/issues/36>`_) (`#37 <https://github.com/osrf/soss/pull/37>`_)
