@@ -11,7 +11,6 @@ find_package(xtypes REQUIRED)
 find_package(soss-json REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(websocketpp REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system date_time regex random)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -43,10 +42,6 @@ target_link_libraries(soss-websocket
   PRIVATE
     soss::json
     OpenSSL::SSL
-    Boost::system
-    Boost::date_time
-    Boost::regex
-    Boost::random
 )
 
 target_include_directories(soss-websocket

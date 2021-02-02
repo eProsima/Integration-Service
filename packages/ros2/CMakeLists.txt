@@ -42,12 +42,20 @@ target_include_directories(soss-ros2
     ${rclcpp_INCLUDE_DIRS}
 )
 
+if (NOT rosidl_runtime_cpp_FOUND)
+  target_compile_definitions(soss-ros2
+    PUBLIC
+      "SOSS_ROS2__ROSIDL_GENERATOR_CPP"
+  )
+endif()
+
 
 ###############################
 # Install soss-ros2
 soss_install_middleware_plugin(
   MIDDLEWARE ros2
   TARGET soss-ros2
+  DEPENDENCIES rclcpp
 )
 
 install(
