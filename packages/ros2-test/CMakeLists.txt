@@ -13,6 +13,7 @@ find_package(soss-ros2 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(soss_ros2_test_msg REQUIRED)
+find_package(std_msgs REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -21,7 +22,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 soss_rosidl_mix(
-  PACKAGES geometry_msgs nav_msgs soss_ros2_test_msg
+  PACKAGES std_msgs geometry_msgs nav_msgs soss_ros2_test_msg
   MIDDLEWARES ros2
 )
 
