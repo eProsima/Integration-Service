@@ -102,11 +102,6 @@ bool SystemHandle::configure(
   bool success = true;
   argv[0] = "soss";
 
-  if(!rclcpp::ok())
-  {
-    rclcpp::init(argc, argv);
-  }
-
   std::string ns = "";
   if(const YAML::Node namespace_node = configuration["namespace"])
   {
@@ -119,9 +114,9 @@ bool SystemHandle::configure(
     name = name_node.as<std::string>("");
   }
 
+  std::string previous_domain;
   if(const YAML::Node domain_node = configuration["domain"])
   {
-    std::string previous_domain;
     if(getenv("ROS_DOMAIN_ID") != nullptr)
     {
       previous_domain = getenv("ROS_DOMAIN_ID");
@@ -130,25 +125,36 @@ bool SystemHandle::configure(
     std::string domain = domain_node.as<std::string>();
 
     success += set_platform_env("ROS_DOMAIN_ID", domain.c_str(), true);
+  }
 
-    _node = std::make_shared<rclcpp::Node>(name, ns);
+  // Initialize context after any change to the ROS_DOMAIN_ID env variable
+  rclcpp::InitOptions init_options;
+  // Quiet "logging initialized more than once" warnings
+  init_options.auto_initialize_logging(false);
+  // As of Galactic, we can also set the domain ID here instead of using the env variable
+  // init_options.set_domain_id(domain_node.as<size_t>());
+  _context = std::make_shared<rclcpp::Context>();
+  _context->init(argc, argv, init_options);
 
-    if(previous_domain.empty())
-    {
-      success += unset_platform_env("ROS_DOMAIN_ID");
-    }
-    else
-    {
-      success += set_platform_env("ROS_DOMAIN_ID", previous_domain.c_str(), true);
-    }
+  // Revert any changes to the ROS_DOMAIN_ID environment variable
+  if(previous_domain.empty())
+  {
+    success += unset_platform_env("ROS_DOMAIN_ID");
   }
   else
   {
-    _node = std::make_shared<rclcpp::Node>(name, ns);
+    success += set_platform_env("ROS_DOMAIN_ID", previous_domain.c_str(), true);
   }
 
+  // Create node with context
+  rclcpp::NodeOptions node_options;
+  node_options.context(_context);
+  _node = std::make_shared<rclcpp::Node>(name, ns, node_options);
+
+  rclcpp::ExecutorOptions executor_options;
+  executor_options.context = _context;
   // TODO(MXG): Allow the type of executor to be specified by the configuration
-  _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+  _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>(executor_options);
 
   soss::Search search("ros2");
   for(const std::string& type : types.messages)
@@ -200,7 +206,7 @@ bool SystemHandle::configure(
 bool SystemHandle::okay() const
 {
   if(_node)
-    return rclcpp::ok();
+    return rclcpp::ok(_context);
 
   return false;
 }
@@ -209,7 +215,7 @@ bool SystemHandle::okay() const
 bool SystemHandle::spin_once()
 {
   _executor->spin_node_once(_node, std::chrono::milliseconds(100));
-  return rclcpp::ok();
+  return rclcpp::ok(_context);
 }
 
 //==============================================================================
@@ -218,7 +224,9 @@ SystemHandle::~SystemHandle()
   _subscriptions.clear();
   _client_proxies.clear();
 
-  rclcpp::shutdown();
+  if (_context) {
+    rclcpp::shutdown(_context);
+  }
 }
 
 //==============================================================================
