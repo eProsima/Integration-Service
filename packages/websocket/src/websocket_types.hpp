@@ -25,7 +25,7 @@
 namespace soss {
 namespace websocket {
 
-using TlsConfig = websocketpp::config::asio_tls;
+using TlsConfig = websocketpp::config::asio;
 using Connection = websocketpp::connection<TlsConfig>;
 
 using WsCppServer = websocketpp::server<TlsConfig>;

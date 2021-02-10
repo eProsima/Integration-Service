@@ -7,17 +7,7 @@ types:
        };
 systems:
   ros2: { type: ros2 }
-  websocket: { type: websocket_server, host: localhost, port: 80, cert: certs/websocket_test.crt, key: certs/websocket_test.key,
-  authentication:
-  {
-    policies:
-    [
-      {
-        secret: soss-websocket-test,
-        algo: HS256
-      }
-    ]
-  }}
+  websocket: { type: websocket_server, host: localhost, port: 80}
 
 routes:
   websocket_to_ros2: { from: websocket, to: ros2 }

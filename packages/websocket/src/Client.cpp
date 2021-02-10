@@ -30,7 +30,7 @@ namespace websocket {
 
 const std::string WebsocketMiddlewareName = "websocket";
 const std::string YamlClientTokenKey = "token";
-const std::string WebsocketUriPrefix = "wss://";
+const std::string WebsocketUriPrefix = "ws://";
 const std::string DefaultHostname = "localhost";
 
 const std::string YamlCertAuthoritiesKey = "cert_authorities";
