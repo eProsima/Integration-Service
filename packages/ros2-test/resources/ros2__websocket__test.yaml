@@ -1,0 +1,17 @@
+types:
+  idls:
+    - >
+       struct std_msgs__String
+       {
+           string data;
+       };
+systems:
+  ros2: { type: ros2 }
+  websocket: { type: websocket_server, host: localhost, port: 80}
+
+routes:
+  websocket_to_ros2: { from: websocket, to: ros2 }
+  ros2_to_websocket: { from: ros2, to: websocket }
+
+topics:
+  helloworld: { type: "std_msgs/String", route: websocket_to_ros2, remap: {websocket: {type: std_msgs__String}} }
