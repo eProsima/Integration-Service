@@ -25,22 +25,31 @@
 namespace soss {
 namespace websocket {
 
-using TlsConfig = websocketpp::config::asio;
-using Connection = websocketpp::connection<TlsConfig>;
+using TlsConfig = websocketpp::config::asio_tls;
+using TcpConfig = websocketpp::config::asio;
+using TlsConnection = websocketpp::connection<TlsConfig>;
+using TcpConnection = websocketpp::connection<TcpConfig>;
 
-using WsCppServer = websocketpp::server<TlsConfig>;
-using WsCppClient = websocketpp::client<TlsConfig>;
+using TlsServer = websocketpp::server<TlsConfig>;
+using TcpServer = websocketpp::server<TcpConfig>;
+using TlsClient = websocketpp::client<TlsConfig>;
+using TcpClient = websocketpp::client<TcpConfig>;
 
-using WsCppEndpoint = websocketpp::endpoint<Connection, TlsConfig>;
-using WsCppEndpointPtr = std::unique_ptr<WsCppEndpoint>;
+using TlsEndpoint = websocketpp::endpoint<TlsConnection, TlsConfig>;
+using TcpEndpoint = websocketpp::endpoint<TcpConnection, TcpConfig>;
+//using WsCppEndpointPtr = std::unique_ptr<WsCppEndpoint>;
 
-using WsCppWeakConnectPtr = websocketpp::connection_hdl;
-using WsCppMessagePtr = WsCppEndpoint::message_ptr;
+using ConnectionHandlePtr = websocketpp::connection_hdl;
+using TlsMessagePtr = TlsEndpoint::message_ptr;
+using TcpMessagePtr = TcpEndpoint::message_ptr;
 
-using WsCppConnectionPtr = WsCppEndpoint::connection_ptr;
+using TlsConnectionPtr = TlsEndpoint::connection_ptr;
+using TcpConnectionPtr = TcpEndpoint::connection_ptr;
 
-using WsCppSslContext = boost::asio::ssl::context;
-using WsCppSslContextPtr = std::shared_ptr<WsCppSslContext>;
+using SslContext = boost::asio::ssl::context;
+using SslContextPtr = std::shared_ptr<SslContext>;
+
+using ErrorCode = websocketpp::lib::error_code;
 
 } // namespace websocket
 } // namespace soss

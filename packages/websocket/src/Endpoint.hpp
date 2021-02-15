@@ -179,74 +179,82 @@ public:
 
 protected:
 
-    const Encoding& get_encoding() const;
+  const Encoding& get_encoding() const;
 
-    void notify_connection_opened(
-            const WsCppConnectionPtr& connection_handle);
+  void notify_connection_opened(
+      const TlsConnectionPtr& connection_handle);
+
+  void notify_connection_opened(
+      const TcpConnectionPtr& connection_handle);
 
     void notify_connection_closed(
             const std::shared_ptr<void>& connection_handle);
 
 private:
 
-    virtual WsCppEndpoint* configure_endpoint(
-            const RequiredTypes& types,
-            const YAML::Node& configuration) = 0;
+  virtual TlsEndpoint* configure_tls_endpoint(
+      const RequiredTypes& types,
+      const YAML::Node& configuration) = 0;
 
-    EncodingPtr _encoding;
-    WsCppEndpoint* _endpoint;
+  virtual TcpEndpoint* configure_tcp_endpoint(
+      const RequiredTypes& types,
+      const YAML::Node& configuration) = 0;
 
-    struct TopicSubscribeInfo
-    {
-        std::string type;
-        SubscriptionCallback callback;
+  EncodingPtr _encoding;
+  std::shared_ptr<TlsEndpoint> _tls_endpoint;
+  std::shared_ptr<TcpEndpoint> _tcp_endpoint;
+  bool _use_security;
 
-        // Connections whose publications we will ignore because their message type
-        // does not match the one we expect.
-        std::unordered_set<std::shared_ptr<void> > blacklist;
-    };
+  struct TopicSubscribeInfo
+  {
+    std::string type;
+    SubscriptionCallback callback;
 
-    struct TopicPublishInfo
-    {
-        std::string type;
+    // Connections whose publications we will ignore because their message type
+    // does not match the one we expect.
+    std::unordered_set<std::shared_ptr<void>> blacklist;
+  };
 
-        using ListenerMap = std::unordered_map<
-            std::shared_ptr<void>,
-            std::unordered_set<std::string> >;
+  struct TopicPublishInfo
+  {
+    std::string type;
 
-        // Map from connection handle to id of listeners
-        ListenerMap listeners;
-    };
+    using ListenerMap = std::unordered_map<
+        std::shared_ptr<void>,
+        std::unordered_set<std::string>>;
 
-    struct ClientProxyInfo
-    {
-        std::string type;
-        RequestCallback callback;
-    };
+    // Map from connection handle to id of listeners
+    ListenerMap listeners;
+  };
 
-    struct ServiceProviderInfo
-    {
-        std::string req_type;
-        std::string reply_type;
-        std::shared_ptr<void> connection_handle;
-        YAML::Node configuration;
-    };
+  struct ClientProxyInfo
+  {
+    std::string type;
+    RequestCallback callback;
+  };
 
-    struct ServiceRequestInfo
-    {
-        ServiceClient* client;
-        std::shared_ptr<void> call_handle;
-    };
+  struct ServiceProviderInfo
+  {
+    std::string type;
+    std::shared_ptr<void> connection_handle;
+    YAML::Node configuration;
+  };
 
-    std::vector<std::string> _startup_messages;
-    std::unordered_map<std::string, TopicSubscribeInfo> _topic_subscribe_info;
-    std::unordered_map<std::string, TopicPublishInfo> _topic_publish_info;
-    std::unordered_map<std::string, ClientProxyInfo> _client_proxy_info;
-    std::unordered_map<std::string, ServiceProviderInfo> _service_provider_info;
-    std::unordered_map<std::string, ServiceRequestInfo> _service_request_info;
-    std::unordered_map<std::string, xtypes::DynamicType::Ptr> _message_types;
+  struct ServiceRequestInfo
+  {
+    ServiceClient* client;
+    std::shared_ptr<void> call_handle;
+  };
 
-    std::size_t _next_service_call_id;
+  std::vector<std::string> _startup_messages;
+  std::unordered_map<std::string, TopicSubscribeInfo> _topic_subscribe_info;
+  std::unordered_map<std::string, TopicPublishInfo> _topic_publish_info;
+  std::unordered_map<std::string, ClientProxyInfo> _client_proxy_info;
+  std::unordered_map<std::string, ServiceProviderInfo> _service_provider_info;
+  std::unordered_map<std::string, ServiceRequestInfo> _service_request_info;
+  std::unordered_map<std::string, xtypes::DynamicType::Ptr> _message_types;
+
+  std::size_t _next_service_call_id;
 
 };
 
