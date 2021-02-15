@@ -71,7 +71,7 @@ public:
             const YAML::Node& configuration) override
     {
         _use_security = true;
-        _tls_client.reset(new TlsClient());
+        _tls_client = std::make_shared<TlsClient>(TlsClient());
         const int32_t port = parse_port(configuration);
         if (port < 0)
         {
@@ -112,7 +112,7 @@ public:
             const YAML::Node& configuration) override
     {
         _use_security = false;
-        _tcp_client.reset(new TcpClient());
+        _tcp_client = std::make_shared<TcpClient>(TcpClient());
         const int32_t port = parse_port(configuration);
         if (port < 0)
         {
