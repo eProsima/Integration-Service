@@ -207,38 +207,40 @@ bool Endpoint::publish(
         const std::string& topic,
         const xtypes::DynamicData& message)
 {
-  const TopicPublishInfo& info = _topic_publish_info.at(topic);
+    const TopicPublishInfo& info = _topic_publish_info.at(topic);
 
-  // If no one is listening, then don't bother publishing
-  if(info.listeners.empty())
+    // If no one is listening, then don't bother publishing
+    if (info.listeners.empty())
+    {
+        return true;
+    }
+
+    for (const auto& v_handle : info.listeners)
+    {
+        ErrorCode ec;
+        if (_use_security)
+        {
+            auto connection_handle = _tls_endpoint->get_con_from_hdl(v_handle.first);
+
+            ec = connection_handle->send(
+                _encoding->encode_publication_msg(topic, info.type, "", message));
+        }
+        else
+        {
+            auto connection_handle = _tcp_endpoint->get_con_from_hdl(v_handle.first);
+
+            ec = connection_handle->send(
+                _encoding->encode_publication_msg(topic, info.type, "", message));
+        }
+
+        if (ec)
+        {
+            std::cerr << "[soss::websocket::Endpoint] Failed to send publication on "
+                      << "topic [" << topic << "]: " << ec.message() << std::endl;
+        }
+    }
+
     return true;
-
-  for(const auto& v_handle : info.listeners)
-  {
-    ErrorCode ec;
-    if (_use_security)
-    {
-      auto connection_handle = _tls_endpoint->get_con_from_hdl(v_handle.first);
-
-      ec = connection_handle->send(
-            _encoding->encode_publication_msg(topic, info.type, "", message));
-    }
-    else
-    {
-      auto connection_handle = _tcp_endpoint->get_con_from_hdl(v_handle.first);
-
-      ec = connection_handle->send(
-            _encoding->encode_publication_msg(topic, info.type, "", message));
-    }
-
-    if(ec)
-    {
-      std::cerr << "[soss::websocket::Endpoint] Failed to send publication on "
-                << "topic [" << topic << "]: " << ec.message() << std::endl;
-    }
-  }
-
-  return true;
 }
 
 //==============================================================================
@@ -258,14 +260,14 @@ void Endpoint::call_service(
         service, provider_info.req_type, request,
         id_str, provider_info.configuration);
 
-  if (_use_security)
-  {
-    _tls_endpoint->get_con_from_hdl(provider_info.connection_handle)->send(payload);
-  }
-  else
-  {
-    _tcp_endpoint->get_con_from_hdl(provider_info.connection_handle)->send(payload);
-  }
+    if (_use_security)
+    {
+        _tls_endpoint->get_con_from_hdl(provider_info.connection_handle)->send(payload);
+    }
+    else
+    {
+        _tcp_endpoint->get_con_from_hdl(provider_info.connection_handle)->send(payload);
+    }
 }
 
 //==============================================================================
@@ -273,33 +275,33 @@ void Endpoint::receive_response(
         std::shared_ptr<void> v_call_handle,
         const xtypes::DynamicData& response)
 {
-  const auto& call_handle =
-      *static_cast<const CallHandle*>(v_call_handle.get());
+    const auto& call_handle =
+            *static_cast<const CallHandle*>(v_call_handle.get());
 
-  if (_use_security)
-  {
-    auto connection_handle = _tls_endpoint->get_con_from_hdl(
-          call_handle.connection_handle);
+    if (_use_security)
+    {
+        auto connection_handle = _tls_endpoint->get_con_from_hdl(
+            call_handle.connection_handle);
 
-    connection_handle->send(
-          _encoding->encode_service_response_msg(
-            call_handle.service_name,
-            call_handle.service_type,
-            call_handle.id,
-            response, true));
-  }
-  else
-  {
-    auto connection_handle = _tcp_endpoint->get_con_from_hdl(
-          call_handle.connection_handle);
+        connection_handle->send(
+            _encoding->encode_service_response_msg(
+                call_handle.service_name,
+                call_handle.service_type,
+                call_handle.id,
+                response, true));
+    }
+    else
+    {
+        auto connection_handle = _tcp_endpoint->get_con_from_hdl(
+            call_handle.connection_handle);
 
-    connection_handle->send(
-          _encoding->encode_service_response_msg(
-            call_handle.service_name,
-            call_handle.service_type,
-            call_handle.id,
-            response, true));
-  }
+        connection_handle->send(
+            _encoding->encode_service_response_msg(
+                call_handle.service_name,
+                call_handle.service_type,
+                call_handle.id,
+                response, true));
+    }
 }
 
 //==============================================================================
@@ -520,14 +522,16 @@ const Encoding& Endpoint::get_encoding() const
 
 //==============================================================================
 void Endpoint::notify_connection_opened(
-    const TlsConnectionPtr& connection_handle)
+        const TlsConnectionPtr& connection_handle)
 {
-  for(const std::string& msg : _startup_messages)
-    connection_handle->send(msg);
+    for (const std::string& msg : _startup_messages)
+    {
+        connection_handle->send(msg);
+    }
 }
 
 void Endpoint::notify_connection_opened(
-    const TcpConnectionPtr& connection_handle)
+        const TcpConnectionPtr& connection_handle)
 {
     for (const std::string& msg : _startup_messages)
     {
