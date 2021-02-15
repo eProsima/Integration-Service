@@ -158,86 +158,97 @@ class Server : public Endpoint
 {
 public:
 
-  Server()
-  {
-    // Do nothing
-  }
-
-  TlsEndpoint* configure_tls_endpoint(
-      const RequiredTypes& /*types*/,
-      const YAML::Node& configuration) override
-  {
-    _use_security = true;
-    _tls_server.reset(new TlsServer());
-    const int32_t port = parse_port(configuration);
-    if(port < 0)
-      return nullptr;
-    const uint16_t uport = static_cast<uint16_t>(port);
-
-    const std::string cert_file = find_certificate(configuration);
-    if(cert_file.empty())
+    Server()
     {
-      std::cerr << "[soss::websocket::Server] You must specify "
-               << "a certificate file in your soss-websocket configuration!"
-               << std::endl;
-      return nullptr;
+        // Do nothing
     }
 
-    const std::string key_file = find_private_key(configuration);
-    if(key_file.empty())
+    TlsEndpoint* configure_tls_endpoint(
+            const RequiredTypes& /*types*/,
+            const YAML::Node& configuration) override
     {
-      std::cerr << "[soss::websocket::Server] You must specify "
-          << "a private key in your soss-websocket configuration!"
-          << std::endl;
-      return nullptr;
+        _use_security = true;
+        _tls_server = std::make_shared<TlsServer>(TlsServer());
+        const int32_t port = parse_port(configuration);
+        if (port < 0)
+        {
+            return nullptr;
+        }
+        const uint16_t uport = static_cast<uint16_t>(port);
+
+        const std::string cert_file = find_certificate(configuration);
+        if (cert_file.empty())
+        {
+            std::cerr << "[soss::websocket::Server] You must specify "
+                      << "a certificate file in your soss-websocket configuration!"
+                      << std::endl;
+            return nullptr;
+        }
+
+        const std::string key_file = find_private_key(configuration);
+        if (key_file.empty())
+        {
+            std::cerr << "[soss::websocket::Server] You must specify "
+                      << "a private key in your soss-websocket configuration!"
+                      << std::endl;
+            return nullptr;
+        }
+
+        const boost::asio::ssl::context::file_format format =
+                parse_format(configuration);
+
+        const YAML::Node auth_node = configuration[YamlAuthKey];
+        if (auth_node)
+        {
+            _jwt_validator = std::make_unique<JwtValidator>();
+            bool success = ServerConfig::load_auth_policy(*_jwt_validator, auth_node);
+            if (!success)
+            {
+                std::cerr << "error loading auth config" << std::endl;
+                return nullptr;
+            }
+        }
+
+        if (!configure_server(uport, cert_file, key_file, format))
+        {
+            return nullptr;
+        }
+
+        return _tls_server.get();
     }
 
-    const boost::asio::ssl::context::file_format format =
-        parse_format(configuration);
-
-    const YAML::Node auth_node = configuration[YamlAuthKey];
-    if (auth_node)
+    TcpEndpoint* configure_tcp_endpoint(
+            const RequiredTypes& /*types*/,
+            const YAML::Node& configuration) override
     {
-      _jwt_validator = std::make_unique<JwtValidator>();
-      bool success = ServerConfig::load_auth_policy(*_jwt_validator, auth_node);
-      if (!success)
-      {
-        std::cerr << "error loading auth config" << std::endl;
-        return nullptr;
-      }
-    }
+        _use_security = false;
+        _tcp_server = std::make_shared<TcpServer>(TcpServer());
+        const int32_t port = parse_port(configuration);
+        if (port < 0)
+        {
+            return nullptr;
+        }
+        const uint16_t uport = static_cast<uint16_t>(port);
 
-    if(!configure_server(uport, cert_file, key_file, format))
-      return nullptr;
+        const boost::asio::ssl::context::file_format format =
+                parse_format(configuration);
 
-    return _tls_server.get();
-  }
+        const YAML::Node auth_node = configuration[YamlAuthKey];
+        if (auth_node)
+        {
+            _jwt_validator = std::make_unique<JwtValidator>();
+            bool success = ServerConfig::load_auth_policy(*_jwt_validator, auth_node);
+            if (!success)
+            {
+                std::cerr << "error loading auth config" << std::endl;
+                return nullptr;
+            }
+        }
 
-  TcpEndpoint* configure_tcp_endpoint(
-      const RequiredTypes& /*types*/,
-      const YAML::Node& configuration) override
-  {
-    _use_security = false;
-    _tcp_server.reset(new TcpServer());
-    const int32_t port = parse_port(configuration);
-    if(port < 0)
-      return nullptr;
-    const uint16_t uport = static_cast<uint16_t>(port);
-
-    const boost::asio::ssl::context::file_format format =
-        parse_format(configuration);
-
-    const YAML::Node auth_node = configuration[YamlAuthKey];
-    if (auth_node)
-    {
-      _jwt_validator = std::make_unique<JwtValidator>();
-      bool success = ServerConfig::load_auth_policy(*_jwt_validator, auth_node);
-      if (!success)
-      {
-        std::cerr << "error loading auth config" << std::endl;
-        return nullptr;
-      }
-    }
+        if (!configure_server(uport, "", "", format))
+        {
+            return nullptr;
+        }
 
     if(!configure_server(uport, "", "", format))
       return nullptr;

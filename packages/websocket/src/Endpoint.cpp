@@ -94,18 +94,18 @@ bool Endpoint::configure(
         return false;
     }
 
-  if (configuration["security"] && configuration["security"].as<std::string>() == "none")
-  {
-    _use_security = false;
-    _tcp_endpoint.reset(configure_tcp_endpoint(types, configuration));
-    return _tcp_endpoint != nullptr;
-  }
-  else
-  {
-    _use_security = true;
-    _tls_endpoint.reset(configure_tls_endpoint(types, configuration));
-    return _tls_endpoint != nullptr;
-  }
+    if (configuration["security"] && configuration["security"].as<std::string>() == "none")
+    {
+        _use_security = false;
+        _tcp_endpoint = std::make_shared<TcpEndpoint>(configure_tcp_endpoint(types, configuration));
+        return _tcp_endpoint != nullptr;
+    }
+    else
+    {
+        _use_security = true;
+        _tls_endpoint = std::make_shared<TlsEndpoint>(configure_tls_endpoint(types, configuration));
+        return _tls_endpoint != nullptr;
+    }
 }
 
 //==============================================================================
