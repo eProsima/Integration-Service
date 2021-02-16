@@ -168,13 +168,14 @@ public:
   {
     _request = initialize_request();
 
+    _callback_group = node.create_callback_group(rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
     _service = node.create_service<Ros2_Srv>(
           service_name,
           [=](const std::shared_ptr<rmw_request_id_t> request_header,
               const std::shared_ptr<Ros2_Request> request,
               const std::shared_ptr<Ros2_Response> response)
               { this->service_callback(request_header, request, response); },
-          qos_profile);
+          qos_profile, _callback_group);
   }
 
   void receive_response(
@@ -217,6 +218,7 @@ private:
   const std::shared_ptr<PromiseHolder> _handle;
   soss::Message _request;
   Ros2_Response _response;
+  rclcpp::callback_group::CallbackGroup::SharedPtr 	_callback_group;
   rclcpp::Service<Ros2_Srv>::SharedPtr _service;
 
 };
