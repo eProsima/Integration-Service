@@ -23,8 +23,6 @@
 
 #include <soss/ros2/Factory.hpp>
 
-#include <rclcpp/executors/single_threaded_executor.hpp>
-
 #include <vector>
 
 namespace soss {
@@ -83,8 +81,10 @@ private:
   std::shared_ptr<rclcpp::Node> _node;
 #ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
   using Executor=rclcpp::executor::Executor;
+  using ExecutorOptions=rclcpp::executor::ExecutorArgs;
 #else
   using Executor=rclcpp::Executor;
+  using ExecutorOptions=rclcpp::ExecutorOptions;
 #endif // SOSS_ROS2_ROSIDL_GENERATOR_CPP
   std::shared_ptr<Executor> _executor;
   std::thread _spinner;

@@ -24,6 +24,7 @@
 #include <soss/Search.hpp>
 
 #include <rclcpp/executors/single_threaded_executor.hpp>
+#include <rclcpp/executors/multi_threaded_executor.hpp>
 
 namespace soss {
 namespace ros2 {
@@ -147,8 +148,15 @@ bool SystemHandle::configure(
     _node = std::make_shared<rclcpp::Node>(name, ns);
   }
 
-  // TODO(MXG): Allow the type of executor to be specified by the configuration
-  _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+  if(const YAML::Node threads = configuration["threads"])
+  {
+    _executor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>(ExecutorOptions(), threads.as<size_t>(0));
+  }
+  else
+  {
+    _executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  }
+
   _executor->add_node(_node);
   _spinner = std::thread(std::bind(&Executor::spin, _executor));
 
