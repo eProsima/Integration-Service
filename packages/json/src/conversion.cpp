@@ -303,7 +303,7 @@ struct Converter
 
   static Json to_json(const Message& input)
   {
-    Json output;
+    Json output({});
     convert_from_soss_message(input, output);
 
     return output;
