@@ -149,6 +149,8 @@ bool SystemHandle::configure(
 
   // TODO(MXG): Allow the type of executor to be specified by the configuration
   _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+  _executor->add_node(_node);
+  _spinner = std::thread(std::bind(&Executor::spin, _executor));
 
   soss::Search search("ros2");
   for(const std::string& type : types.messages)
@@ -208,7 +210,7 @@ bool SystemHandle::okay() const
 //==============================================================================
 bool SystemHandle::spin_once()
 {
-  _executor->spin_node_once(_node, std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   return rclcpp::ok();
 }
 
@@ -219,6 +221,11 @@ SystemHandle::~SystemHandle()
   _client_proxies.clear();
 
   rclcpp::shutdown();
+
+  if(_spinner.joinable())
+  {
+    _spinner.join();
+  }
 }
 
 //==============================================================================
