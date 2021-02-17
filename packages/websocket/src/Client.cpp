@@ -134,11 +134,11 @@ public:
             const uint16_t port,
             const std::vector<std::string>& extra_certificate_authorities)
     {
-        _host_uri = (_use_security) ? WebsocketTlsUriPrefix : WebsocketTcpUriPrefix
-                + hostname + ":" + std::to_string(port);
+        std::string uri_prefix = (_use_security) ? WebsocketTlsUriPrefix : WebsocketTcpUriPrefix;
+        _host_uri = uri_prefix + hostname + ":" + std::to_string(port);
 
         _context = std::make_shared<SslContext>(
-            boost::asio::ssl::context::tlsv1);
+            boost::asio::ssl::context::tlsv12);
 
         boost::system::error_code ec;
         _context->set_default_verify_paths(ec);
@@ -211,98 +211,116 @@ public:
 
         if (_use_security)
         {
-            initialize_client(_tls_client.get());
+            initialize_tls_client();
         }
         else
         {
-            initialize_client(_tcp_client.get());
+            initialize_tcp_client();
         }
 
         return true;
     }
 
-    void initialize_client(
-            auto _client)
+    void initialize_tls_client()
     {
-        _client->clear_access_channels(
+        _tls_client->clear_access_channels(
             websocketpp::log::alevel::frame_header |
             websocketpp::log::alevel::frame_payload);
 
-        _client->init_asio();
-        _client->start_perpetual();
+        _tls_client->init_asio();
+        _tls_client->start_perpetual();
 
-        if (_use_security)
-        {
-            _client->set_message_handler(
-                [&](ConnectionHandlePtr handle, TlsMessagePtr message)
-                {
-                    this->_handle_tls_message(std::move(handle), std::move(message));
-                });
-        }
-        else
-        {
-            _client->set_message_handler(
-                [&](ConnectionHandlePtr handle, TcpMessagePtr message)
-                {
-                    this->_handle_tcp_message(std::move(handle), std::move(message));
-                });
-        }
+        _tls_client->set_message_handler(
+            [&](ConnectionHandlePtr handle, TlsMessagePtr message)
+            {
+                this->_handle_tls_message(std::move(handle), std::move(message));
+            });
 
-        _client->set_close_handler(
+        _tls_client->set_close_handler(
             [&](ConnectionHandlePtr handle)
             {
                 this->_handle_close(std::move(handle));
             });
 
-        _client->set_open_handler(
+        _tls_client->set_open_handler(
             [&](ConnectionHandlePtr handle)
             {
                 this->_handle_opening(std::move(handle));
             });
 
-        _client->set_fail_handler(
+        _tls_client->set_fail_handler(
             [&](ConnectionHandlePtr handle)
             {
                 this->_handle_failed_connection(std::move(handle));
             });
 
-        if (_use_security)
-        {
-            _tls_client->set_tls_init_handler(
-                [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
-                {
-                    return this->_context;
-                });
-        }
-        else
-        {
-            _tcp_client->set_tcp_init_handler(
-                [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
-                {
-                    return this->_context;
-                });
-        }
+        _tls_client->set_tls_init_handler(
+            [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
+            {
+                return this->_context;
+            });
 
-        _client->set_socket_init_handler(
+        _tls_client->set_socket_init_handler(
             [&](ConnectionHandlePtr handle, auto& /*sock*/)
             {
                 this->_handle_socket_init(std::move(handle));
             });
 
-        if (_use_security)
-        {
-            _client_thread = std::thread([&]()
-                            {
-                                this->_tls_client->run();
-                            });
-        }
-        else
-        {
-            _client_thread = std::thread([&]()
-                            {
-                                this->_tcp_client->run();
-                            });
-        }
+        _client_thread = std::thread([&]()
+                        {
+                            this->_tls_client->run();
+                        });
+    }
+
+        void initialize_tcp_client()
+    {
+        _tcp_client->clear_access_channels(
+            websocketpp::log::alevel::frame_header |
+            websocketpp::log::alevel::frame_payload);
+
+        _tcp_client->init_asio();
+        _tcp_client->start_perpetual();
+
+        _tcp_client->set_message_handler(
+            [&](ConnectionHandlePtr handle, TcpMessagePtr message)
+            {
+                this->_handle_tls_message(std::move(handle), std::move(message));
+            });
+
+        _tcp_client->set_close_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_close(std::move(handle));
+            });
+
+        _tcp_client->set_open_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_opening(std::move(handle));
+            });
+
+        _tcp_client->set_fail_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_failed_connection(std::move(handle));
+            });
+
+        _tcp_client->set_tcp_init_handler(
+            [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
+            {
+                return this->_context;
+            });
+
+        _tcp_client->set_socket_init_handler(
+            [&](ConnectionHandlePtr handle, auto& /*sock*/)
+            {
+                this->_handle_socket_init(std::move(handle));
+            });
+
+        _client_thread = std::thread([&]()
+                        {
+                            this->_tcp_client->run();
+                        });
     }
 
     ~Client() override
@@ -360,10 +378,12 @@ public:
         {
             if (_use_security)
             {
+                _tls_client->stop_perpetual();
                 _tls_client->stop();
             }
             else
             {
+                _tcp_client->stop_perpetual();
                 _tcp_client->stop();
             }
             _client_thread.join();

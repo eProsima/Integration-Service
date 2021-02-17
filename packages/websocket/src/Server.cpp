@@ -599,6 +599,7 @@ private:
     void _handle_close(
             const ConnectionHandlePtr& handle)
     {
+        _mutex.lock();
         if (_use_security)
         {
             const auto connection = _tls_server->get_con_from_hdl(handle);
@@ -617,11 +618,13 @@ private:
 
             _open_tcp_connections.erase(connection);
         }
+        _mutex.unlock();
     }
 
     void _handle_opening(
             const ConnectionHandlePtr& handle)
     {
+        _mutex.lock();
         if (_use_security)
         {
             const auto connection = _tls_server->get_con_from_hdl(handle);
@@ -654,6 +657,7 @@ private:
 
             _open_tcp_connections.insert(connection);
         }
+        _mutex.unlock();
     }
 
     void _handle_failed_connection(
@@ -715,6 +719,7 @@ private:
     std::shared_ptr<TcpServer> _tcp_server;
     bool _use_security;
     std::thread _server_thread;
+    std::mutex _mutex;
     EncodingPtr _encoding;
     SslContextPtr _context;
     std::unordered_set<TlsConnectionPtr> _open_tls_connections;
