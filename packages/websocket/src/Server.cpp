@@ -272,17 +272,21 @@ public:
     // on these connections.
 
     // First instruct all connections to close
-    const auto connection_copies = _open_connections;
-    for (const auto& connection : connection_copies)
-      connection->close(websocketpp::close::status::normal, "shutdown");
-
+    _mutex.lock();
+    for(const auto& connection : _open_connections)
+    {
+      if (connection->get_state() != websocketpp::session::state::closed)
+      {
+          connection->close(websocketpp::close::status::normal, "shutdown");
+      }
+    }
     // Then wait for all of them to close
 
     using namespace std::chrono_literals;
     const auto start_time = std::chrono::steady_clock::now();
     // TODO(MXG): Make these timeout parameters something that can be
     // configured by users.
-    while (!all_closed(connection_copies))
+    while(!all_closed(_open_connections))
     {
       std::this_thread::sleep_for(200ms);
 
@@ -294,6 +298,7 @@ public:
         break;
       }
     }
+    _mutex.unlock();
 
     if (_server_thread.joinable())
     {
@@ -333,8 +338,12 @@ public:
         get_encoding().encode_advertise_msg(
               topic, message_type.name(), id, configuration);
 
-    for (const WsCppConnectionPtr& connection : _open_connections)
+    _mutex.lock();
+
+    for(const WsCppConnectionPtr& connection : _open_connections)
       connection->send(advertise_msg);
+
+    _mutex.unlock();
   }
 
 private:
@@ -354,7 +363,9 @@ private:
               << connection << "]" << std::endl;
     notify_connection_closed(connection);
 
+    _mutex.lock();
     _open_connections.erase(connection);
+    _mutex.unlock();
   }
 
   void _handle_opening(const WsCppWeakConnectPtr& handle)
@@ -371,7 +382,9 @@ private:
               << "]" << std::endl;
     notify_connection_opened(connection);
 
+    _mutex.lock();
     _open_connections.insert(connection);
+    _mutex.unlock();
   }
 
   void _handle_failed_connection(const WsCppWeakConnectPtr& /*handle*/)
@@ -412,6 +425,7 @@ private:
 
   WsCppServer _server;
   std::thread _server_thread;
+  std::mutex _mutex;
   EncodingPtr _encoding;
   WsCppSslContextPtr _context;
   std::unordered_set<WsCppConnectionPtr> _open_connections;

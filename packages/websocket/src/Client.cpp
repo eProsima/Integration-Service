@@ -100,7 +100,7 @@ public:
     _host_uri = WebsocketUriPrefix + hostname + ":" + std::to_string(port);
 
     _context = std::make_shared<WsCppSslContext>(
-          boost::asio::ssl::context::tlsv1);
+          boost::asio::ssl::context::tlsv12);
 
     boost::system::error_code ec;
     _context->set_default_verify_paths(ec);
