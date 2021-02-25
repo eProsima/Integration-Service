@@ -30,6 +30,8 @@
 
 #include <random>
 
+// TODO (@jamoralp): re-think or refactor these tests.
+
 using Catch::Matchers::WithinAbs;
 
 geometry_msgs::msg::PoseStamped generate_random_pose(const int sec = 0)
@@ -130,26 +132,26 @@ void compare_plans(
   }
 }
 
-TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
+TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
 {
-  using namespace std::chrono_literals;
+    using namespace std::chrono_literals;
 
-  const double tolerance = 1e-8;
+    const double tolerance = 1e-8;
 
-  YAML::Node config_node = YAML::LoadFile(ROS2__GEOMETRY_MSGS__TEST_CONFIG);
+    YAML::Node config_node = YAML::LoadFile(ROS2__GEOMETRY_MSGS__TEST_CONFIG);
 
-  soss::InstanceHandle handle = soss::run_instance(
-        config_node, {ROS2__ROSIDL__BUILD_DIR});
+    soss::InstanceHandle handle = soss::run_instance(
+            config_node, {ROS2__ROSIDL__BUILD_DIR});
 
-  REQUIRE(handle);
+    REQUIRE(handle);
 
-  rclcpp::Node::SharedPtr ros2 = std::make_shared<rclcpp::Node>("ros2_test");
-  rclcpp::executors::SingleThreadedExecutor executor;
+    rclcpp::Node::SharedPtr ros2 = std::make_shared<rclcpp::Node>("ros2_test");
+    rclcpp::executors::SingleThreadedExecutor executor;
 
-  REQUIRE( rclcpp::ok() );
+    REQUIRE( rclcpp::ok() );
 
-  SECTION("Publish a pose and get it echoed back")
-  {
+    executor.add_node(ros2);
+
     const auto publisher =
 #ifndef RCLCPP__QOS_HPP_
         ros2->create_publisher<geometry_msgs::msg::Pose>("transmit_pose");
@@ -178,7 +180,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
 
     publisher->publish(ros2_pose);
 
-    executor.spin_node_some(ros2);
+    executor.spin_some();
 
     // Wait no longer than a few seconds for the message to arrive. If it's not
     // ready by that time, then something is probably broken with the test, and
@@ -187,7 +189,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     auto start_time = std::chrono::steady_clock::now();
     while(std::chrono::steady_clock::now() - start_time < 30s)
     {
-      executor.spin_node_some(ros2);
+      executor.spin_some();
       if(msg_future.wait_for(100ms) == std::future_status::ready)
         break;
 
@@ -246,11 +248,11 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     start_time = std::chrono::steady_clock::now();
     while(std::chrono::steady_clock::now() - start_time < 30s)
     {
-      executor.spin_node_some(ros2);
+      executor.spin_some();
 
       soss::mock::publish_message("echo_pose", received_msg);
 
-      executor.spin_node_some(ros2);
+      executor.spin_some();
       if(pose_future.wait_for(100ms) == std::future_status::ready)
         break;
     }
@@ -259,10 +261,41 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     geometry_msgs::msg::Pose received_pose = pose_future.get();
 
     CHECK(ros2_pose == received_pose);
-  }
 
-  SECTION("Request a plan and get it echoed back")
-  {
+    // Destroy ros2 instance node
+    executor.remove_node(ros2);
+    ros2.reset();
+
+    // Quit and wait for no more than a minute. We don't want the test to get
+    // hung here indefinitely in the case of an error.
+    handle.quit().wait_for(1min);
+
+    // Require that it's no longer running. If it is still running, then it is
+    // probably stuck, and we should forcefully quit.
+    REQUIRE(!handle.running());
+    REQUIRE(handle.wait() == 0);
+}
+
+TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
+{
+    using namespace std::chrono_literals;
+
+    const double tolerance = 1e-8;
+
+    YAML::Node config_node = YAML::LoadFile(ROS2__GEOMETRY_MSGS__TEST_CONFIG);
+
+    soss::InstanceHandle handle = soss::run_instance(
+            config_node, {ROS2__ROSIDL__BUILD_DIR});
+
+    REQUIRE(handle);
+
+    rclcpp::Node::SharedPtr ros2 = std::make_shared<rclcpp::Node>("ros2_test");
+    rclcpp::executors::SingleThreadedExecutor executor;
+
+    REQUIRE( rclcpp::ok() );
+
+    executor.add_node(ros2);
+
     // Get request type from ros2 middleware
     const soss::TypeRegistry& ros2_types = *handle.type_registry("ros2");
     const xtypes::DynamicType& request_type = *ros2_types.at("nav_msgs/GetPlan:request");
@@ -273,7 +306,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     plan_response.plan.header.stamp.nanosec = 285;
     plan_response.plan.header.frame_id = "arbitrary_frame_string";
     for(int i=0 ; i < 5; ++i)
-      plan_response.plan.poses.push_back(generate_random_pose(i));
+      plan_response.plan.poses.emplace_back(generate_random_pose(i));
 
     std::promise<geometry_msgs::msg::PoseStamped> promised_start;
     auto future_start = promised_start.get_future();
@@ -304,7 +337,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     const auto ros2_serv = ros2->create_service<nav_msgs::srv::GetPlan>(
           "get_plan", ros2_plan_service);
 
-    executor.spin_node_some(ros2);
+    executor.spin_some();
 
     xtypes::DynamicData request_msg = generate_plan_request_msg(
           request_type,
@@ -318,7 +351,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     auto start_time = std::chrono::steady_clock::now();
     while(std::chrono::steady_clock::now() - start_time < 30s)
     {
-      executor.spin_node_some(ros2);
+      executor.spin_some();
       // Note: future_goal gets set after future_start, so waiting on
       // future_goal alone is sufficient for waiting on both.
       if(future_goal.wait_for(100ms) == std::future_status::ready)
@@ -335,7 +368,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     start_time = std::chrono::steady_clock::now();
     while(std::chrono::steady_clock::now() - start_time < 30s)
     {
-      executor.spin_node_some(ros2);
+      executor.spin_some();
       if(future_response_msg.wait_for(100ms) == std::future_status::ready)
         break;
     }
@@ -369,7 +402,7 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     start_time = std::chrono::steady_clock::now();
     while(std::chrono::steady_clock::now() - start_time < 30s)
     {
-      executor.spin_node_some(ros2);
+      executor.spin_some();
       if(future_response.wait_for(100ms) == std::future_status::ready)
         break;
     }
@@ -378,13 +411,17 @@ TEST_CASE("Talk between ros2 and the mock middleware", "[ros2]")
     const auto response = future_response.get();
     CHECK(*response == plan_response);
     compare_plans(response->plan, plan_response.plan);
-  }
-  // Quit and wait for no more than a minute. We don't want the test to get
-  // hung here indefinitely in the case of an error.
-  handle.quit().wait_for(1min);
 
-  // Require that it's no longer running. If it is still running, then it is
-  // probably stuck, and we should forcefully quit.
-  REQUIRE(!handle.running());
-  REQUIRE(handle.wait() == 0);
+    // Destroy ros2 instance node
+    executor.remove_node(ros2);
+    ros2.reset();
+
+    // Quit and wait for no more than a minute. We don't want the test to get
+    // hung here indefinitely in the case of an error.
+    handle.quit().wait_for(1min);
+
+    // Require that it's no longer running. If it is still running, then it is
+    // probably stuck, and we should forcefully quit.
+    REQUIRE(!handle.running());
+    REQUIRE(handle.wait() == 0);
 }

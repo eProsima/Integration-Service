@@ -24,13 +24,19 @@
 #include <soss/Search.hpp>
 
 #include <rclcpp/executors/single_threaded_executor.hpp>
+#include <rcl/logging.h>
+
+#include <thread>
 
 namespace soss {
 namespace ros2 {
 
 namespace {
 
-int set_platform_env(
+#define soss_ros2_cout std::cout << "[soss-ros2] "
+#define soss_ros2_cerr std::cerr << "[soss-ros2] "
+
+bool set_platform_env(
     const std::string& variable,
     const std::string& value,
     const bool overwrite)
@@ -38,9 +44,9 @@ int set_platform_env(
 #ifdef WIN32
   std::ostringstream aux_d;
   aux_d << variable << "=" << value;
-  return _putenv(aux_d.str().c_str());
+  return (0 == _putenv(aux_d.str().c_str()));
 #else
-  return setenv(variable.c_str(), value.c_str(), overwrite);
+  return (0 == setenv(variable.c_str(), value.c_str(), overwrite));
 #endif // WIN32
 }
 
@@ -50,7 +56,7 @@ int unset_platform_env(
 #ifdef WIN32
   return set_platform_env(variable, "", false);
 #else
-  return unsetenv(variable.c_str());
+  return (0 == unsetenv(variable.c_str()));
 #endif // WIN32
 }
 
@@ -71,25 +77,25 @@ SystemHandle::SystemHandle()
 }
 
 //==============================================================================
-void print_missing_mix_file(
+inline void print_missing_mix_file(
     const std::string& msg_or_srv,
     const std::string& type,
     const std::vector<std::string>& /*checked_paths*/)
 {
-  std::string error = "soss-ros2 could not find .mix file for " + msg_or_srv
-      + " type: " + type +
-      "\n -- Make sure that you have generated the soss-ros2 extension for "
-      "that message type by calling "
-      "soss_rosidl_mix(PACKAGES <package> MIDDLEWARES ros2) "
-      "in your build system!\n";
+  soss_ros2_cerr << "Could not find .mix file for "
+                 << msg_or_srv << " type: '"
+                 << type << "'" << std::endl
+                 << " -- Make sure that you have generated "
+                 << "the 'soss-ros2' extension for "
+                 << "that message type by calling "
+                 << "'soss_rosidl_mix(PACKAGES <package> MIDDLEWARES ros2)' "
+                 << "in your build system!" << std::endl;
 
 //  // TODO(MXG): Introduce a way for users to request a "debug", especially from
 //  // the command line. When debug mode is active, this should be printed out.
 //  error += " -- Checked locations (these files did not exist or could not be accessed):\n";
 //  for(const auto& p : checked_paths)
 //    error += "     - " + p + "\n";
-
-  std::cerr << error;
 }
 
 //==============================================================================
@@ -114,7 +120,10 @@ bool SystemHandle::configure(
     ns = namespace_node.as<std::string>("");
   }
 
-  std::string name = "soss_ros2";
+  std::stringstream node_name_ss;
+  node_name_ss << "soss_ros2_node_" << rand();
+  std::string name = node_name_ss.str();
+
   if(const YAML::Node name_node = configuration["node_name"])
   {
     name = name_node.as<std::string>("");
@@ -122,6 +131,14 @@ bool SystemHandle::configure(
 
   if(const YAML::Node domain_node = configuration["domain"])
   {
+    if (!configuration["node_name"])
+    {
+      soss_ros2_cout << "It is recommended to set the 'node_name' attribute "
+                     << "in the YAML file when using the 'domain' option. "
+                     << "The default node name will be '"
+                     << name << "'." << std::endl;
+    }
+    // TODO(@jamoralp) Warn if not set a custom node name unique for each node.
     std::string previous_domain;
     if(getenv("ROS_DOMAIN_ID") != nullptr)
     {
@@ -129,21 +146,55 @@ bool SystemHandle::configure(
     }
 
     std::string domain = domain_node.as<std::string>();
-    success += set_platform_env("ROS_DOMAIN_ID", domain.c_str(), true);
+    success &= set_platform_env("ROS_DOMAIN_ID", domain.c_str(), true);
 
-    _node = std::make_shared<rclcpp::Node>(name, ns);
+    if (!success)
+    {
+      return false;
+    }
+    /**
+     * Since ROS2 Foxy, there is one participant per context.
+     * Thus, to ensure isolation between nodes,
+     * each node must be created in a different context.
+     */
+
+    rclcpp::InitOptions init_options;
+    if (rcl_logging_rosout_enabled())
+    {
+      init_options.auto_initialize_logging(false);
+    }
+
+    const char* context_argv[1];
+    const std::string context_name("soss_ros2_context_" + name);
+    context_argv[0] = context_name.c_str();
+
+    _context = std::make_shared<rclcpp::Context>();
+    _context->init(1, context_argv, init_options);
+
+    _node_options = std::make_shared<rclcpp::NodeOptions>();
+    _node_options->context(_context);
+
+    _node = std::make_shared<rclcpp::Node>(name, ns, *_node_options);
+
+    soss_ros2_cout << "Created node '"
+                   << ns << "/" << name << "'"
+                   << " with Domain ID: "
+                   << _node_options->get_rcl_node_options()->domain_id
+                   << std::endl;
 
     if(previous_domain.empty())
     {
-      success += unset_platform_env("ROS_DOMAIN_ID");
+      success &= unset_platform_env("ROS_DOMAIN_ID");
     }
     else
     {
-      success += set_platform_env("ROS_DOMAIN_ID", previous_domain.c_str(), true);
+      success &= set_platform_env("ROS_DOMAIN_ID", previous_domain.c_str(), true);
     }
   }
   else
   {
+    // Using default DOMAIN_ID, the node can be added to the default context.
+    soss_ros2_cout << "Created node '" << ns << "/" << name << "'" << std::endl;
     _node = std::make_shared<rclcpp::Node>(name, ns);
   }
 
@@ -154,8 +205,8 @@ bool SystemHandle::configure(
     xtypes::DynamicType::Ptr type = Factory::instance().create_type(type_name);
     if(type.get() == nullptr)
     {
-      std::cerr << "soss-ros2 failed to register the required DynamicType [" << type_name
-                << "]" << std::endl;
+      soss_ros2_cerr << "Failed to register the required DynamicType ["
+                     << type_name << "]" << std::endl;
       return false;
     }
     type_registry.emplace(type_name, std::move(type));
@@ -178,7 +229,7 @@ bool SystemHandle::configure(
 
     if(!Mix::from_file(msg_mix_path).load())
     {
-      std::cerr << "soss-ros2 failed to load extension for message type ["
+      soss_ros2_cerr << "Failed to load extension for message type ["
                 << type_name << "] using mix file: " << msg_mix_path << std::endl;
       success = false;
       continue;
@@ -203,8 +254,9 @@ bool SystemHandle::configure(
 
     if(!Mix::from_file(srv_mix_path).load())
     {
-      std::cerr << "soss-ros2 failed to load extension for service type ["
-                << type_name << "] using mix file: " << srv_mix_path << std::endl;
+      soss_ros2_cerr << "Failed to load extension for service type ["
+                     << type_name << "] using mix file: '"
+                     << srv_mix_path << "'." << std::endl;
       success = false;
       continue;
     }
@@ -252,9 +304,16 @@ bool SystemHandle::subscribe(
         parse_rmw_qos_configuration(configuration));
 
   if(!subscription)
+  {
     return false;
+  }
 
   _subscriptions.emplace_back(std::move(subscription));
+
+  soss_ros2_cout << "Created subscription for topic: '"
+                 << topic_name << "' on node: '"
+                 << _node->get_namespace() << _node->get_name()
+                 << "'" << std::endl;
   return true;
 }
 
@@ -264,19 +323,32 @@ std::shared_ptr<TopicPublisher> SystemHandle::advertise(
     const xtypes::DynamicType& message_type,
     const YAML::Node& configuration)
 {
+  std::shared_ptr<TopicPublisher> publisher;
+
   if(topic_name.find('{') != std::string::npos)
   {
     // If the topic name contains a curly brace, we must assume that it needs
     // runtime substitutions.
-    return make_meta_publisher(
-          message_type, *_node, topic_name,
-          parse_rmw_qos_configuration(configuration),
-          configuration);
+    publisher = make_meta_publisher(
+                message_type, *_node, topic_name,
+                parse_rmw_qos_configuration(configuration),
+                configuration);
+  }
+  else
+  {
+    publisher = Factory::instance().create_publisher(
+                message_type, *_node, topic_name,
+                parse_rmw_qos_configuration(configuration));
   }
 
-  return Factory::instance().create_publisher(
-        message_type, *_node, topic_name,
-        parse_rmw_qos_configuration(configuration));
+  if (nullptr != publisher)
+  {
+    soss_ros2_cout << "Created publisher for topic: '"
+                   << topic_name << "' on node: '"
+                   << _node->get_namespace() << _node->get_name()
+                   << "'" << std::endl;
+  }
+  return publisher;
 }
 
 //==============================================================================

@@ -16,7 +16,11 @@
 */
 
 #include <rclcpp/node.hpp>
+#include <rclcpp/node_options.hpp>
+#include <rclcpp/context.hpp>
 #include <rclcpp/executors/single_threaded_executor.hpp>
+
+#include <rcl/logging.h>
 
 #include <soss/Instance.hpp>
 #include <soss/utilities.hpp>
@@ -29,6 +33,9 @@
 #include <catch2/catch.hpp>
 
 using Catch::Matchers::WithinAbs;
+
+constexpr const char* DOMAIN_ID_1 = "5";
+constexpr const char* DOMAIN_ID_2 = "10";
 
 #ifdef WIN32
 #define SETENV(id,value,b) \
@@ -43,27 +50,66 @@ using Catch::Matchers::WithinAbs;
 
 TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 {
-  const int argc = 1;
-  const char* argv[argc];
-  argv[0] = "soss";
-  if (rclcpp::ok())
+  char const * const argv[1] = {"soss"};
+  if (!rclcpp::ok())
   {
-    rclcpp::init(argc, argv);
+    rclcpp::init(1, argv);
   }
-
   REQUIRE(rclcpp::ok());
 
-  SETENV("ROS_DOMAIN_ID", "5", true);
-  std::string name_1 = "Node_1";
-  std::string ns_1 = "";
-  rclcpp::Node::SharedPtr node_1 = std::make_shared<rclcpp::Node>(name_1, ns_1);
+  // Create the nodes in separate context, since in ROS2 Foxy each context uses
+  // an unique DDS participant and thus creating the two nodes in the same context
+  // would result in them having the same DOMAIN_ID.
+  SETENV("ROS_DOMAIN_ID", DOMAIN_ID_1, true);
 
-  SETENV("ROS_DOMAIN_ID", "10", true);
-  std::string name_2 = "Node_2";
-  std::string ns_2 = "";
-  rclcpp::Node::SharedPtr node_2 = std::make_shared<rclcpp::Node>(name_2, ns_2);
+  rclcpp::InitOptions init_options_1;
+  if (rcl_logging_rosout_enabled())
+  {
+    init_options_1.auto_initialize_logging(false);
+  }
 
-  std::string topic_name = "string_topic";
+  const char* const argv_1[1] = {"soss_context_1"};
+  auto context_1 = std::make_shared<rclcpp::Context>();
+  context_1->init(1, argv_1, init_options_1);
+
+  rclcpp::NodeOptions node_ops_1;
+  node_ops_1.context(context_1);
+
+  // This needs to be called so that NodeOptions::node_options_ pointer gets filled.
+  auto rcl_node_ops_1 = node_ops_1.get_rcl_node_options();
+
+  auto node_1 = std::make_shared<rclcpp::Node>("node_1", node_ops_1);
+
+  UNSETENV("ROS_DOMAIN_ID");
+
+  SETENV("ROS_DOMAIN_ID", DOMAIN_ID_2, true);
+
+  rclcpp::InitOptions init_options_2;
+  if (rcl_logging_rosout_enabled())
+  {
+    init_options_2.auto_initialize_logging(false);
+  }
+
+  const char* const argv_2[1] = {"soss_context_2"};
+  auto context_2 = std::make_shared<rclcpp::Context>();
+  context_2->init(1, argv_2);
+
+  rclcpp::NodeOptions node_ops_2;
+  node_ops_2.context(context_2);
+
+  // This needs to be called so that NodeOptions::node_options_ pointer gets filled.
+  auto rcl_node_ops_2 = node_ops_2.get_rcl_node_options();
+
+  auto node_2 = std::make_shared<rclcpp::Node>("node_2", node_ops_2);
+
+  UNSETENV("ROS_DOMAIN_ID");
+
+  std::cout << "[soss-ros2-test] Domain ID for 'node1': "
+            << rcl_node_ops_1->domain_id << std::endl;
+  std::cout << "[soss-ros2-test] Domain ID for 'node2': "
+            << rcl_node_ops_2->domain_id << std::endl;
+
+  const std::string topic_name("string_topic");
 
 #ifdef RCLCPP__QOS_HPP_
   const auto publisher =
