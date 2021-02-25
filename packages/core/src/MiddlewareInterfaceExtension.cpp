@@ -17,13 +17,13 @@
 
 #include <soss/MiddlewareInterfaceExtension.hpp>
 
+#include <cassert>
 #include <experimental/filesystem>
 #include <iostream>
 
 #ifdef WIN32
 // WINDOWS includes
 #include <Windows.h>
-#include <assert.h>
 #else
 #include <dlfcn.h>
 #endif
