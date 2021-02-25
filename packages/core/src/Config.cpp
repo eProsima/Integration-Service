@@ -737,11 +737,11 @@ bool Config::parse(
       }
 
       auto it_mw_remap = config.remap.find(mw);
-      if (it_mw_remap == config.remap.end() || it_mw_remap->second.type == "")
+      if ((it_mw_remap == config.remap.end() || it_mw_remap->second.type == "") && config.request_type != "")
       {
         m_required_types[mw].services.insert(config.request_type);
       }
-      if (it_mw_remap == config.remap.end() || it_mw_remap->second.reply_type == "")
+      if ((it_mw_remap == config.remap.end() || it_mw_remap->second.reply_type == "") && config.reply_type != "")
       {
         m_required_types[mw].services.insert(config.reply_type);
       }
