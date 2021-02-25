@@ -24,7 +24,6 @@
 #ifdef WIN32
 // WINDOWS includes
 #include <Windows.h>
-#include <assert.h>
 #else
 #include <dlfcn.h>
 #endif
