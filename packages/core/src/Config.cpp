@@ -796,7 +796,15 @@ bool Config::parse(
 bool Config::load_middlewares(
     SystemHandleInfoMap& info_map) const
 {
-  for (const auto& mw_entry : m_middlewares)
+  using Entry = std::map<std::string, MiddlewareConfig>::value_type;
+  std::list<Entry> middlewares(m_middlewares.begin(), m_middlewares.end());
+  middlewares.sort([](const Entry & a, const Entry & b) -> bool
+  {
+      auto & from = b.second.types_from;
+      return std::find(from.begin(), from.end(), a.first) != from.end();
+  });
+
+  for (const auto& mw_entry : middlewares)
   {
     const std::string& mw_name = mw_entry.first;
     const MiddlewareConfig& mw_config = mw_entry.second;
@@ -862,6 +870,47 @@ bool Config::load_middlewares(
         }
       }
 
+      if (!mw_config.types_from.empty())
+      {
+        for (const std::string& type : mw_config.types_from)
+        {
+          const auto it = info_map.find(type);
+          if (it == info_map.end())
+          {
+            std::cerr << "'types-from' references to a non-existant middleware" << std::endl;
+            return false;
+          }
+
+          for (auto&& it_type: info_map.at(type).types)
+          {
+            info.types.emplace(it_type.second->name(), it_type.second);
+          }
+        }
+
+        const auto requirements = m_required_types.find(mw_name);
+        for (const std::string& required_type: requirements->second.messages)
+        {
+          if (!info.types.count(required_type))
+          {
+            std::cerr << "The middleware '" << mw_name << "' must satisfy the required "
+                      << "type '" << required_type << "'"
+                      << std::endl;
+            return false;
+          }
+        }
+
+        for (const std::string& required_type: requirements->second.services)
+        {
+          if (!info.types.count(required_type))
+          {
+            std::cerr << "The middleware '" << mw_name << "' must satisfy the required "
+                      << "type '" << required_type << "'"
+                      << std::endl;
+            return false;
+          }
+        }
+      }
+
       configured = info.handle->configure(requirements->second, mw_config.config_node, info.types);
     }
 
@@ -874,53 +923,6 @@ bool Config::load_middlewares(
       return false;
     }
   }
-
-  for (const auto& mw_entry : m_middlewares)
-  {
-    const std::string& mw_name = mw_entry.first;
-    const MiddlewareConfig& mw_config = mw_entry.second;
-    auto& types = info_map.at(mw_name).types;
-
-    if (!mw_config.types_from.empty())
-    {
-      for (const std::string& type : mw_config.types_from)
-      {
-        const auto it = info_map.find(type);
-        if (it == info_map.end())
-        {
-          std::cerr << "'types-from' references to a non-existant middleware" << std::endl;
-          return false;
-        }
-
-        for (auto&& it_type: info_map.at(type).types)
-        {
-          types.emplace(it_type.second->name(), it_type.second);
-        }
-      }
-
-      const auto requirements = m_required_types.find(mw_name);
-      for (const std::string& required_type: requirements->second.messages)
-      {
-        if (!types.count(required_type))
-        {
-          std::cerr << "The middleware '" << mw_name << "' must satisfy the required "
-                    << "type '" << required_type << "'"
-                    << std::endl;
-        }
-      }
-
-      for (const std::string& required_type: requirements->second.services)
-      {
-        if (!types.count(required_type))
-        {
-          std::cerr << "The middleware '" << mw_name << "' must satisfy the required "
-                    << "type '" << required_type << "'"
-                    << std::endl;
-        }
-      }
-    }
-  }
-
   return true;
 }
 
