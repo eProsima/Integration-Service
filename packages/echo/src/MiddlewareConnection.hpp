@@ -93,7 +93,7 @@ private:
             }
 
             std::string topic = income_.front().topic;
-            Json& message = income_.front().message;
+            Json message = income_.front().message;
 
             income_.pop();
 
