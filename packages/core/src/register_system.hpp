@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__INTERNAL__REGISTER_SYSTEM_HPP
 #define SOSS__INTERNAL__REGISTER_SYSTEM_HPP
@@ -28,39 +28,41 @@ namespace internal {
 //==============================================================================
 struct SystemHandleInfo
 {
-  SystemHandleInfo(std::unique_ptr<SystemHandle> input)
-    : handle(std::move(input)),
-      topic_publisher(dynamic_cast<TopicPublisherSystem*>(handle.get())),
-      topic_subscriber(dynamic_cast<TopicSubscriberSystem*>(handle.get())),
-      service_client(dynamic_cast<ServiceClientSystem*>(handle.get())),
-      service_provider(dynamic_cast<ServiceProviderSystem*>(handle.get()))
-  {
-    // Do nothing
-  }
+    SystemHandleInfo(
+            std::unique_ptr<SystemHandle> input)
+        : handle(std::move(input))
+        , topic_publisher(dynamic_cast<TopicPublisherSystem*>(handle.get()))
+        , topic_subscriber(dynamic_cast<TopicSubscriberSystem*>(handle.get()))
+        , service_client(dynamic_cast<ServiceClientSystem*>(handle.get()))
+        , service_provider(dynamic_cast<ServiceProviderSystem*>(handle.get()))
+    {
+        // Do nothing
+    }
 
-  SystemHandleInfo(SystemHandleInfo&& other)
-    : handle(std::move(other.handle)),
-      topic_publisher(std::move(other.topic_publisher)),
-      topic_subscriber(std::move(other.topic_subscriber)),
-      service_client(std::move(other.service_client)),
-      service_provider(std::move(other.service_provider)),
-      types(std::move(other.types))
-  {
-    // Do nothing
-  }
+    SystemHandleInfo(
+            SystemHandleInfo&& other)
+        : handle(std::move(other.handle))
+        , topic_publisher(std::move(other.topic_publisher))
+        , topic_subscriber(std::move(other.topic_subscriber))
+        , service_client(std::move(other.service_client))
+        , service_provider(std::move(other.service_provider))
+        , types(std::move(other.types))
+    {
+        // Do nothing
+    }
 
-  inline operator bool() const
-  {
-    return static_cast<bool>(handle);
-  }
+    inline operator bool() const
+    {
+        return static_cast<bool>(handle);
+    }
 
-  std::unique_ptr<SystemHandle> handle;
-  TopicPublisherSystem*         topic_publisher;
-  TopicSubscriberSystem*        topic_subscriber;
-  ServiceClientSystem*          service_client;
-  ServiceProviderSystem*        service_provider;
+    std::unique_ptr<SystemHandle> handle;
+    TopicPublisherSystem*         topic_publisher;
+    TopicSubscriberSystem*        topic_subscriber;
+    ServiceClientSystem*          service_client;
+    ServiceProviderSystem*        service_provider;
 
-  TypeRegistry types;
+    TypeRegistry types;
 };
 
 //==============================================================================
@@ -71,17 +73,19 @@ class Register
 {
 public:
 
-  static void insert(
-      std::string middleware,
-      detail::SystemHandleFactory handle);
+    static void insert(
+            std::string middleware,
+            detail::SystemHandleFactory handle);
 
-  static SystemHandleInfo get(const std::string& middleware);
+    static SystemHandleInfo get(
+            const std::string& middleware);
 
 private:
-  using FactoryMap = std::map<std::string, detail::SystemHandleFactory>;
 
-  static FactoryMap _info_map;
-  static std::mutex _mutex;
+    using FactoryMap = std::map<std::string, detail::SystemHandleFactory>;
+
+    static FactoryMap _info_map;
+    static std::mutex _mutex;
 };
 
 } // namespace internal

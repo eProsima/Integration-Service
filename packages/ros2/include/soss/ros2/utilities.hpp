@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__ROS2__UTILITIES_HPP
 #define SOSS__ROS2__UTILITIES_HPP
@@ -24,7 +24,7 @@
 #include <rosidl_generator_cpp/bounded_vector.hpp>
 #else
 #include <rosidl_runtime_cpp/bounded_vector.hpp>
-#endif
+#endif // ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
 
 namespace soss {
 
@@ -34,16 +34,16 @@ using BoundedVector = rosidl_generator_cpp::BoundedVector<T, U, V>;
 #else
 template<typename T, std::size_t U, typename V>
 using BoundedVector = rosidl_runtime_cpp::BoundedVector<T, U, V>;
-#endif
+#endif // ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
 
 //==============================================================================
 template<typename ElementType, std::size_t UpperBound, typename Allocator>
-struct Convert<BoundedVector<ElementType, UpperBound, Allocator>>
+struct Convert<BoundedVector<ElementType, UpperBound, Allocator> >
     : ContainerConvert<
-    ElementType,
-    BoundedVector<ElementType, UpperBound, Allocator>,
-    std::vector<typename Convert<ElementType>::soss_type>,
-    soss::convert_bounded_vector<ElementType, UpperBound> > { };
+        ElementType,
+        BoundedVector<ElementType, UpperBound, Allocator>,
+        std::vector<typename Convert<ElementType>::soss_type>,
+        soss::convert_bounded_vector<ElementType, UpperBound> > { };
 
 } // namespace soss
 

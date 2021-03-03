@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__JSON__CONVERSION_HPP
 #define SOSS__JSON__CONVERSION_HPP
@@ -29,10 +29,13 @@ using Json = nlohmann::json;
 
 //==============================================================================
 /// Convert from a soss message to a JSON message
-Json SOSS_JSON_API convert(const xtypes::DynamicData& input);
+Json SOSS_JSON_API convert(
+        const xtypes::DynamicData& input);
 
 /// Convert from a JSON message to a soss message
-xtypes::DynamicData SOSS_JSON_API convert(const xtypes::DynamicType& type, const Json& input);
+xtypes::DynamicData SOSS_JSON_API convert(
+        const xtypes::DynamicType& type,
+        const Json& input);
 
 } // namespace json
 } // namespace soss

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <soss/FieldToString.hpp>
 
@@ -28,110 +28,113 @@ class FieldConversions
 {
 public:
 
-  static const FieldConversions& instance()
-  {
-    static FieldConversions conversions;
-    return conversions;
-  }
+    static const FieldConversions& instance()
+    {
+        static FieldConversions conversions;
+        return conversions;
+    }
 
-  std::string to_string(
-      xtypes::ReadableDynamicDataRef field,
-      const std::string& field_name,
-      const std::string& details) const
-  {
-    const std::string& type =
-      (field.type().name().find("std::string") != std::string::npos)
+    std::string to_string(
+            xtypes::ReadableDynamicDataRef field,
+            const std::string& field_name,
+            const std::string& details) const
+    {
+        const std::string& type =
+                (field.type().name().find("std::string") != std::string::npos)
       ? "std::string"
       : field.type().name();
-    const auto it = conversions.find(type);
-    if(it != conversions.end())
-      return it->second(field);
+        const auto it = conversions.find(type);
+        if (it != conversions.end())
+        {
+            return it->second(field);
+        }
 
-    throw UnknownFieldToStringCast(type, field_name, details);
-  }
+        throw UnknownFieldToStringCast(type, field_name, details);
+    }
 
 private:
 
-  FieldConversions()
-  {
-    conversions["std::string"] = [](xtypes::ReadableDynamicDataRef field) -> std::string
+    FieldConversions()
     {
-      return field;
-    };
+        conversions["std::string"] = [](xtypes::ReadableDynamicDataRef field) -> std::string
+                {
+                    return field;
+                };
 
-    add_primitive_conversion<bool>();
-    add_primitive_conversion<char>();
-    add_primitive_conversion<wchar_t>();
-    add_primitive_conversion<int8_t>();
-    add_primitive_conversion<uint8_t>();
-    add_primitive_conversion<int16_t>();
-    add_primitive_conversion<uint16_t>();
-    add_primitive_conversion<int32_t>();
-    add_primitive_conversion<uint32_t>();
-    add_primitive_conversion<int64_t>();
-    add_primitive_conversion<uint64_t>();
-    add_primitive_conversion<float>();
-    add_primitive_conversion<double>();
-    add_primitive_conversion<long double>();
-  }
+        add_primitive_conversion<bool>();
+        add_primitive_conversion<char>();
+        add_primitive_conversion<wchar_t>();
+        add_primitive_conversion<int8_t>();
+        add_primitive_conversion<uint8_t>();
+        add_primitive_conversion<int16_t>();
+        add_primitive_conversion<uint16_t>();
+        add_primitive_conversion<int32_t>();
+        add_primitive_conversion<uint32_t>();
+        add_primitive_conversion<int64_t>();
+        add_primitive_conversion<uint64_t>();
+        add_primitive_conversion<float>();
+        add_primitive_conversion<double>();
+        add_primitive_conversion<long double>();
+    }
 
-  template<typename T>
-  void add_primitive_conversion()
-  {
-    conversions[xtypes::primitive_type<T>().name()] = [](xtypes::ReadableDynamicDataRef field) -> std::string
+    template<typename T>
+    void add_primitive_conversion()
     {
-      T temp = field;
-      return std::to_string(temp);
-    };
-  }
+        conversions[xtypes::primitive_type<T>().name()] = [](xtypes::ReadableDynamicDataRef field) -> std::string
+                {
+                    T temp = field;
+                    return std::to_string(temp);
+                };
+    }
 
-  using ConversionFunc = std::function<std::string(xtypes::ReadableDynamicDataRef)>;
-  using ConversionMap = std::unordered_map<std::string, ConversionFunc>;
+    using ConversionFunc = std::function<std::string(xtypes::ReadableDynamicDataRef)>;
+    using ConversionMap = std::unordered_map<std::string, ConversionFunc>;
 
-  ConversionMap conversions;
+    ConversionMap conversions;
 };
 } // anonymous namespace
 
 //==============================================================================
-FieldToString::FieldToString(const std::string& usage_details)
-  : details(usage_details)
+FieldToString::FieldToString(
+        const std::string& usage_details)
+    : details(usage_details)
 {
-  // Do nothing
+    // Do nothing
 }
 
 //==============================================================================
 std::string FieldToString::to_string(
-    xtypes::ReadableDynamicDataRef field,
-    const std::string& field_name) const
+        xtypes::ReadableDynamicDataRef field,
+        const std::string& field_name) const
 {
-  return FieldConversions::instance().to_string(field, field_name, details);
+    return FieldConversions::instance().to_string(field, field_name, details);
 }
 
 //==============================================================================
 UnknownFieldToStringCast::UnknownFieldToStringCast(
-    const std::string& type,
-    const std::string& field_name,
-    const std::string& details)
-  : std::runtime_error(
-      std::string()
-      + "ERROR: Unable to cast type [" + type + "] of field [" + field_name
-      + "] to a string. Details: " + details),
-    _type(type),
-    _field_name(field_name)
+        const std::string& type,
+        const std::string& field_name,
+        const std::string& details)
+    : std::runtime_error(
+        std::string()
+        + "ERROR: Unable to cast type [" + type + "] of field [" + field_name
+        + "] to a string. Details: " + details)
+    , _type(type)
+    , _field_name(field_name)
 {
-  // Do nothing
+    // Do nothing
 }
 
 //==============================================================================
 const std::string& UnknownFieldToStringCast::type() const
 {
-  return _type;
+    return _type;
 }
 
 //==============================================================================
 const std::string& UnknownFieldToStringCast::field_name() const
 {
-  return _field_name;
+    return _field_name;
 }
 
 } // namespace soss

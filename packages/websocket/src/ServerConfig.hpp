@@ -11,10 +11,15 @@ namespace websocket {
 class ServerConfig
 {
 public:
-  static bool load_auth_policy(JwtValidator& jwt_validator, const YAML::Node& auth_node);
+
+    static bool load_auth_policy(
+            JwtValidator& jwt_validator,
+            const YAML::Node& auth_node);
 
 private:
-  static std::string glob_to_regex(const std::string& s);
+
+    static std::string glob_to_regex(
+            const std::string& s);
 };
 
 } // namespace websocket

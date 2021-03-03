@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <rclcpp/node.hpp>
 #include <rclcpp/node_options.hpp>
@@ -38,137 +38,137 @@ constexpr const char* DOMAIN_ID_1 = "5";
 constexpr const char* DOMAIN_ID_2 = "10";
 
 #ifdef WIN32
-#define SETENV(id,value,b) \
-	{std::ostringstream _aux_d; \
-	_aux_d << id << "=" << value; \
-	_putenv(_aux_d.str().c_str());}
-#define UNSETENV(id,retValue) SETENV(id, "", false)
+#define SETENV(id, value, b) \
+    {std::ostringstream _aux_d; \
+     _aux_d << id << "=" << value; \
+     _putenv(_aux_d.str().c_str());}
+#define UNSETENV(id, retValue) SETENV(id, "", false)
 #else
-#define SETENV(id,value,b) setenv(id, value, b)
+#define SETENV(id, value, b) setenv(id, value, b)
 #define UNSETENV(id) unsetenv(id)
-#endif
+#endif // ifdef WIN32
 
 TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 {
-  char const * const argv[1] = {"soss"};
-  if (!rclcpp::ok())
-  {
-    rclcpp::init(1, argv);
-  }
-  REQUIRE(rclcpp::ok());
+    char const* const argv[1] = {"soss"};
+    if (!rclcpp::ok())
+    {
+        rclcpp::init(1, argv);
+    }
+    REQUIRE(rclcpp::ok());
 
-  // Create the nodes in separate context, since in ROS2 Foxy each context uses
-  // an unique DDS participant and thus creating the two nodes in the same context
-  // would result in them having the same DOMAIN_ID.
-  SETENV("ROS_DOMAIN_ID", DOMAIN_ID_1, true);
+    // Create the nodes in separate context, since in ROS2 Foxy each context uses
+    // an unique DDS participant and thus creating the two nodes in the same context
+    // would result in them having the same DOMAIN_ID.
+    SETENV("ROS_DOMAIN_ID", DOMAIN_ID_1, true);
 
-  rclcpp::InitOptions init_options_1;
-  if (rcl_logging_rosout_enabled())
-  {
-    init_options_1.auto_initialize_logging(false);
-  }
+    rclcpp::InitOptions init_options_1;
+    if (rcl_logging_rosout_enabled())
+    {
+        init_options_1.auto_initialize_logging(false);
+    }
 
-  const char* const argv_1[1] = {"soss_context_1"};
-  auto context_1 = std::make_shared<rclcpp::Context>();
-  context_1->init(1, argv_1, init_options_1);
+    const char* const argv_1[1] = {"soss_context_1"};
+    auto context_1 = std::make_shared<rclcpp::Context>();
+    context_1->init(1, argv_1, init_options_1);
 
-  rclcpp::NodeOptions node_ops_1;
-  node_ops_1.context(context_1);
+    rclcpp::NodeOptions node_ops_1;
+    node_ops_1.context(context_1);
 
-  // This needs to be called so that NodeOptions::node_options_ pointer gets filled.
-  auto rcl_node_ops_1 = node_ops_1.get_rcl_node_options();
+    // This needs to be called so that NodeOptions::node_options_ pointer gets filled.
+    auto rcl_node_ops_1 = node_ops_1.get_rcl_node_options();
 
-  auto node_1 = std::make_shared<rclcpp::Node>("node_1", node_ops_1);
+    auto node_1 = std::make_shared<rclcpp::Node>("node_1", node_ops_1);
 
-  UNSETENV("ROS_DOMAIN_ID");
+    UNSETENV("ROS_DOMAIN_ID");
 
-  SETENV("ROS_DOMAIN_ID", DOMAIN_ID_2, true);
+    SETENV("ROS_DOMAIN_ID", DOMAIN_ID_2, true);
 
-  rclcpp::InitOptions init_options_2;
-  if (rcl_logging_rosout_enabled())
-  {
-    init_options_2.auto_initialize_logging(false);
-  }
+    rclcpp::InitOptions init_options_2;
+    if (rcl_logging_rosout_enabled())
+    {
+        init_options_2.auto_initialize_logging(false);
+    }
 
-  const char* const argv_2[1] = {"soss_context_2"};
-  auto context_2 = std::make_shared<rclcpp::Context>();
-  context_2->init(1, argv_2);
+    const char* const argv_2[1] = {"soss_context_2"};
+    auto context_2 = std::make_shared<rclcpp::Context>();
+    context_2->init(1, argv_2);
 
-  rclcpp::NodeOptions node_ops_2;
-  node_ops_2.context(context_2);
+    rclcpp::NodeOptions node_ops_2;
+    node_ops_2.context(context_2);
 
-  // This needs to be called so that NodeOptions::node_options_ pointer gets filled.
-  auto rcl_node_ops_2 = node_ops_2.get_rcl_node_options();
+    // This needs to be called so that NodeOptions::node_options_ pointer gets filled.
+    auto rcl_node_ops_2 = node_ops_2.get_rcl_node_options();
 
-  auto node_2 = std::make_shared<rclcpp::Node>("node_2", node_ops_2);
+    auto node_2 = std::make_shared<rclcpp::Node>("node_2", node_ops_2);
 
-  UNSETENV("ROS_DOMAIN_ID");
+    UNSETENV("ROS_DOMAIN_ID");
 
-  std::cout << "[soss-ros2-test] Domain ID for 'node1': "
-            << rcl_node_ops_1->domain_id << std::endl;
-  std::cout << "[soss-ros2-test] Domain ID for 'node2': "
-            << rcl_node_ops_2->domain_id << std::endl;
+    std::cout << "[soss-ros2-test] Domain ID for 'node1': "
+              << rcl_node_ops_1->domain_id << std::endl;
+    std::cout << "[soss-ros2-test] Domain ID for 'node2': "
+              << rcl_node_ops_2->domain_id << std::endl;
 
-  const std::string topic_name("string_topic");
-
-#ifdef RCLCPP__QOS_HPP_
-  const auto publisher =
-    node_1->create_publisher<std_msgs::msg::String>(topic_name, rclcpp::SystemDefaultsQoS());
-#else
-  const auto publisher =
-    node_1->create_publisher<std_msgs::msg::String>(topic_name);
-#endif
-
-  std::promise<std_msgs::msg::String> msg_promise;
-  std::future<std_msgs::msg::String> msg_future = msg_promise.get_future();
-  std::mutex node2_sub_mutex;
-  auto node2_sub = [&](std_msgs::msg::String::UniquePtr msg)
-  {
-    std::unique_lock<std::mutex> lock(node2_sub_mutex);
-    msg_promise.set_value(*msg);
-  };
+    const std::string topic_name("string_topic");
 
 #ifdef RCLCPP__QOS_HPP_
-  const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
-    topic_name, rclcpp::SystemDefaultsQoS(), node2_sub);
+    const auto publisher =
+            node_1->create_publisher<std_msgs::msg::String>(topic_name, rclcpp::SystemDefaultsQoS());
 #else
-  const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
-    topic_name, node2_sub);
-#endif
+    const auto publisher =
+            node_1->create_publisher<std_msgs::msg::String>(topic_name);
+#endif // ifdef RCLCPP__QOS_HPP_
 
-  std_msgs::msg::String pub_msg;
-  pub_msg.set__data("Hello node");
+    std::promise<std_msgs::msg::String> msg_promise;
+    std::future<std_msgs::msg::String> msg_future = msg_promise.get_future();
+    std::mutex node2_sub_mutex;
+    auto node2_sub = [&](std_msgs::msg::String::UniquePtr msg)
+            {
+                std::unique_lock<std::mutex> lock(node2_sub_mutex);
+                msg_promise.set_value(*msg);
+            };
 
-  rclcpp::executors::SingleThreadedExecutor executor;
-  using namespace std::chrono_literals;
+#ifdef RCLCPP__QOS_HPP_
+    const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
+        topic_name, rclcpp::SystemDefaultsQoS(), node2_sub);
+#else
+    const auto subscriber = node_2->create_subscription<std_msgs::msg::String>(
+        topic_name, node2_sub);
+#endif // ifdef RCLCPP__QOS_HPP_
 
-  auto rclcpp_delay = 500ms;
-  publisher->publish(pub_msg);
-  executor.spin_node_some(node_1);
-  std::this_thread::sleep_for(rclcpp_delay);
-  executor.spin_node_some(node_2);
+    std_msgs::msg::String pub_msg;
+    pub_msg.set__data("Hello node");
 
-  // In different domains the message should not be received
-  REQUIRE(msg_future.wait_for(0s) != std::future_status::ready);
+    rclcpp::executors::SingleThreadedExecutor executor;
+    using namespace std::chrono_literals;
 
-  // Run soss in order to make the communication possible.
-  YAML::Node config_node = YAML::LoadFile(ROS2__TEST_DOMAIN__TEST_CONFIG);
+    auto rclcpp_delay = 500ms;
+    publisher->publish(pub_msg);
+    executor.spin_node_some(node_1);
+    std::this_thread::sleep_for(rclcpp_delay);
+    executor.spin_node_some(node_2);
 
-  soss::InstanceHandle handle = soss::run_instance(
-    config_node, { ROS2__ROSIDL__BUILD_DIR });
+    // In different domains the message should not be received
+    REQUIRE(msg_future.wait_for(0s) != std::future_status::ready);
 
-  REQUIRE(handle);
+    // Run soss in order to make the communication possible.
+    YAML::Node config_node = YAML::LoadFile(ROS2__TEST_DOMAIN__TEST_CONFIG);
 
-  // Wait for soss to start properly before publishing.
-  std::this_thread::sleep_for(1s);
-  publisher->publish(pub_msg);
-  executor.spin_node_some(node_1);
-  std::this_thread::sleep_for(rclcpp_delay);
-  executor.spin_node_some(node_2);
+    soss::InstanceHandle handle = soss::run_instance(
+        config_node, { ROS2__ROSIDL__BUILD_DIR });
 
-  REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
+    REQUIRE(handle);
 
-  std_msgs::msg::String received_msg = msg_future.get();
+    // Wait for soss to start properly before publishing.
+    std::this_thread::sleep_for(1s);
+    publisher->publish(pub_msg);
+    executor.spin_node_some(node_1);
+    std::this_thread::sleep_for(rclcpp_delay);
+    executor.spin_node_some(node_2);
 
-  REQUIRE(pub_msg == received_msg);
+    REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
+
+    std_msgs::msg::String received_msg = msg_future.get();
+
+    REQUIRE(pub_msg == received_msg);
 }

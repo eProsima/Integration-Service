@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__MIDDLEWAREINTERFACEEXTENSION_HPP
 #define SOSS__MIDDLEWAREINTERFACEEXTENSION_HPP
@@ -29,31 +29,32 @@ class SOSS_CORE_API MiddlewareInterfaceExtension
 {
 public:
 
-  MiddlewareInterfaceExtension(
-      YAML::Node root,
-      const std::string& absolute_file_directory_path);
+    MiddlewareInterfaceExtension(
+            YAML::Node root,
+            const std::string& absolute_file_directory_path);
 
-  MiddlewareInterfaceExtension(MiddlewareInterfaceExtension&& other);
+    MiddlewareInterfaceExtension(
+            MiddlewareInterfaceExtension&& other);
 
-  static MiddlewareInterfaceExtension from_file(
-      const std::string& filename);
+    static MiddlewareInterfaceExtension from_file(
+            const std::string& filename);
 
-  static MiddlewareInterfaceExtension from_string(
-      const std::string& text,
-      const std::string& absolute_file_directory_path);
+    static MiddlewareInterfaceExtension from_string(
+            const std::string& text,
+            const std::string& absolute_file_directory_path);
 
-  static MiddlewareInterfaceExtension from_node(
-      YAML::Node node,
-      const std::string& absolute_file_directory_path);
+    static MiddlewareInterfaceExtension from_node(
+            YAML::Node node,
+            const std::string& absolute_file_directory_path);
 
-  bool load() const;
+    bool load() const;
 
-  ~MiddlewareInterfaceExtension();
+    ~MiddlewareInterfaceExtension();
 
 private:
 
-  class Implementation;
-  std::unique_ptr<Implementation> _pimpl;
+    class Implementation;
+    std::unique_ptr<Implementation> _pimpl;
 
 };
 

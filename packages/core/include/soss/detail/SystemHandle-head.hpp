@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__DETAIL__SYSTEMHANDLE_HEAD_HPP
 #define SOSS__DETAIL__SYSTEMHANDLE_HEAD_HPP
@@ -35,8 +35,8 @@ using SystemHandleFactory = std::function<std::unique_ptr<SystemHandle>()>;
 
 //==============================================================================
 void SOSS_CORE_API register_system_handle_factory(
-    const std::string& middleware,
-    SystemHandleFactory handle);
+        const std::string& middleware,
+        SystemHandleFactory handle);
 
 //==============================================================================
 template<typename S>
@@ -44,11 +44,15 @@ class SystemHandleRegistrar
 {
 public:
 
-  SystemHandleRegistrar(const std::string& middleware)
-  {
-    register_system_handle_factory(
-          middleware, [](){ return std::make_unique<S>(); });
-  }
+    SystemHandleRegistrar(
+            const std::string& middleware)
+    {
+        register_system_handle_factory(
+            middleware, []()
+            {
+                return std::make_unique<S>();
+            });
+    }
 
 };
 
@@ -56,23 +60,23 @@ public:
 } // namespace soss
 
 #define DETAIL_SOSS_REGISTER_SYSTEM_HELPER( \
-      UniqueID, middleware_name, HandleType) \
-  namespace { \
+        UniqueID, middleware_name, HandleType) \
+    namespace { \
     ::soss::detail::SystemHandleRegistrar<HandleType> \
     execute_at_load_ ## UniqueID (middleware_name); \
-  } /* anonymous namespace */
+    } /* anonymous namespace */
 
 
 // Because of C macro expansion rules, we need this middle step in order for
 // __COUNTER__/UniqueID to be expanded to an integer value correctly
 #define DETAIL_SOSS_REGISTER_SYSTEM_WITH_COUNTER( \
-      UniqueID, middleware_name, HandleType) \
-  DETAIL_SOSS_REGISTER_SYSTEM_HELPER(UniqueID, middleware_name, HandleType)
+        UniqueID, middleware_name, HandleType) \
+    DETAIL_SOSS_REGISTER_SYSTEM_HELPER(UniqueID, middleware_name, HandleType)
 
 
 
 #define DETAIL_SOSS_REGISTER_SYSTEM(middleware_name, HandleType) \
-  DETAIL_SOSS_REGISTER_SYSTEM_WITH_COUNTER( \
-    __COUNTER__, middleware_name, HandleType)
+    DETAIL_SOSS_REGISTER_SYSTEM_WITH_COUNTER( \
+        __COUNTER__, middleware_name, HandleType)
 
 #endif // SOSS__DETAIL__SYSTEMHANDLE_HEAD_HPP

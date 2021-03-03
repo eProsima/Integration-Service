@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__UTILITIES_HPP
 #define SOSS__UTILITIES_HPP
@@ -37,28 +37,33 @@ namespace soss {
 template<typename Type>
 struct Convert
 {
-  using native_type = Type;
+    using native_type = Type;
 
-  static constexpr bool type_is_primitive =
-         std::is_arithmetic<Type>::value
-      || std::is_same<std::string, Type>::value
-      || std::is_same<std::basic_string<char16_t>, Type>::value;
+    static constexpr bool type_is_primitive =
+            std::is_arithmetic<Type>::value
+            || std::is_same<std::string, Type>::value
+            || std::is_same<std::basic_string<char16_t>, Type>::value;
 
-  /// \brief Move data from a xtype field to a native middleware
-  /// data structure
-  static void from_xtype_field(const xtypes::ReadableDynamicDataRef& from, native_type& to)
-  {
-    to = from.value<native_type>();
-  }
+    /// \brief Move data from a xtype field to a native middleware
+    /// data structure
+    static void from_xtype_field(
+            const xtypes::ReadableDynamicDataRef& from,
+            native_type& to)
+    {
+        to = from.value<native_type>();
+    }
 
-  /// \brief Move data from a native middleware data structure to a xtype
-  /// message field.
-  static void to_xtype_field(const native_type& from, xtypes::WritableDynamicDataRef to)
-  {
-    static_assert(type_is_primitive,
-      "The soss::Convert struct should be specialized for non-primitive types");
-    to.value<native_type>(from);
-  }
+    /// \brief Move data from a native middleware data structure to a xtype
+    /// message field.
+    static void to_xtype_field(
+            const native_type& from,
+            xtypes::WritableDynamicDataRef to)
+    {
+        static_assert(type_is_primitive,
+                "The soss::Convert struct should be specialized for non-primitive types");
+        to.value<native_type>(from);
+    }
+
 };
 
 //==============================================================================
@@ -72,35 +77,40 @@ struct Convert
 // NOTE: This specialization can be removed safety if rosidl modifies its behaviour.
 struct CharConvert
 {
-  using native_type = char;
+    using native_type = char;
 
-  static constexpr bool type_is_primitive = true;
+    static constexpr bool type_is_primitive = true;
 
-  // Documentation inherited from Convert
-  static void from_xtype_field(const xtypes::ReadableDynamicDataRef& from, native_type& to)
-  {
-    if(from.type().kind() == xtypes::TypeKind::UINT_8_TYPE)
+    // Documentation inherited from Convert
+    static void from_xtype_field(
+            const xtypes::ReadableDynamicDataRef& from,
+            native_type& to)
     {
-      to = static_cast<native_type>(from.value<uint8_t>());
+        if (from.type().kind() == xtypes::TypeKind::UINT_8_TYPE)
+        {
+            to = static_cast<native_type>(from.value<uint8_t>());
+        }
+        else
+        {
+            to = from.value<native_type>();
+        }
     }
-    else
-    {
-      to = from.value<native_type>();
-    }
-  }
 
-  // Documentation inherited from Convert
-  static void to_xtype_field(const native_type& from, xtypes::WritableDynamicDataRef to)
-  {
-    if(to.type().kind() == xtypes::TypeKind::UINT_8_TYPE)
+    // Documentation inherited from Convert
+    static void to_xtype_field(
+            const native_type& from,
+            xtypes::WritableDynamicDataRef to)
     {
-      to.value<uint8_t>(static_cast<uint8_t>(from));
+        if (to.type().kind() == xtypes::TypeKind::UINT_8_TYPE)
+        {
+            to.value<uint8_t>(static_cast<uint8_t>(from));
+        }
+        else
+        {
+            to.value<native_type>(from);
+        }
     }
-    else
-    {
-      to.value<native_type>(from);
-    }
-  }
+
 };
 
 template<>
@@ -135,21 +145,26 @@ template<
     void (*_to_xtype)(const Type& from, xtypes::WritableDynamicDataRef to)>
 struct MessageConvert
 {
-  using native_type = Type;
+    using native_type = Type;
 
-  static constexpr bool type_is_primitive = false;
+    static constexpr bool type_is_primitive = false;
 
-  // Documentation inherited from Convert
-  static void from_xtype_field(const xtypes::ReadableDynamicDataRef& from, native_type& to)
-  {
-    (*_from_xtype)(from, to);
-  }
+    // Documentation inherited from Convert
+    static void from_xtype_field(
+            const xtypes::ReadableDynamicDataRef& from,
+            native_type& to)
+    {
+        (*_from_xtype)(from, to);
+    }
 
-  // Documentation inherited from Convert
-  static void to_xtype_field(const native_type& from, xtypes::WritableDynamicDataRef to)
-  {
-    (*_to_xtype)(from, to);
-  }
+    // Documentation inherited from Convert
+    static void to_xtype_field(
+            const native_type& from,
+            xtypes::WritableDynamicDataRef to)
+    {
+        (*_to_xtype)(from, to);
+    }
+
 };
 
 //==============================================================================
@@ -164,85 +179,98 @@ template<
     std::size_t UpperBound>
 struct ContainerConvert
 {
-  using native_type = NativeType;
+    using native_type = NativeType;
 
-  static constexpr bool type_is_primitive =
-      Convert<ElementType>::type_is_primitive;
+    static constexpr bool type_is_primitive =
+            Convert<ElementType>::type_is_primitive;
 
-  static void from_xtype(const xtypes::ReadableDynamicDataRef& from, ElementType& to)
-  {
-    Convert<ElementType>::from_xtype_field(from, to);
-  }
-
-  /// \brief This template specialization is needed to deal with the edge case
-  /// produced by vectors of bools. std::vector<bool> is specialized to be
-  /// implemented as a bitmap, and as a result its operator[] cannot return its
-  /// bool elements by reference. Instead it returns a "reference" proxy object.
-  static void from_xtype(const xtypes::ReadableDynamicDataRef& from, std::vector<bool>::reference to)
-  {
-    bool temp = from;
-    to = temp;
-  }
-
-  template<typename Container>
-  static void container_resize(Container& vector, std::size_t size)
-  {
-    vector.resize(size);
-  }
-
-  template<template <typename, std::size_t> class Array, typename T, std::size_t N>
-  static void container_resize(Array<T, N>& /*array*/, std::size_t /*size*/)
-  {
-    // Do nothing. Arrays don't need to be resized.
-  }
-
-  // Documentation inherited from Convert
-  static void from_xtype_field(const xtypes::ReadableDynamicDataRef& from, native_type& to)
-  {
-    const std::size_t N = std::min(from.size(), UpperBound);
-    container_resize(to, N);
-    for(std::size_t i=0; i < N; ++i)
+    static void from_xtype(
+            const xtypes::ReadableDynamicDataRef& from,
+            ElementType& to)
     {
-      from_xtype(from[i], to[i]);
+        Convert<ElementType>::from_xtype_field(from, to);
     }
-  }
 
-  // Documentation inherited from Convert
-  static void to_xtype_field(const native_type& from, xtypes::WritableDynamicDataRef to)
-  {
-    const std::size_t N = std::min(from.size(), UpperBound);
-    to.resize(N);
-    for(std::size_t i=0; i < N; ++i)
+    /// \brief This template specialization is needed to deal with the edge case
+    /// produced by vectors of bools. std::vector<bool> is specialized to be
+    /// implemented as a bitmap, and as a result its operator[] cannot return its
+    /// bool elements by reference. Instead it returns a "reference" proxy object.
+    static void from_xtype(
+            const xtypes::ReadableDynamicDataRef& from,
+            std::vector<bool>::reference to)
     {
-      Convert<ElementType>::to_xtype_field(from[i], to[i]);
+        bool temp = from;
+        to = temp;
     }
-  }
+
+    template<typename Container>
+    static void container_resize(
+            Container& vector,
+            std::size_t size)
+    {
+        vector.resize(size);
+    }
+
+    template<template <typename, std::size_t> class Array, typename T, std::size_t N>
+    static void container_resize(
+            Array<T, N>& /*array*/,
+            std::size_t /*size*/)
+    {
+        // Do nothing. Arrays don't need to be resized.
+    }
+
+    // Documentation inherited from Convert
+    static void from_xtype_field(
+            const xtypes::ReadableDynamicDataRef& from,
+            native_type& to)
+    {
+        const std::size_t N = std::min(from.size(), UpperBound);
+        container_resize(to, N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            from_xtype(from[i], to[i]);
+        }
+    }
+
+    // Documentation inherited from Convert
+    static void to_xtype_field(
+            const native_type& from,
+            xtypes::WritableDynamicDataRef to)
+    {
+        const std::size_t N = std::min(from.size(), UpperBound);
+        to.resize(N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            Convert<ElementType>::to_xtype_field(from[i], to[i]);
+        }
+    }
+
 };
 
 //==============================================================================
 template<typename ElementType, typename Allocator>
-struct Convert<std::vector<ElementType, Allocator>>
+struct Convert<std::vector<ElementType, Allocator> >
     : ContainerConvert<
-    ElementType,
-    std::vector<typename Convert<ElementType>::native_type, Allocator>,
-    std::numeric_limits<typename std::vector<ElementType, Allocator>::size_type>::max()> { };
+        ElementType,
+        std::vector<typename Convert<ElementType>::native_type, Allocator>,
+        std::numeric_limits<typename std::vector<ElementType, Allocator>::size_type>::max()> { };
 
 //==============================================================================
 template<template <typename, std::size_t> class Array, typename ElementType, std::size_t N>
-struct Convert<Array<ElementType, N>>
+struct Convert<Array<ElementType, N> >
     : ContainerConvert<
-    ElementType,
-    Array<typename Convert<ElementType>::native_type, N>,
-    N> { };
+        ElementType,
+        Array<typename Convert<ElementType>::native_type, N>,
+        N> { };
 
 //==============================================================================
 template<typename ElementType, std::size_t N, typename Allocator,
-    template<typename, std::size_t ,typename> class VectorImpl>
-struct Convert<VectorImpl<ElementType, N, Allocator>>
+        template<typename, std::size_t, typename> class VectorImpl>
+struct Convert<VectorImpl<ElementType, N, Allocator> >
     : ContainerConvert<
-    ElementType,
-    VectorImpl<typename Convert<ElementType>::native_type, N, Allocator>,
-    N> { };
+        ElementType,
+        VectorImpl<typename Convert<ElementType>::native_type, N, Allocator>,
+        N> { };
 
 //==============================================================================
 /// \brief A thread-safe repository for resources to avoid unnecessary
@@ -252,59 +280,70 @@ class ResourcePool
 {
 public:
 
-  ResourcePool(const std::size_t initial_depth = 1)
-  {
-    _queue.reserve(initial_depth);
-    for(std::size_t i=0; i < initial_depth; ++i)
-      _queue.emplace_back((_initializer)());
-  }
-
-  void setInitializer(std::function<Resource()> initializer)
-  {
-    _initializer = std::move(initializer);
-  }
-
-  Resource pop()
-  {
-    if(_queue.empty())
+    ResourcePool(
+            const std::size_t initial_depth = 1)
     {
-      return (_initializer)();
+        _queue.reserve(initial_depth);
+        for (std::size_t i = 0; i < initial_depth; ++i)
+        {
+            _queue.emplace_back((_initializer)());
+        }
     }
 
-    std::unique_lock<std::mutex> lock(_mutex);
-    Resource r = std::move(_queue.back());
-    _queue.pop_back();
-    return r;
-  }
+    void setInitializer(
+            std::function<Resource()> initializer)
+    {
+        _initializer = std::move(initializer);
+    }
 
-  void recycle(Resource&& r)
-  {
-    std::unique_lock<std::mutex> lock(_mutex);
-    _queue.emplace_back(std::move(r));
-  }
+    Resource pop()
+    {
+        if (_queue.empty())
+        {
+            return (_initializer)();
+        }
+
+        std::unique_lock<std::mutex> lock(_mutex);
+        Resource r = std::move(_queue.back());
+        _queue.pop_back();
+        return r;
+    }
+
+    void recycle(
+            Resource&& r)
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _queue.emplace_back(std::move(r));
+    }
 
 private:
 
-  std::vector<Resource> _queue;
-  std::mutex _mutex;
-  std::function<Resource()> _initializer = initializerT;
+    std::vector<Resource> _queue;
+    std::mutex _mutex;
+    std::function<Resource()> _initializer = initializerT;
 
 };
 
 //==============================================================================
 template<typename Resource>
 using UniqueResourcePool =
-    ResourcePool<std::unique_ptr<Resource>, &std::make_unique<Resource>>;
+        ResourcePool<std::unique_ptr<Resource>, &std::make_unique<Resource> >;
 
 template<typename Resource>
-std::unique_ptr<Resource> initialize_unique_null() { return nullptr; }
+std::unique_ptr<Resource> initialize_unique_null()
+{
+    return nullptr;
+}
 
 template<typename Resource>
 using SharedResourcePool =
-    ResourcePool<std::shared_ptr<Resource>, &std::make_shared<Resource>>;
+        ResourcePool<std::shared_ptr<Resource>, &std::make_shared<Resource> >;
 
 template<typename Resource>
-std::shared_ptr<Resource> initialize_shared_null() { return nullptr; }
+std::shared_ptr<Resource> initialize_shared_null()
+{
+    return nullptr;
+}
 
 } // namespace soss
 

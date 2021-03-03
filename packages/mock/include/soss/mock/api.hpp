@@ -13,15 +13,15 @@ namespace soss {
 namespace mock {
 
 bool SOSS_MOCK_API publish_message(
-    const std::string& topic,
-    const xtypes::DynamicData& msg);
+        const std::string& topic,
+        const xtypes::DynamicData& msg);
 
 
-using MockSubscriptionCallback = std::function<void(const xtypes::DynamicData&)>;
+using MockSubscriptionCallback = std::function<void (const xtypes::DynamicData&)>;
 
 bool SOSS_MOCK_API subscribe(
-    const std::string& topic,
-    MockSubscriptionCallback callback);
+        const std::string& topic,
+        MockSubscriptionCallback callback);
 
 /// Request a service
 /// \param[in] retry
@@ -31,17 +31,17 @@ bool SOSS_MOCK_API subscribe(
 ///     server responds multiple times, only the first response will be
 ///     available to the std::shared_future.
 std::shared_future<xtypes::DynamicData> SOSS_MOCK_API request(
-    const std::string& topic,
-    const xtypes::DynamicData& request_msg,
-    std::chrono::nanoseconds retry = std::chrono::seconds(0));
+        const std::string& topic,
+        const xtypes::DynamicData& request_msg,
+        std::chrono::nanoseconds retry = std::chrono::seconds(0));
 
 
 using MockServiceCallback = std::function<xtypes::DynamicData(const xtypes::DynamicData& request)>;
 
 void SOSS_MOCK_API serve(
-    const std::string& topic,
-    MockServiceCallback callback,
-    const std::string& type = "");
+        const std::string& topic,
+        MockServiceCallback callback,
+        const std::string& type = "");
 
 
 } // namespace mock

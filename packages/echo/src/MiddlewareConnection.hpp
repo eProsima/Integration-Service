@@ -19,7 +19,7 @@ using Json = soss::json::Json;
 // Class used for emulate the remote connection with the middleware.
 class MiddlewareConnection
 {
-    using Callback = std::function<void(const Json& message)>;
+    using Callback = std::function<void (const Json& message)>;
 
     struct MiddlewareMessageQueued
     {
@@ -28,16 +28,19 @@ class MiddlewareConnection
     };
 
 public:
-    MiddlewareConnection(bool roundtrip)
+
+    MiddlewareConnection(
+            bool roundtrip)
         : roundtrip_(roundtrip)
-    {}
+    {
+    }
 
     void subscribe(
             const std::string& topic,
             Callback callback)
     {
         auto it = topic_callbacks_.find(topic);
-        if(it != topic_callbacks_.end())
+        if (it != topic_callbacks_.end())
         {
             it->second.emplace_back(callback);
         }
@@ -53,7 +56,7 @@ public:
     {
         std::cout << MIDDLEWARE_PREFIX "send to middleware:" << std::endl;
         std::cout << message.dump(4) << std::endl;
-        if(roundtrip_)
+        if (roundtrip_)
         {
             receive(topic, message);
         }
@@ -82,12 +85,16 @@ public:
     }
 
 private:
+
     void listen()
     {
-        while(running_)
+        while (running_)
         {
             std::unique_lock<std::mutex> pop_lock(income_mutex_);
-            if(!pop_condition_.wait_for(pop_lock, std::chrono::microseconds(100), [this]{ return !income_.empty(); }))
+            if (!pop_condition_.wait_for(pop_lock, std::chrono::microseconds(100), [this]
+                    {
+                        return !income_.empty();
+                    }))
             {
                 continue; //timemout
             }
@@ -103,9 +110,9 @@ private:
             std::cout << message.dump(4) << std::endl;
 
             auto it = topic_callbacks_.find(topic);
-            if(it != topic_callbacks_.end())
+            if (it != topic_callbacks_.end())
             {
-                for(auto&& callback: it->second)
+                for (auto&& callback: it->second)
                 {
                     callback(message);
                 }
@@ -122,7 +129,7 @@ private:
     std::condition_variable pop_condition_;
     std::thread listen_thread;
     bool running_;
-    std::map<std::string, std::vector<Callback>> topic_callbacks_;
+    std::map<std::string, std::vector<Callback> > topic_callbacks_;
     bool roundtrip_;
 };
 

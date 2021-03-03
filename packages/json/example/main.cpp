@@ -26,7 +26,7 @@ int main()
     xtypes::DynamicData xtypes_message(outer);
     xtypes_message["int"] = 42;
     xtypes_message["string"] = "Hello json :D";
-    for(size_t i = 0; i < xtypes_message["array"].size(); i++)
+    for (size_t i = 0; i < xtypes_message["array"].size(); i++)
     {
         xtypes_message["array"][i] = 10 + int(i);
     }
@@ -40,28 +40,28 @@ int main()
 
 
     Json json_message = {
-      {"int", 42},
-      {"array", {10, 11, 12, 13, 14} },
-      {"string", "Hello json :D" },
-      {"sequence", { 50.3, 100.8 } },
-      {"inner",
-        {
-          {"int", 1042},
-          {"double", 10.42}
+        {"int", 42},
+        {"array", {10, 11, 12, 13, 14} },
+        {"string", "Hello json :D" },
+        {"sequence", { 50.3, 100.8 } },
+        {"inner",
+         {
+             {"int", 1042},
+             {"double", 10.42}
+         },
         },
-      },
-      {"inners",
-        {
-          {
-            {"int", 7},
-            {"double", 5.9}
-          },
-          {
-            {"int", 7},
-            {"double", 5.9}
-          },
+        {"inners",
+         {
+             {
+                 {"int", 7},
+                 {"double", 5.9}
+             },
+             {
+                 {"int", 7},
+                 {"double", 5.9}
+             },
+         },
         },
-      },
     };
 
     std::cout << "ORIGINALS" << std::endl;
@@ -75,7 +75,7 @@ int main()
     std::cout << from_json.to_string() << std::endl;
     std::cout << from_xtypes.dump(4) << std::endl;
 
-    std::stack<std::reference_wrapper<Json>> stack;
+    std::stack<std::reference_wrapper<Json> > stack;
     stack.push(json_message["int"]);
     return 0;
 }

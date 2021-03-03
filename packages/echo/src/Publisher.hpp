@@ -8,6 +8,7 @@
 class Publisher : public virtual soss::TopicPublisher
 {
 public:
+
     Publisher(
             const std::string& topic,
             const xtypes::DynamicType& type,
@@ -15,15 +16,21 @@ public:
         : topic_(topic)
         , type_(type)
         , connection_(connection)
-    {}
+    {
+    }
 
     virtual ~Publisher() override = default;
-    Publisher(const Publisher& rhs) = delete;
-    Publisher& operator = (const Publisher& rhs) = delete;
-    Publisher(Publisher&& rhs) = delete;
-    Publisher& operator = (Publisher&& rhs) = delete;
+    Publisher(
+            const Publisher& rhs) = delete;
+    Publisher& operator = (
+            const Publisher& rhs) = delete;
+    Publisher(
+            Publisher&& rhs) = delete;
+    Publisher& operator = (
+            Publisher&& rhs) = delete;
 
-    bool publish(const xtypes::DynamicData& soss_message) override
+    bool publish(
+            const xtypes::DynamicData& soss_message) override
     {
         std::cout << "[soss-echo]: (conversion) soss -> middleware" << std::endl;
 
@@ -34,10 +41,18 @@ public:
         return true;
     }
 
-    const std::string& topic() const { return topic_; }
-    const xtypes::DynamicType& type() const { return type_; }
+    const std::string& topic() const
+    {
+        return topic_;
+    }
+
+    const xtypes::DynamicType& type() const
+    {
+        return type_;
+    }
 
 private:
+
     const std::string topic_;
     const xtypes::DynamicType& type_;
     MiddlewareConnection& connection_;

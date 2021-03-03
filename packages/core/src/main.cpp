@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <soss/Instance.hpp>
 
 // This very simple translation unit lets us spawn a soss instance and return
 // its exit code once it's finished. This provides the main function for the
 // canonical soss command line program.
-int main(int argc, char* argv[])
+int main(
+        int argc,
+        char* argv[])
 {
-  return soss::run_instance(argc, argv).wait();
+    return soss::run_instance(argc, argv).wait();
 }

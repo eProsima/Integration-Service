@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__WEBSOCKET__SRC__ENCODING_HPP
 #define SOSS__WEBSOCKET__SRC__ENCODING_HPP
@@ -34,57 +34,58 @@ class Encoding
 {
 public:
 
-  virtual void interpret_websocket_msg(
-      const std::string& msg,
-      Endpoint& endpoint,
-      std::shared_ptr<void> connection_handle) const = 0;
+    virtual void interpret_websocket_msg(
+            const std::string& msg,
+            Endpoint& endpoint,
+            std::shared_ptr<void> connection_handle) const = 0;
 
-  virtual std::string encode_publication_msg(
-      const std::string& topic_name,
-      const std::string& topic_type,
-      const std::string& id,
-      const xtypes::DynamicData& msg) const = 0;
+    virtual std::string encode_publication_msg(
+            const std::string& topic_name,
+            const std::string& topic_type,
+            const std::string& id,
+            const xtypes::DynamicData& msg) const = 0;
 
-  virtual std::string encode_service_response_msg(
-      const std::string& service_name,
-      const std::string& service_type,
-      const std::string& id,
-      const xtypes::DynamicData& response,
-      bool result) const = 0;
+    virtual std::string encode_service_response_msg(
+            const std::string& service_name,
+            const std::string& service_type,
+            const std::string& id,
+            const xtypes::DynamicData& response,
+            bool result) const = 0;
 
-  virtual std::string encode_subscribe_msg(
-      const std::string& topic_name,
-      const std::string& message_type,
-      const std::string& id,
-      const YAML::Node& configuration) const = 0;
+    virtual std::string encode_subscribe_msg(
+            const std::string& topic_name,
+            const std::string& message_type,
+            const std::string& id,
+            const YAML::Node& configuration) const = 0;
 
-  virtual std::string encode_advertise_msg(
-      const std::string& topic_name,
-      const std::string& message_type,
-      const std::string& id,
-      const YAML::Node& configuration) const = 0;
+    virtual std::string encode_advertise_msg(
+            const std::string& topic_name,
+            const std::string& message_type,
+            const std::string& id,
+            const YAML::Node& configuration) const = 0;
 
-  virtual std::string encode_call_service_msg(
-      const std::string& service_name,
-      const std::string& service_type,
-      const xtypes::DynamicData& service_request,
-      const std::string& id,
-      const YAML::Node& configuration) const = 0;
+    virtual std::string encode_call_service_msg(
+            const std::string& service_name,
+            const std::string& service_type,
+            const xtypes::DynamicData& service_request,
+            const std::string& id,
+            const YAML::Node& configuration) const = 0;
 
-  virtual std::string encode_advertise_service_msg(
-      const std::string& service_name,
-      const std::string& service_type,
-      const std::string& id,
-      const YAML::Node& configuration) const = 0;
+    virtual std::string encode_advertise_service_msg(
+            const std::string& service_name,
+            const std::string& service_type,
+            const std::string& id,
+            const YAML::Node& configuration) const = 0;
 
-  virtual bool add_type(
-        const xtypes::DynamicType& type,
-        const std::string& type_name = "")
-  {
-      (void)type;
-      (void)type_name;
-      return false;
-  }
+    virtual bool add_type(
+            const xtypes::DynamicType& type,
+            const std::string& type_name = "")
+    {
+        (void)type;
+        (void)type_name;
+        return false;
+    }
+
 };
 
 using EncodingPtr = std::shared_ptr<Encoding>;
