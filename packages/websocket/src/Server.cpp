@@ -373,6 +373,21 @@ public:
       });
 
         _mutex.lock();
+        for (const auto& connection : _open_connections)
+        {
+            if (connection->get_state() != websocketpp::session::state::closed)
+            {
+                try
+                {
+                    connection->close(websocketpp::close::status::normal, "shutdown");
+                }
+                catch (websocketpp::exception& e)
+                {
+                    std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" << std::endl;
+                }
+            }
+        }
+        // Then wait for all of them to close
 
     _server_thread = std::thread([&]() { this->_server.run(); });
 
