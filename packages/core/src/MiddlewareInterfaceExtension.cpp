@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <soss/MiddlewareInterfaceExtension.hpp>
 
@@ -26,7 +26,7 @@
 #include <Windows.h>
 #else
 #include <dlfcn.h>
-#endif
+#endif // ifdef WIN32
 #include <assert.h>
 
 #ifdef WIN32
@@ -37,7 +37,7 @@
 #define OPEN_LIB(libname) dlopen(libname, RTLD_NOW)
 #define GET_LAST_ERROR() dlerror()
 #define LIB_EXTENSION "dl"
-#endif
+#endif // ifdef WIN32
 
 
 namespace soss {
@@ -47,42 +47,43 @@ namespace filesystem = std::experimental::filesystem;
 namespace {
 //==============================================================================
 bool load_if_exists(
-    const std::string& path_str,
-    const filesystem::path& relative_to)
+        const std::string& path_str,
+        const filesystem::path& relative_to)
 {
-  filesystem::path path(path_str);
-  if(path.is_relative())
-  {
-    path = relative_to / path;
-  }
-
-  if(filesystem::exists(path))
-  {
-    void* handle = OPEN_LIB(path.c_str());
-
-    auto loading_error = GET_LAST_ERROR();
-    if(loading_error)
+    filesystem::path path(path_str);
+    if (path.is_relative())
     {
-      std::cerr << "Error while loading the library [" << path << "]: "
-                << loading_error << std::endl;
-      return false;
+        path = relative_to / path;
     }
 
-    if(!handle)
+    if (filesystem::exists(path))
     {
-      std::cerr << "Unknown error while loading the library [" << path << "]"
-                << std::endl;
-      return false;
+        void* handle = OPEN_LIB(path.c_str());
+
+        auto loading_error = GET_LAST_ERROR();
+        if (loading_error)
+        {
+            std::cerr << "Error while loading the library [" << path << "]: "
+                      << loading_error << std::endl;
+            return false;
+        }
+
+        if (!handle)
+        {
+            std::cerr << "Unknown error while loading the library [" << path << "]"
+                      << std::endl;
+            return false;
+        }
+
+        return true;
     }
 
-    return true;
-  }
+    std::cerr << "Could not load shared library [" << path << "] because it "
+              << "could not be found!" << std::endl;
 
-  std::cerr << "Could not load shared library [" << path << "] because it "
-            << "could not be found!" << std::endl;
-
-  return false;
+    return false;
 }
+
 } // anonymous namespace
 
 //==============================================================================
@@ -90,45 +91,47 @@ class Mix::Implementation
 {
 public:
 
-  Implementation(
-      YAML::Node root,
-      const std::string& absolute_file_directory_path)
-    : _root(std::move(root)),
-      _directory(absolute_file_directory_path)
-  {
-    assert(_directory.is_absolute());
-    assert(filesystem::is_directory(_directory));
-  }
-
-  bool load() const
-  {
-    bool result = load_dl();
-    // TODO(MXG): If we want to use the .mix files for more purposes, implement
-    // it here.
-    return result;
-  }
-
-  bool load_dl() const
-  {
-    bool result = true;
-    const YAML::Node& dl = _root[LIB_EXTENSION];
-    if(dl.IsSequence())
+    Implementation(
+            YAML::Node root,
+            const std::string& absolute_file_directory_path)
+        : _root(std::move(root))
+        , _directory(absolute_file_directory_path)
     {
-      for(YAML::const_iterator it = dl.begin(); it != dl.end(); ++it)
-        result |= load_if_exists(it->as<std::string>(), _directory);
-    }
-    else if(dl.IsScalar())
-    {
-      result |= load_if_exists(dl.as<std::string>(), _directory);
+        assert(_directory.is_absolute());
+        assert(filesystem::is_directory(_directory));
     }
 
-    return result;
-  }
+    bool load() const
+    {
+        bool result = load_dl();
+        // TODO(MXG): If we want to use the .mix files for more purposes, implement
+        // it here.
+        return result;
+    }
+
+    bool load_dl() const
+    {
+        bool result = true;
+        const YAML::Node& dl = _root[LIB_EXTENSION];
+        if (dl.IsSequence())
+        {
+            for (YAML::const_iterator it = dl.begin(); it != dl.end(); ++it)
+            {
+                result |= load_if_exists(it->as<std::string>(), _directory);
+            }
+        }
+        else if (dl.IsScalar())
+        {
+            result |= load_if_exists(dl.as<std::string>(), _directory);
+        }
+
+        return result;
+    }
 
 private:
 
-  YAML::Node _root;
-  filesystem::path _directory;
+    YAML::Node _root;
+    filesystem::path _directory;
 
 };
 
@@ -136,51 +139,52 @@ private:
 Mix::MiddlewareInterfaceExtension(
     YAML::Node root,
     const std::string& absolute_file_directory_path)
-  : _pimpl(new Implementation(std::move(root), absolute_file_directory_path))
+    : _pimpl(new Implementation(std::move(root), absolute_file_directory_path))
 {
-  // Do nothing
+    // Do nothing
 }
 
 //==============================================================================
-Mix::MiddlewareInterfaceExtension(MiddlewareInterfaceExtension&& other)
-  : _pimpl(std::move(other._pimpl))
+Mix::MiddlewareInterfaceExtension(MiddlewareInterfaceExtension && other)
+    : _pimpl(std::move(other._pimpl))
 {
-  // Do nothing
+    // Do nothing
 }
 
 //==============================================================================
-Mix Mix::from_file(const std::string& filename)
+Mix Mix::from_file(
+        const std::string& filename)
 {
-  auto parentpath = filesystem::path(filename).parent_path();
-  return Mix(YAML::LoadFile(filename), parentpath.string());
+    auto parentpath = filesystem::path(filename).parent_path();
+    return Mix(YAML::LoadFile(filename), parentpath.string());
 }
 
 //==============================================================================
 Mix Mix::from_string(
-    const std::string& text,
-    const std::string& absolute_file_directory_path)
+        const std::string& text,
+        const std::string& absolute_file_directory_path)
 {
-  return Mix(YAML::Load(text), absolute_file_directory_path);
+    return Mix(YAML::Load(text), absolute_file_directory_path);
 }
 
 //==============================================================================
 Mix Mix::from_node(
-    YAML::Node node,
-    const std::string& absolute_file_directory_path)
+        YAML::Node node,
+        const std::string& absolute_file_directory_path)
 {
-  return Mix(std::move(node), absolute_file_directory_path);
+    return Mix(std::move(node), absolute_file_directory_path);
 }
 
 //==============================================================================
 bool Mix::load() const
 {
-  return _pimpl->load();
+    return _pimpl->load();
 }
 
 //==============================================================================
 Mix::~MiddlewareInterfaceExtension()
 {
-  // Do nothing
+    // Do nothing
 }
 
 } // namespace soss

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include "Endpoint.hpp"
 
@@ -25,37 +25,38 @@ class ServiceProvider : public soss::ServiceProvider
 {
 public:
 
-  ServiceProvider(
-      const std::string& service,
-      Endpoint& endpoint)
-    : _service(service),
-      _endpoint(endpoint)
-  {
-    // Do nothing
-  }
+    ServiceProvider(
+            const std::string& service,
+            Endpoint& endpoint)
+        : _service(service)
+        , _endpoint(endpoint)
+    {
+        // Do nothing
+    }
 
-  void call_service(
-      const xtypes::DynamicData& request,
-      ServiceClient& client,
-      std::shared_ptr<void> call_handle)
-  {
-    _endpoint.call_service(_service, request, client, call_handle);
-  }
+    void call_service(
+            const xtypes::DynamicData& request,
+            ServiceClient& client,
+            std::shared_ptr<void> call_handle)
+    {
+        _endpoint.call_service(_service, request, client, call_handle);
+    }
 
-  ~ServiceProvider() override = default;
+    ~ServiceProvider() override = default;
 
 private:
 
-  const std::string _service;
-  Endpoint& _endpoint;
+    const std::string _service;
+    Endpoint& _endpoint;
 
 };
 
 //==============================================================================
 std::shared_ptr<soss::ServiceProvider> make_service_provider(
-    const std::string& service, Endpoint& endpoint)
+        const std::string& service,
+        Endpoint& endpoint)
 {
-  return std::make_shared<ServiceProvider>(service, endpoint);
+    return std::make_shared<ServiceProvider>(service, endpoint);
 }
 
 } // namespace websocket

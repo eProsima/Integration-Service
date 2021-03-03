@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include "MiddlewareConnection.hpp"
 #include "Subscriber.hpp"
@@ -29,15 +29,16 @@
 class SystemHandle : public virtual soss::TopicSystem
 {
 public:
+
     virtual ~SystemHandle() override
     {
         connection_->stop();
-    };
+    }
 
     bool configure(
-        const soss::RequiredTypes& /*required_types*/,
-        const YAML::Node& configuration,
-        soss::TypeRegistry& /*type_registry*/) override
+            const soss::RequiredTypes& /*required_types*/,
+            const YAML::Node& configuration,
+            soss::TypeRegistry& /*type_registry*/) override
     {
         // This system handle load its types by the idls specified in the yaml.
         // The type_registry should already have the required types.
@@ -47,7 +48,7 @@ public:
         connection_->run();
 
         std::cout << "[soss-echo]: Initializing... "
-            << (roundtrip ? " (roundtrip mode)" : "") << std::endl;
+                  << (roundtrip ? " (roundtrip mode)" : "") << std::endl;
 
         return true;
     }
@@ -67,10 +68,10 @@ public:
     }
 
     bool subscribe(
-        const std::string& topic_name,
-        const xtypes::DynamicType& message_type,
-        SubscriptionCallback callback,
-        const YAML::Node& /*configuration*/) override
+            const std::string& topic_name,
+            const xtypes::DynamicType& message_type,
+            SubscriptionCallback callback,
+            const YAML::Node& /*configuration*/) override
     {
         auto subscriber = std::make_shared<Subscriber>(topic_name, message_type, callback, *connection_);
         subscribers_.emplace_back(std::move(subscriber));
@@ -83,9 +84,9 @@ public:
     }
 
     std::shared_ptr<soss::TopicPublisher> advertise(
-        const std::string& topic_name,
-        const xtypes::DynamicType& message_type,
-        const YAML::Node& /*configuration*/) override
+            const std::string& topic_name,
+            const xtypes::DynamicType& message_type,
+            const YAML::Node& /*configuration*/) override
     {
         auto publisher = std::make_shared<Publisher>(topic_name, message_type, *connection_);
         publishers_.emplace_back(std::move(publisher));
@@ -98,9 +99,10 @@ public:
     }
 
 private:
+
     std::unique_ptr<MiddlewareConnection> connection_;
-    std::vector<std::shared_ptr<Publisher>> publishers_;
-    std::vector<std::shared_ptr<Subscriber>> subscribers_;
+    std::vector<std::shared_ptr<Publisher> > publishers_;
+    std::vector<std::shared_ptr<Subscriber> > subscribers_;
 };
 
 SOSS_REGISTER_SYSTEM("echo", SystemHandle)

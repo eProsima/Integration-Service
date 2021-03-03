@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <catch2/catch.hpp>
 
@@ -51,7 +51,7 @@ TEST_CASE("validates jwt token", "[Verification]")
 
 TEST_CASE("simple verification strategy", "[Verification]")
 {
-  JwtValidator jwt_validator;
+    JwtValidator jwt_validator;
 
   jwt_validator.add_verification_policy(VerificationPolicy(
       {{ "iss", "test" }, { "sub", "test" }}, {}, "test"));

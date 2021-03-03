@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
 #define SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
@@ -63,22 +63,25 @@ public:
   /**
    * @throws VerificationError
    */
-  void verify(const std::string& token);
+    void verify(
+            const std::string& token);
 
-  /// \brief Adds a policy to resolve the verification strategy to use
-  /// \details The VerificationPolicy should set the VerificationStrategy and returns true if
-  /// it is able to provide a strategy. If there are multiple policies that can process a token,
-  /// the 1st policy that matches is used. VerificationPolicyFactory contains some simple
-  /// predefined policies.
-  /// \remarks The idea is that JwtValidator should support verfiying in multiple use cases.
-  /// For example, choosing a secret based on the issuer or other claims and any custom strategy
-  /// as required. There is no way to open up such flexibility from within the class so the
-  /// conclusion is to have a handler that the consumer supplies to choose the verification method.
-  /// \param policy
-  void add_verification_policy(const VerificationPolicy& policy);
+    /// \brief Adds a policy to resolve the verification strategy to use
+    /// \details The VerificationPolicy should set the VerificationStrategy and returns true if
+    /// it is able to provide a strategy. If there are multiple policies that can process a token,
+    /// the 1st policy that matches is used. VerificationPolicyFactory contains some simple
+    /// predefined policies.
+    /// \remarks The idea is that JwtValidator should support verfiying in multiple use cases.
+    /// For example, choosing a secret based on the issuer or other claims and any custom strategy
+    /// as required. There is no way to open up such flexibility from within the class so the
+    /// conclusion is to have a handler that the consumer supplies to choose the verification method.
+    /// \param policy
+    void add_verification_policy(
+            const VerificationPolicy& policy);
 
 private:
-  std::vector<VerificationPolicy> _verification_policies;
+
+    std::vector<VerificationPolicy> _verification_policies;
 };
 
 } // namespace websocket

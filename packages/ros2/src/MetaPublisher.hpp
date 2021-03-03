@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__ROS2__SRC__METAPUBLISHER_HPP
 #define SOSS__ROS2__SRC__METAPUBLISHER_HPP
@@ -27,11 +27,11 @@ namespace ros2 {
 
 //==============================================================================
 std::shared_ptr<TopicPublisher> make_meta_publisher(
-    const xtypes::DynamicType& message_type,
-    rclcpp::Node& node,
-    const std::string& topic_name,
-    const rmw_qos_profile_t& qos_profile,
-    const YAML::Node& configuration);
+        const xtypes::DynamicType& message_type,
+        rclcpp::Node& node,
+        const std::string& topic_name,
+        const rmw_qos_profile_t& qos_profile,
+        const YAML::Node& configuration);
 
 } // namespace ros2
 } // namespace soss

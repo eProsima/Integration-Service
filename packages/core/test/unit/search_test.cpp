@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <Search-impl.hpp>
 
@@ -23,15 +23,15 @@
 
 TEST_CASE("Use config-file directory", "[search][core]")
 {
-  soss::Search::Implementation::set_config_file_directory(
+    soss::Search::Implementation::set_config_file_directory(
         SEARCH_TEST__MOCK_CONFIG_DIRECTORY);
 
-  const soss::Search no_config_dir = soss::Search("mock");
-  const auto result = no_config_dir.find_file(SEARCH_TEST__MOCK_FILE_NAME);
-  REQUIRE(result.empty());
+    const soss::Search no_config_dir = soss::Search("mock");
+    const auto result = no_config_dir.find_file(SEARCH_TEST__MOCK_FILE_NAME);
+    REQUIRE(result.empty());
 
-  const soss::Search with_config_dir = soss::Search("mock")
-      .relative_to_config();
-  REQUIRE(with_config_dir.find_file(SEARCH_TEST__MOCK_FILE_NAME)
-          == SEARCH_TEST__MOCK_FILE_PATH);
+    const soss::Search with_config_dir = soss::Search("mock")
+            .relative_to_config();
+    REQUIRE(with_config_dir.find_file(SEARCH_TEST__MOCK_FILE_NAME)
+            == SEARCH_TEST__MOCK_FILE_PATH);
 }

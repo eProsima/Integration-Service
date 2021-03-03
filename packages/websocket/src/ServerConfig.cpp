@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include "ServerConfig.hpp"
 
@@ -62,7 +62,7 @@ bool ServerConfig::load_auth_policy(JwtValidator& jwt_validator,
 
 std::string ServerConfig::_glob_to_regex(const std::string& s)
 {
-  using namespace boost::algorithm;
+    using namespace boost::algorithm;
 
   return find_format_all_copy(
     s, token_finder(is_any_of(".*?\\")), [](auto s)

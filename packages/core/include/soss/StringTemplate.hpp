@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__STRINGTEMPLATE_HPP
 #define SOSS__STRINGTEMPLATE_HPP
@@ -29,43 +29,46 @@ class SOSS_CORE_API StringTemplate
 {
 public:
 
-  /// Constructor
-  ///
-  /// \param[in] template_string
-  ///   A string that describes the desired template. Varying components of the
-  ///   string must be wrapped in curly braces {}. Currently only
-  ///   {message.<field>} variables are supported. Those components of the
-  ///   string will be replaced by the value of the requested field when
-  ///   compute_string() is called.
-  ///
-  /// \param[in] usage_details
-  ///   A string that describes how this StringTemplate is being used. Ideally
-  ///   this should contain information like:
-  ///   1. What middleware is using the template?
-  ///   2. What message+topic pair is using the conversion?
-  StringTemplate(
-      const std::string& template_string,
-      const std::string& usage_details);
+    /// Constructor
+    ///
+    /// \param[in] template_string
+    ///   A string that describes the desired template. Varying components of the
+    ///   string must be wrapped in curly braces {}. Currently only
+    ///   {message.<field>} variables are supported. Those components of the
+    ///   string will be replaced by the value of the requested field when
+    ///   compute_string() is called.
+    ///
+    /// \param[in] usage_details
+    ///   A string that describes how this StringTemplate is being used. Ideally
+    ///   this should contain information like:
+    ///   1. What middleware is using the template?
+    ///   2. What message+topic pair is using the conversion?
+    StringTemplate(
+            const std::string& template_string,
+            const std::string& usage_details);
 
-  StringTemplate(const StringTemplate& other);
-  StringTemplate(StringTemplate&& other);
+    StringTemplate(
+            const StringTemplate& other);
+    StringTemplate(
+            StringTemplate&& other);
 
-  /// Compute the desired output string given the input message.
-  std::string compute_string(const xtypes::DynamicData& message) const;
+    /// Compute the desired output string given the input message.
+    std::string compute_string(
+            const xtypes::DynamicData& message) const;
 
-  /// Mutable reference to the usage details for this StringTemplate
-  std::string& usage_details();
+    /// Mutable reference to the usage details for this StringTemplate
+    std::string& usage_details();
 
-  /// Const reference to the usage details for this StringTemplate
-  const std::string& usage_details() const;
+    /// Const reference to the usage details for this StringTemplate
+    const std::string& usage_details() const;
 
-  // Destructor
-  ~StringTemplate();
+    // Destructor
+    ~StringTemplate();
 
 private:
 
-  class Implementation;
-  std::unique_ptr<Implementation> pimpl;
+    class Implementation;
+    std::unique_ptr<Implementation> pimpl;
 
 };
 
@@ -74,15 +77,15 @@ class InvalidTemplateFormat : public std::runtime_error
 {
 public:
 
-  InvalidTemplateFormat(
-      const std::string& template_string,
-      const std::string& details);
+    InvalidTemplateFormat(
+            const std::string& template_string,
+            const std::string& details);
 
-  const std::string& template_string() const;
+    const std::string& template_string() const;
 
 private:
 
-  const std::string _template_string;
+    const std::string _template_string;
 
 };
 
@@ -91,15 +94,15 @@ class UnavailableMessageField : public std::runtime_error
 {
 public:
 
-  UnavailableMessageField(
-      const std::string& field_name,
-      const std::string& details);
+    UnavailableMessageField(
+            const std::string& field_name,
+            const std::string& details);
 
-  const std::string& field_name() const;
+    const std::string& field_name() const;
 
 private:
 
-  const std::string _field_name;
+    const std::string _field_name;
 
 };
 

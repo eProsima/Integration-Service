@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <soss/mock/api.hpp>
 #include <soss/Instance.hpp>
@@ -25,72 +25,73 @@
 
 namespace {
 void run_test_case(
-    soss::InstanceHandle& handle,
-    const std::string& initial_topic,
-    const std::string& name,
-    const uint32_t number,
-    const std::string& suffix)
+        soss::InstanceHandle& handle,
+        const std::string& initial_topic,
+        const std::string& name,
+        const uint32_t number,
+        const std::string& suffix)
 {
-  const std::string topic =
-      initial_topic + "/" + name + "_" + std::to_string(number) + suffix;
+    const std::string topic =
+            initial_topic + "/" + name + "_" + std::to_string(number) + suffix;
 
-  std::cout << "Testing topic [" << topic << "]" << std::endl;
+    std::cout << "Testing topic [" << topic << "]" << std::endl;
 
-  std::promise<xtypes::DynamicData> message_promise;
-  auto message_future = message_promise.get_future();
-  REQUIRE(soss::mock::subscribe(
-          topic, [&](const xtypes::DynamicData& incoming_message)
-  {
-    message_promise.set_value(incoming_message);
-  }));
+    std::promise<xtypes::DynamicData> message_promise;
+    auto message_future = message_promise.get_future();
+    REQUIRE(soss::mock::subscribe(
+                topic, [&](const xtypes::DynamicData& incoming_message)
+                {
+                    message_promise.set_value(incoming_message);
+                }));
 
-  const soss::TypeRegistry& mock_types = *handle.type_registry("mock");
-  xtypes::DynamicData message(*mock_types.at("Dispatch"));
+    const soss::TypeRegistry& mock_types = *handle.type_registry("mock");
+    xtypes::DynamicData message(*mock_types.at("Dispatch"));
 
-  message["name"] = name;
-  message["number"] = number;
+    message["name"] = name;
+    message["number"] = number;
 
-  soss::mock::publish_message(initial_topic, message);
+    soss::mock::publish_message(initial_topic, message);
 
-  using namespace std::chrono_literals;
-  REQUIRE(message_future.wait_for(5s) == std::future_status::ready);
-  const xtypes::DynamicData result = message_future.get();
-  REQUIRE(result.size() > 0);
+    using namespace std::chrono_literals;
+    REQUIRE(message_future.wait_for(5s) == std::future_status::ready);
+    const xtypes::DynamicData result = message_future.get();
+    REQUIRE(result.size() > 0);
 
-  std::string result_name;
-  result_name = result["name"].value<std::string>();
-  CHECK(result_name == name);
+    std::string result_name;
+    result_name = result["name"].value<std::string>();
+    CHECK(result_name == name);
 
-  uint32_t result_number;
-  result_number = result["number"].value<uint32_t>();
-  CHECK(result_number == number);
+    uint32_t result_number;
+    result_number = result["number"].value<uint32_t>();
+    CHECK(result_number == number);
 }
+
 } // anonymous namespace
 
 TEST_CASE("Transmit and dispatch messages", "[websocket]")
 {
-  using namespace std::chrono_literals;
+    using namespace std::chrono_literals;
 
-  soss::InstanceHandle handle =
-      soss::run_instance(WEBSOCKET__DISPATCH__TEST_CONFIG);
-  REQUIRE(handle);
+    soss::InstanceHandle handle =
+            soss::run_instance(WEBSOCKET__DISPATCH__TEST_CONFIG);
+    REQUIRE(handle);
 
-  std::cout << " -- Waiting to make sure the client has time to connect"
-            << std::endl;
-  std::this_thread::sleep_for(5s);
-  std::cout << " -- Done waiting!" << std::endl;
+    std::cout << " -- Waiting to make sure the client has time to connect"
+              << std::endl;
+    std::this_thread::sleep_for(5s);
+    std::cout << " -- Done waiting!" << std::endl;
 
-  run_test_case(handle, "dispatch_into_client", "apple", 1, "/topic");
-  run_test_case(handle, "dispatch_into_client", "banana", 2, "/topic");
-  run_test_case(handle, "dispatch_into_client", "cherry", 3, "/topic");
+    run_test_case(handle, "dispatch_into_client", "apple", 1, "/topic");
+    run_test_case(handle, "dispatch_into_client", "banana", 2, "/topic");
+    run_test_case(handle, "dispatch_into_client", "cherry", 3, "/topic");
 
-  run_test_case(handle, "dispatch_into_server", "avocado", 10, "");
-  run_test_case(handle, "dispatch_into_server", "blueberry", 20, "");
-  run_test_case(handle, "dispatch_into_server", "citrus", 30, "");
+    run_test_case(handle, "dispatch_into_server", "avocado", 10, "");
+    run_test_case(handle, "dispatch_into_server", "blueberry", 20, "");
+    run_test_case(handle, "dispatch_into_server", "citrus", 30, "");
 
-  CHECK(handle.quit().wait() == 0);
+    CHECK(handle.quit().wait() == 0);
 
-  // NOTE(MXG) It seems the error
-  // `[info] asio async_shutdown error: asio.misc:2 (End of file)`
-  // is normal and to be expected as far as I can tell.
+    // NOTE(MXG) It seems the error
+    // `[info] asio async_shutdown error: asio.misc:2 (End of file)`
+    // is normal and to be expected as far as I can tell.
 }

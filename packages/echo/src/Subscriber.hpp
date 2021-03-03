@@ -8,6 +8,7 @@
 class Subscriber
 {
 public:
+
     Subscriber(
             const std::string& topic,
             const xtypes::DynamicType& type,
@@ -21,12 +22,17 @@ public:
     }
 
     virtual ~Subscriber() = default;
-    Subscriber(const Subscriber& rhs) = delete;
-    Subscriber& operator = (const Subscriber& rhs) = delete;
-    Subscriber(Subscriber&& rhs) = delete;
-    Subscriber& operator = (Subscriber&& rhs) = delete;
+    Subscriber(
+            const Subscriber& rhs) = delete;
+    Subscriber& operator = (
+            const Subscriber& rhs) = delete;
+    Subscriber(
+            Subscriber&& rhs) = delete;
+    Subscriber& operator = (
+            Subscriber&& rhs) = delete;
 
-    void receive(const Json& middleware_message)
+    void receive(
+            const Json& middleware_message)
     {
         std::cout << "[soss-echo]: (conversion) middleware -> soss" << std::endl;
 
@@ -35,10 +41,18 @@ public:
         soss_callback_(soss_message);
     }
 
-    const std::string& topic() const { return topic_; }
-    const xtypes::DynamicType& type() const { return type_; }
+    const std::string& topic() const
+    {
+        return topic_;
+    }
+
+    const xtypes::DynamicType& type() const
+    {
+        return type_;
+    }
 
 private:
+
     const std::string topic_;
     const xtypes::DynamicType& type_;
     soss::TopicSubscriberSystem::SubscriptionCallback soss_callback_;

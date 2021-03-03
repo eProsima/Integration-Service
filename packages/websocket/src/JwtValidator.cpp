@@ -61,7 +61,7 @@ void VerificationPolicy::check(const std::string& token,
 
 void JwtValidator::verify(const std::string& token)
 {
-  using namespace jwt::params;
+    using namespace jwt::params;
 
   auto parts = jwt::jwt_object::three_parts(token);
   json_t header = json_t::parse(
@@ -93,9 +93,10 @@ void JwtValidator::verify(const std::string& token)
   throw jwt::VerificationError(ss.str());
 }
 
-void JwtValidator::add_verification_policy(const VerificationPolicy& policy)
+void JwtValidator::add_verification_policy(
+        const VerificationPolicy& policy)
 {
-  _verification_policies.emplace_back(policy);
+    _verification_policies.emplace_back(policy);
 }
 
 } // namespace websocket

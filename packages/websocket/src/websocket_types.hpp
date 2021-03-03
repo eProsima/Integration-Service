@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__WEBOSCKET__SRC__WEBSOCKET_TYPES_HPP
 #define SOSS__WEBOSCKET__SRC__WEBSOCKET_TYPES_HPP
