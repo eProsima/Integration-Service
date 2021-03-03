@@ -15,12 +15,10 @@
  *
  */
 
-#ifndef SOSS__MESSAGE_HPP
-#define SOSS__MESSAGE_HPP
+#ifndef _ISCORE_MESSAGE_HPP_
+#define _ISCORE_MESSAGE_HPP_
 
 #include <xtypes/xtypes.hpp>
 #include <xtypes/idl/idl.hpp>
 
-namespace xtypes = eprosima::xtypes;
-
-#endif // SOSS__MESSAGE_HPP
+#endif // _ISCORE_MESSAGE_HPP_

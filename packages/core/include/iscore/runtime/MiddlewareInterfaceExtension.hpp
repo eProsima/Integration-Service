@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +16,21 @@
  *
  */
 
-#ifndef SOSS__MIDDLEWAREINTERFACEEXTENSION_HPP
-#define SOSS__MIDDLEWAREINTERFACEEXTENSION_HPP
+#ifndef _IS_CORE_MIDDLEWAREINTERFACEEXTENSION_HPP_
+#define _IS_CORE_MIDDLEWAREINTERFACEEXTENSION_HPP_
 
 #include <yaml-cpp/yaml.h>
 #include <soss/core/export.hpp>
 
 #include <memory>
 
-namespace soss {
+namespace eprosima {
+namespace iscore {
 
-class SOSS_CORE_API MiddlewareInterfaceExtension
+/**
+ * TODO(jamoralp): IS_CORE_API is not defined anywhere. Create a visibility.hpp header for dllexport_ on win32
+ */
+class IS_CORE_API MiddlewareInterfaceExtension
 {
 public:
 
@@ -60,6 +65,7 @@ private:
 
 using Mix = MiddlewareInterfaceExtension;
 
-} // namespace soss
+} // namespace iscore
+} // namespace eprosima
 
-#endif // SOSS__MIDDLEWAREINTERFACEEXTENSION_HPP
+#endif // _ISCORE_MIDDLEWAREINTERFACEEXTENSION_HPP_
