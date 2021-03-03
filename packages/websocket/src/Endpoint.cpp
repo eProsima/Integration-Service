@@ -56,7 +56,7 @@ Endpoint::Endpoint()
 bool Endpoint::configure(
         const RequiredTypes& types,
         const YAML::Node& configuration,
-        TypeRegistry& type_registry)
+        TypeRegistry& /*type_registry*/)
 {
     if (const YAML::Node encode_node = configuration[YamlEncodingKey])
     {
@@ -94,22 +94,6 @@ bool Endpoint::configure(
         return false;
     }
 
-    for (const std::string& type : types.messages)
-    {
-        if (!type.empty())
-        {
-            _encoding->add_type(*type_registry.at(type), type);
-        }
-    }
-
-    for (const std::string& type : types.services)
-    {
-        if (!type.empty())
-        {
-            _encoding->add_type(*type_registry.at(type), type);
-        }
-    }
-
     _endpoint = configure_endpoint(types, configuration);
 
     return static_cast<bool>(_endpoint);
@@ -122,6 +106,8 @@ bool Endpoint::subscribe(
         SubscriptionCallback callback,
         const YAML::Node& configuration)
 {
+    _encoding->add_type(message_type, message_type.name());
+
     _startup_messages.emplace_back(
         _encoding->encode_subscribe_msg(
             topic_name, message_type.name(), "", configuration));
@@ -139,6 +125,8 @@ std::shared_ptr<TopicPublisher> Endpoint::advertise(
         const xtypes::DynamicType& message_type,
         const YAML::Node& configuration)
 {
+    _encoding->add_type(message_type, message_type.name());
+
     return make_topic_publisher(
         topic_name, message_type, "", configuration, *this);
 }
@@ -153,6 +141,8 @@ bool Endpoint::create_client_proxy(
     ClientProxyInfo& info = _client_proxy_info[service_name];
     info.type = service_type.name();
     info.callback = callback;
+
+    _encoding->add_type(service_type, service_type.name());
 
     return true;
 }
@@ -181,6 +171,9 @@ std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
     info.req_type = request_type.name();
     info.reply_type = reply_type.name();
     info.configuration = configuration;
+
+    _encoding->add_type(request_type, request_type.name());
+    _encoding->add_type(reply_type, reply_type.name());
 
     return make_service_provider(service_name, *this);
 }
