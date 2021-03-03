@@ -94,7 +94,7 @@ public:
 
                     return extra_ca;
                 }
-                    ();
+                ();
 
         if (!configure_client(hostname, static_cast<uint16_t>(port), extra_ca))
         {
@@ -240,7 +240,14 @@ public:
 
         if (_connection && _connection->get_state() == websocketpp::session::state::open)
         {
-            _connection->close(websocketpp::close::status::normal, "shutdown");
+            try
+            {
+                _connection->close(websocketpp::close::status::normal, "shutdown");
+            }
+            catch (websocketpp::exception& e)
+            {
+                std::cerr <<  "[soss::websocket::Client] Exception ocurred while closing connection" << std::endl;
+            }
 
             // TODO(MXG) Make these timeout parameters something that can be
             // configured by users

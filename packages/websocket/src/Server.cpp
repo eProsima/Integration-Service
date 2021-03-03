@@ -308,7 +308,14 @@ public:
         {
             if (connection->get_state() != websocketpp::session::state::closed)
             {
-                connection->close(websocketpp::close::status::normal, "shutdown");
+                try
+                {
+                    connection->close(websocketpp::close::status::normal, "shutdown");
+                }
+                catch (websocketpp::exception& e)
+                {
+                    std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" << std::endl;
+                }
             }
         }
         // Then wait for all of them to close
