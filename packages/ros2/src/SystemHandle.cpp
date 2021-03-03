@@ -20,7 +20,7 @@
 
 #include <soss/ros2/Factory.hpp>
 
-#include <soss/Mix.hpp>
+#include <soss/MiddlewareInterfaceExtension.hpp>
 #include <soss/Search.hpp>
 
 #include <rclcpp/executors/single_threaded_executor.hpp>
