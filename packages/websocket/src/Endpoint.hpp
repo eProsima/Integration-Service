@@ -31,7 +31,7 @@ namespace soss {
 namespace websocket {
 
 const std::string YamlEncodingKey = "encoding";
-const std::string YamlEncoding_Rosbridge_v2_0 = "rosbridge_v2.0";
+const std::string YamlEncoding_Json = "json";
 const std::string YamlPortKey = "port";
 const std::string YamlHostKey = "host";
 
@@ -78,6 +78,13 @@ public:
             const std::string& service_name,
             const xtypes::DynamicType& service_type,
             const YAML::Node& configuration) override final;
+
+    std::shared_ptr<ServiceProvider> create_service_proxy(
+            const std::string& service_name,
+            const xtypes::DynamicType& request_type,
+            const xtypes::DynamicType& reply_type,
+            const YAML::Node& configuration) override final;
+
 
     /// Send out an advertisement the next time a connection is made.
     void startup_advertisement(
@@ -154,7 +161,8 @@ public:
 
     void receive_service_advertisement_ws(
             const std::string& service_name,
-            const xtypes::DynamicType& service_type,
+            const xtypes::DynamicType& req_type,
+            const xtypes::DynamicType& reply_type,
             std::shared_ptr<void> connection_handle);
 
     void receive_service_unadvertisement_ws(
@@ -218,7 +226,8 @@ private:
 
     struct ServiceProviderInfo
     {
-        std::string type;
+        std::string req_type;
+        std::string reply_type;
         std::shared_ptr<void> connection_handle;
         YAML::Node configuration;
     };

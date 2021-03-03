@@ -73,7 +73,8 @@ public:
 
     virtual std::string encode_advertise_service_msg(
             const std::string& service_name,
-            const std::string& service_type,
+            const std::string& request_type,
+            const std::string& reply_type,
             const std::string& id,
             const YAML::Node& configuration) const = 0;
 
@@ -91,7 +92,7 @@ public:
 using EncodingPtr = std::shared_ptr<Encoding>;
 
 //==============================================================================
-EncodingPtr make_rosbridge_v2_0();
+EncodingPtr make_json_encoding();
 
 } // namespace websocket
 } // namespace soss

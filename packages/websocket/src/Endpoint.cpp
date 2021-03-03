@@ -67,11 +67,11 @@ bool Endpoint::configure(
                             encoding.begin(), ::tolower);
                     return encoding;
                 }
-                    ();
+                ();
 
-        if (encoding_str == YamlEncoding_Rosbridge_v2_0)
+        if (encoding_str == YamlEncoding_Json)
         {
-            _encoding = make_rosbridge_v2_0();
+            _encoding = make_json_encoding();
         }
         else
         {
@@ -83,7 +83,7 @@ bool Endpoint::configure(
     }
     else
     {
-        _encoding = make_rosbridge_v2_0();
+        _encoding = make_json_encoding();
     }
 
     if (!_encoding)
@@ -164,7 +164,22 @@ std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
         const YAML::Node& configuration)
 {
     ServiceProviderInfo& info = _service_provider_info[service_name];
-    info.type = service_type.name();
+    info.req_type = service_type.name();
+    info.configuration = configuration;
+
+    return make_service_provider(service_name, *this);
+}
+
+//==============================================================================
+std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
+        const std::string& service_name,
+        const xtypes::DynamicType& request_type,
+        const xtypes::DynamicType& reply_type,
+        const YAML::Node& configuration)
+{
+    ServiceProviderInfo& info = _service_provider_info[service_name];
+    info.req_type = request_type.name();
+    info.reply_type = reply_type.name();
     info.configuration = configuration;
 
     return make_service_provider(service_name, *this);
@@ -229,7 +244,7 @@ void Endpoint::call_service(
     ServiceProviderInfo& provider_info = _service_provider_info.at(service);
 
     const std::string payload = _encoding->encode_call_service_msg(
-        service, provider_info.type, request,
+        service, provider_info.req_type, request,
         id_str, provider_info.configuration);
 
     _endpoint->get_con_from_hdl(provider_info.connection_handle)->send(payload);
@@ -412,11 +427,13 @@ void Endpoint::receive_service_request_ws(
 //==============================================================================
 void Endpoint::receive_service_advertisement_ws(
         const std::string& service_name,
-        const xtypes::DynamicType& service_type,
+        const xtypes::DynamicType& req_type,
+        const xtypes::DynamicType& reply_type,
         std::shared_ptr<void> connection_handle)
 {
     _service_provider_info[service_name] =
-            ServiceProviderInfo{service_type.name(), connection_handle, YAML::Node{}};
+            ServiceProviderInfo{req_type.name(), reply_type.name(), connection_handle, YAML::Node{}
+    };
 }
 
 //==============================================================================
