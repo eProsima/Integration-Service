@@ -29,7 +29,7 @@ add_library(soss-websocket SHARED
   src/Client.cpp
   src/Endpoint.cpp
   src/JwtValidator.cpp
-  src/rosbridge_v2_encoding.cpp
+  src/json_encoding.cpp
   src/Server.cpp
   src/ServerConfig.cpp
   src/ServiceProvider.cpp
