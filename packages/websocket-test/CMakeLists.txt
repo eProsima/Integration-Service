@@ -4,7 +4,10 @@ project(soss-websocket-test)
 
 find_package(soss-websocket REQUIRED)
 find_package(soss-mock REQUIRED)
+find_package(soss-json REQUIRED)
 find_package(xtypes REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(websocketpp REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -16,6 +19,7 @@ add_executable(soss-websocket-test
   main.cpp
   integration/websocket__roundtrip.cpp
   integration/websocket__dispatch.cpp
+  integration/websocket__services.cpp
 )
 
 set(thirdparty_dir "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty")
@@ -29,17 +33,22 @@ catch_discover_tests(soss-websocket-test)
 target_link_libraries(soss-websocket-test
   PRIVATE
     soss::mock
+    pthread
+    OpenSSL::SSL
+    soss::json
 )
 
 target_include_directories(soss-websocket-test
   PRIVATE
     "${thirdparty_dir}/catch2/include"
+    ${WEBSOCKETPP_INCLUDE_DIR}
 )
 
 foreach(resource
     websocket__roundtrip_server.yaml
     websocket__roundtrip_client.yaml
-    websocket__dispatch.yaml)
+    websocket__dispatch.yaml
+    websocket__services.yaml)
 
   get_filename_component(resource_name ${resource} NAME_WE)
   string(TOUPPER ${resource_name} CAPS_RESOURCE_NAME)
