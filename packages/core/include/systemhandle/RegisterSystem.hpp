@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,52 +16,82 @@
  *
  */
 
-#ifndef SOSS__INTERNAL__REGISTER_SYSTEM_HPP
-#define SOSS__INTERNAL__REGISTER_SYSTEM_HPP
+#ifndef _IS_CORE_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
+#define _IS_CORE_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
 
-#include <soss/SystemHandle.hpp>
+#include <is/core/systemhandle/SystemHandle.hpp>
+#include <is/core/utils/Log.hpp>
 
 #include <mutex>
 
-namespace soss {
+// namespace eprosima {
+namespace is {
+namespace core {
 namespace internal {
 
-//==============================================================================
-struct SystemHandleInfo
+/**
+ * @class SystemHandleInfo
+ *        Storage class that holds all the information relative to a certain
+ *        SystemHandle instance.
+ *
+ *        This class will retrieve the corresponding TopicPublisherSystem,
+ *        TopicSubscriberSystem, ServiceClientSystme and ServiceProviderSystem
+ *        instances associated to the SystemHandle instance, if applicable.
+ *
+ *        If not applicable, these instances will just be casted to `nullptr`.
+ *        Later on, this will allow to know whether a certain SystemHandle comes
+ *        or not with any of these four working capabilities.
+ *
+ *        Also, a TypeRegistry is defined, where all the types that the SystemHandle
+ *        instance must know prior to start performing any conversion are defined.
+ */
+class SystemHandleInfo
 {
-    SystemHandleInfo(
-            std::unique_ptr<SystemHandle> input)
-        : handle(std::move(input))
-        , topic_publisher(dynamic_cast<TopicPublisherSystem*>(handle.get()))
-        , topic_subscriber(dynamic_cast<TopicSubscriberSystem*>(handle.get()))
-        , service_client(dynamic_cast<ServiceClientSystem*>(handle.get()))
-        , service_provider(dynamic_cast<ServiceProviderSystem*>(handle.get()))
-    {
-        // Do nothing
-    }
+public:
 
+    /**
+     * @brief Constructor.
+     *
+     * @param[in] input The SystemHandle instance which we want to obtain information from.
+     */
     SystemHandleInfo(
-            SystemHandleInfo&& other)
-        : handle(std::move(other.handle))
-        , topic_publisher(std::move(other.topic_publisher))
-        , topic_subscriber(std::move(other.topic_subscriber))
-        , service_client(std::move(other.service_client))
-        , service_provider(std::move(other.service_provider))
-        , types(std::move(other.types))
-    {
-        // Do nothing
-    }
+            std::unique_ptr<SystemHandle> input);
 
-    inline operator bool() const
-    {
-        return static_cast<bool>(handle);
-    }
+    /**
+     * @brief SystemHandleInfo shall not be copy constructible.
+     */
+    SystemHandleInfo(
+            const SystemHandleInfo& other) = delete;
+
+    /**
+     * @brief Move constructor.
+     * @param[in] other A movable reference to other SystemHandleInfo instance.
+     */
+    SystemHandleInfo(
+            SystemHandleInfo&& other);
+
+    ~SystemHandleInfo() = default;
+
+    /**
+     * @brief bool operator overload.
+     *
+     * @brief Returns `true` if the pointer to the handle is not `nullptr`, false otherwise.
+     */
+    operator bool() const;
+
+    /**
+     * Class members.
+     */
 
     std::unique_ptr<SystemHandle> handle;
-    TopicPublisherSystem*         topic_publisher;
-    TopicSubscriberSystem*        topic_subscriber;
-    ServiceClientSystem*          service_client;
-    ServiceProviderSystem*        service_provider;
+
+    TopicPublisherSystem* topic_publisher;
+
+    TopicSubscriberSystem* topic_subscriber;
+
+    ServiceClientSystem* service_client;
+
+    ServiceProviderSystem* service_provider;
 
     TypeRegistry types;
 };
@@ -68,27 +99,62 @@ struct SystemHandleInfo
 //==============================================================================
 using SystemHandleInfoMap = std::map<std::string, SystemHandleInfo>;
 
-//==============================================================================
+
+/**
+ * @class Register
+ *        Static class that contains a static map of SystemHandleFactoryBuilder instances.
+ *
+ *        SystemHandleFactoryBuilder is nothing but a function signatures that helps
+ *        in the creation of an `std::unique_ptr<SystemHandle>` object.
+ *
+ *        This way, each time a certain SystemHandle instance is required,
+ *        it will be created from the factory map.
+ */
 class Register
 {
 public:
 
+    /**
+     * @brief Insert a new SystemHandleFactoryBuilder element in the factory map.
+     *
+     * @param[in] middleware The middleware's name.
+     *
+     * @param[in] handle The handle function responsible of creating the
+     *            SystemHandle instance.
+     */
     static void insert(
-            std::string middleware,
-            detail::SystemHandleFactory handle);
+            std::string&& middleware,
+            detail::SystemHandleFactoryBuilder&& handle);
 
+    /**
+     * @brief Get the SystemHandleInfo object associated to a certain middleware.
+     *
+     * @param[in] middleware The middleware from which we want
+     *            to obtain a SystemHandleInfo instance.
+     *
+     * @returns A properly initialized SystemHandleInfo object if the middleware
+     *          exists and it is registered within the Register, or pointing
+     *          to `nullptr` otherwise.
+     */
     static SystemHandleInfo get(
             const std::string& middleware);
 
 private:
 
-    using FactoryMap = std::map<std::string, detail::SystemHandleFactory>;
+    using FactoryMap = std::map<std::string, detail::SystemHandleFactoryBuilder>;
+
+    /**
+     * Class members.
+     */
 
     static FactoryMap _info_map;
+
     static std::mutex _mutex;
 };
 
-} // namespace internal
-} // namespace soss
+} //  namespace internal
+} //  namespace core
+} //  namespace is
+// } //  namespace eprosima
 
-#endif // SOSS__INTERNAL__REGISTER_SYSTEM_HPP
+#endif //  _IS_CORE_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
