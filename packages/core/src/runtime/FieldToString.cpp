@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,48 +16,64 @@
  *
  */
 
-#include <soss/FieldToString.hpp>
+#include <is/core/runtime/FieldToString.hpp>
 
 #include <string>
 #include <unordered_map>
 
-namespace soss {
+// namespace eprosima {
+namespace is {
+namespace core {
 
-namespace {
-//==============================================================================
-class FieldConversions
+class FieldToString::Implementation
 {
 public:
 
-    static const FieldConversions& instance()
+    /**
+     * @brief Get a const reference to this Factory class instance.
+     */
+    static const Implementation& instance()
     {
-        static FieldConversions conversions;
-        return conversions;
+        static Implementation instance;
+        return instance;
     }
 
-    std::string to_string(
-            xtypes::ReadableDynamicDataRef field,
+    const std::string to_string(
+            eprosima::xtypes::ReadableDynamicDataRef field,
             const std::string& field_name,
             const std::string& details) const
     {
         const std::string& type =
                 (field.type().name().find("std::string") != std::string::npos)
-      ? "std::string"
-      : field.type().name();
-        const auto it = conversions.find(type);
-        if (it != conversions.end())
+                ? "std::string"
+                : field.type().name();
+
+        _logger << Logger::Level::DEBUG << "Trying to convert type '" << type
+                << "' to string" << std::endl;
+        const auto it = _conversions.find(type);
+
+        if (it != _conversions.end())
         {
             return it->second(field);
         }
+
+        _logger << Logger::Level::ERROR << "Failed convert type '" << type
+                << "' to string" << std::endl;
 
         throw UnknownFieldToStringCast(type, field_name, details);
     }
 
 private:
 
-    FieldConversions()
+    using ConversionFunc = std::function<std::string (
+                        eprosima::xtypes::ReadableDynamicDataRef)>;
+    using ConversionMap = std::unordered_map<std::string, ConversionFunc>;
+
+    Implementation()
+        : _logger("is::core::FieldToString")
     {
-        conversions["std::string"] = [](xtypes::ReadableDynamicDataRef field) -> std::string
+        _conversions["std::string"] =
+                [](xtypes::ReadableDynamicDataRef field) -> std::string
                 {
                     return field;
                 };
@@ -77,37 +94,62 @@ private:
         add_primitive_conversion<long double>();
     }
 
+    Implementation(
+            const Implementation& /*other*/) = delete;
+
+    Implementation(
+            Implementation&& /*other*/) = delete;
+
+    ~Implementation() = default;
+
+    /**
+     * @brief Add conversion function for primitive type.
+     */
     template<typename T>
     void add_primitive_conversion()
     {
-        conversions[xtypes::primitive_type<T>().name()] = [](xtypes::ReadableDynamicDataRef field) -> std::string
+        _conversions[xtypes::primitive_type<T>().name()] =
+                [](xtypes::ReadableDynamicDataRef field) -> std::string
                 {
                     T temp = field;
                     return std::to_string(temp);
                 };
     }
 
-    using ConversionFunc = std::function<std::string(xtypes::ReadableDynamicDataRef)>;
-    using ConversionMap = std::unordered_map<std::string, ConversionFunc>;
+    /**
+     * Class members.
+     */
 
-    ConversionMap conversions;
+    ConversionMap _conversions;
+    utils::Logger _logger;
 };
-} // anonymous namespace
 
 //==============================================================================
 FieldToString::FieldToString(
         const std::string& usage_details)
-    : details(usage_details)
+    : _details(usage_details)
+    , _pimpl(new Implementation::instance())
 {
-    // Do nothing
 }
 
 //==============================================================================
-std::string FieldToString::to_string(
-        xtypes::ReadableDynamicDataRef field,
+const std::string FieldToString::to_string(
+        eprosima::xtypes::ReadableDynamicDataRef field,
         const std::string& field_name) const
 {
-    return FieldConversions::instance().to_string(field, field_name, details);
+    return _pimpl->to_string(field, field_name, _details);
+}
+
+//==============================================================================
+const std::string& FieldToString::details() const
+{
+    return _details;
+}
+
+//==============================================================================
+std::string& FieldToString::details()
+{
+    return _details;
 }
 
 //==============================================================================
@@ -117,12 +159,11 @@ UnknownFieldToStringCast::UnknownFieldToStringCast(
         const std::string& details)
     : std::runtime_error(
         std::string()
-        + "ERROR: Unable to cast type [" + type + "] of field [" + field_name
-        + "] to a string. Details: " + details)
+        + "ERROR: Unable to cast type '" + type + "' of field '" + field_name
+        + "' to a string. Details: " + details)
     , _type(type)
     , _field_name(field_name)
 {
-    // Do nothing
 }
 
 //==============================================================================
@@ -137,4 +178,6 @@ const std::string& UnknownFieldToStringCast::field_name() const
     return _field_name;
 }
 
-} // namespace soss
+} //  namespace core
+} //  namespace is
+// } //  namespace eprosima
