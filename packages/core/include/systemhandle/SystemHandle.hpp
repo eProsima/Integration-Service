@@ -18,7 +18,7 @@
 #ifndef SOSS__SYSTEMHANDLE_HPP
 #define SOSS__SYSTEMHANDLE_HPP
 
-#include <soss/detail/SystemHandle-head.hpp>
+#include <is/core/systemhandle/SystemHandleFactory.hpp>
 
 #include <soss/Message.hpp>
 
@@ -46,13 +46,6 @@ namespace soss {
 /// that implements SystemHandle in your plugin library.
 #define SOSS_REGISTER_SYSTEM(middleware_name_str, SystemType) \
     DETAIL_SOSS_REGISTER_SYSTEM(middleware_name_str, SystemType)
-
-//==============================================================================
-struct RequiredTypes
-{
-    std::set<std::string> messages;
-    std::set<std::string> services;
-};
 
 //==============================================================================
 /// SystemHandle is the base interface class for all middleware systems. All

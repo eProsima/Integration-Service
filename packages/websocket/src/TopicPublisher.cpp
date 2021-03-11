@@ -88,7 +88,7 @@ public:
     bool publish(
             const xtypes::DynamicData& message)
     {
-        const std::string& topic = _string_template.compute_string(message);
+        const std::string topic = _string_template.compute_string(message);
         const bool inserted = _advertised_topics.insert(topic).second;
 
         if (inserted)
