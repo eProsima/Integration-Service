@@ -15,10 +15,10 @@
  *
  */
 
-#ifndef _ISCORE_MESSAGE_HPP_
-#define _ISCORE_MESSAGE_HPP_
+#ifndef _IS_CORE_MESSAGE_HPP_
+#define _IS_CORE_MESSAGE_HPP_
 
 #include <xtypes/xtypes.hpp>
 #include <xtypes/idl/idl.hpp>
 
-#endif // _ISCORE_MESSAGE_HPP_
+#endif //  _IS_CORE_MESSAGE_HPP_
