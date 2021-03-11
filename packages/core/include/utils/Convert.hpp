@@ -141,8 +141,8 @@ struct Convert<char> : CharConvert { };
 /// namespace.
 template<
     typename Type,
-    void (*_from_xtype)(const xtypes::ReadableDynamicDataRef& from, Type& to),
-    void (*_to_xtype)(const Type& from, xtypes::WritableDynamicDataRef to)>
+    void (* _from_xtype)(const xtypes::ReadableDynamicDataRef& from, Type& to),
+    void (* _to_xtype)(const Type& from, xtypes::WritableDynamicDataRef to)>
 struct MessageConvert
 {
     using native_type = Type;
@@ -275,7 +275,7 @@ struct Convert<VectorImpl<ElementType, N, Allocator> >
 //==============================================================================
 /// \brief A thread-safe repository for resources to avoid unnecessary
 /// allocations
-template<typename Resource, Resource(*initializerT)()>
+template<typename Resource, Resource(* initializerT)()>
 class ResourcePool
 {
 public:

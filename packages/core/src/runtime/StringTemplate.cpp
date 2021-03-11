@@ -15,16 +15,15 @@
  *
  */
 
-#include <soss/StringTemplate.hpp>
-#include <soss/FieldToString.hpp>
-
-#include <xtypes/AggregationType.hpp>
+#include <is/runtime/StringTemplate.hpp>
+#include <is/runtime/FieldToString.hpp>
 
 #include <vector>
 
-namespace soss {
+// namespace eprosima {
+namespace is {
+namespace core {
 
-//==============================================================================
 class StringTemplate::Implementation
 {
 public:
@@ -32,13 +31,14 @@ public:
     Implementation(
             const std::string& template_string,
             const std::string& usage_details)
-        : converter(usage_details)
+        : _converter(usage_details)
     {
         std::size_t last_end = 0;
         std::size_t start = template_string.find('{', last_end);
+
         while (start < template_string.size())
         {
-            components.push_back(template_string.substr(last_end, start - last_end));
+            _components.emplace_back(template_string.substr(last_end, start - last_end));
 
             last_end = template_string.find('}', start) + 1;
             if (last_end == std::string::npos)
@@ -46,42 +46,45 @@ public:
                 throw InvalidTemplateFormat(template_string, usage_details);
             }
 
-            const std::string substitution_string = template_string.substr(start + 1, last_end - start - 2);
+            const std::string substitution_string =
+                    template_string.substr(start + 1, last_end - start - 2);
             if (substitution_string.substr(0, 8) != "message.")
             {
                 throw InvalidTemplateFormat(template_string, usage_details);
             }
-            substitutions[components.size()] = substitution_string.substr(8);
+            _substitutions[_components.size()] = substitution_string.substr(8);
 
-            // We use an empty string to represent components that will get
-            // substituted later.
-            components.push_back("");
+            // We use an empty string to represent components that will get substituted later.
+            _components.emplace_back("");
 
             start = template_string.find('{', last_end);
         }
 
         if (last_end < template_string.size())
         {
-            components.push_back(template_string.substr(last_end));
+            _components.emplace_back(template_string.substr(last_end));
         }
     }
 
-    std::string compute_string(
-            const xtypes::DynamicData& message) const
+    ~Implementation() = default;
+
+    const std::string compute_string(
+            const eprosima::xtypes::DynamicData& message) const
     {
         std::string result;
-        if (!components.empty())
+        if (!_components.empty())
         {
             result = components[0];
         }
 
         SubstitutionMap::const_iterator substitute_it = substitutions.begin();
-        for (std::size_t i = 1; i < components.size(); ++i)
+        for (std::size_t i = 1; i < _components.size(); ++i)
         {
-            if (substitute_it != substitutions.end() && substitute_it->first == i)
+            if (substitute_it != _substitutions.end() && substitute_it->first == i)
             {
                 const std::string& field_name = substitute_it->second;
-                const xtypes::AggregationType& type = static_cast<const xtypes::AggregationType&>(message.type());
+                const xtypes::AggregationType& type =
+                        static_cast<const xtypes::AggregationType&>(message.type());
 
                 if (!type.has_member(field_name))
                 {
@@ -89,83 +92,84 @@ public:
                 }
 
                 xtypes::ReadableDynamicDataRef data = message[field_name];
-                result += converter.to_string(data, field_name);
+                result += _converter.to_string(data, field_name);
                 ++substitute_it;
                 continue;
             }
 
-            result += components[i];
+            result += _components[i];
         }
 
         return result;
     }
 
-    FieldToString converter;
+private:
 
-    /// This contains a vector of string literal components.
-    std::vector<std::string> components;
+    /**
+     * Class members.
+     */
 
-    // This uses an ordered map so that we can iterate through it linearly as we
-    // perform substitutions.
+    FieldToString _converter;
+
+    /**
+     * This contains a vector of string literal components.
+     */
+    std::vector<std::string> _components;
+
+    /**
+     * This uses an ordered map so that we can iterate
+     * through it linearly, as we perform substitutions.
+     */
     using SubstitutionMap = std::map<std::size_t, std::string>;
 
-    /// Right now this simply maps a component index to a xtypes::DynamicData field name.
-    /// In the future, we can replace std::string with an abstract Substitution
-    /// class that gets factory generated based on what type of substitution is
-    /// requested. For right now we've only implemented "message.field"
-    /// substitutions.
-    SubstitutionMap substitutions;
-
+    /**
+     * Right now this simply maps a component index to a xtypes::DynamicData field name.
+     * In the future, we can replace std::string with an abstract Substitution
+     * class that gets factory generated based on what type of substitution is
+     * requested. For right now we've only implemented "message.field" substitutions.
+     */
+    SubstitutionMap _substitutions;
 };
 
 //==============================================================================
 StringTemplate::StringTemplate(
         const std::string& template_string,
         const std::string& usage_details)
-    : pimpl(new Implementation(template_string, usage_details))
+    : _pimpl(new Implementation(template_string, usage_details))
 {
-    // Do nothing
 }
 
 //==============================================================================
 StringTemplate::StringTemplate(
         const StringTemplate& other)
-    : pimpl(new Implementation(*other.pimpl))
+    : _pimpl(new Implementation(*other.pimpl))
 {
-    // Do nothing
 }
 
 //==============================================================================
 StringTemplate::StringTemplate(
         StringTemplate&& other)
-    : pimpl(new Implementation(std::move(*other.pimpl)))
+    : _pimpl(new Implementation(std::move(*other.pimpl)))
 {
-    // Do nothing
 }
 
 //==============================================================================
 std::string StringTemplate::compute_string(
-        const xtypes::DynamicData& message) const
+        const eprosima::xtypes::DynamicData& message) const
 {
-    return pimpl->compute_string(message);
+    return _pimpl->compute_string(message);
 }
 
 //==============================================================================
 std::string& StringTemplate::usage_details()
 {
-    return pimpl->converter.details;
+    return _pimpl->_converter.details();
 }
 
 //==============================================================================
 const std::string& StringTemplate::usage_details() const
 {
-    return pimpl->converter.details;
-}
-
-//==============================================================================
-StringTemplate::~StringTemplate()
-{
-    // Do nothing
+    return _pimpl->_converter.details();
 }
 
 //==============================================================================
@@ -174,11 +178,10 @@ InvalidTemplateFormat::InvalidTemplateFormat(
         const std::string& details)
     : std::runtime_error(
         std::string()
-        + "ERROR: Template string [" + template_string + "] was incorrectly "
+        + "ERROR : Template string '" + template_string + "' was incorrectly "
         + "formatted. Details: " + details)
     , _template_string(template_string)
 {
-    // Do nothing
 }
 
 //==============================================================================
@@ -193,11 +196,10 @@ UnavailableMessageField::UnavailableMessageField(
         const std::string& details)
     : std::runtime_error(
         std::string()
-        + "ERROR: Unable to find a required field [" + field_name
-        + "]. Details: " + details)
+        + "ERROR : Unable to find a required field '" + field_name
+        + "'. Details: " + details)
     , _field_name(field_name)
 {
-    // Do nothing
 }
 
 //==============================================================================
@@ -206,4 +208,6 @@ const std::string& UnavailableMessageField::field_name() const
     return _field_name;
 }
 
-} // namespace soss
+} //  namespace core
+} //  namespace is
+// } //  namespace eprosima
