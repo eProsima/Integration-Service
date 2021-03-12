@@ -17,7 +17,7 @@
 
 #include <is/utils/Log.hpp>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace utils {
 
@@ -165,4 +165,4 @@ inline std::ostream& Logger::yellow(
 
 } //  namespace is
 } //  namespace utils
-// } //  namespace eprosima
+} //  namespace eprosima

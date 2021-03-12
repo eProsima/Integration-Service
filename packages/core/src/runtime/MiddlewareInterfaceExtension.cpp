@@ -43,7 +43,7 @@
 
 #endif //  WIN32
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -204,4 +204,4 @@ bool Mix::load() const
 
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima

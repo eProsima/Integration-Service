@@ -24,7 +24,7 @@
 
 #include <stdexcept>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -202,6 +202,6 @@ private:
 
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima
 
 #endif // _IS_CORE_RUNTIME_STRINGTEMPLATE_HPP_

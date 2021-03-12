@@ -30,7 +30,7 @@
 #include <unordered_map>
 #include <vector>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -371,6 +371,6 @@ IS_CORE_API InstanceHandle run_instance(
         const MiddlewarePrefixPathMap& middleware_prefixes = {});
 
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima
 
 #endif //  _IS_CORE_INSTANCE_HPP_

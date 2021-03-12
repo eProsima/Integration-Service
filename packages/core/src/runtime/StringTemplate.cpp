@@ -20,7 +20,7 @@
 
 #include <vector>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -210,4 +210,4 @@ const std::string& UnavailableMessageField::field_name() const
 
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima
