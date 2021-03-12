@@ -44,7 +44,7 @@ using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
  *
  *        The first argument should be a string representing the name of the
  *        middleware. This should match the name in the `system:` dictionary of your
- *        soss configuration file. Each middleware should have a unique name.
+ *        Integration Service configuration file. Each middleware should have a unique name.
  *
  *        The second argument should be the literal type (not a string) of the class
  *        that implements SystemHandle in your plugin library.
