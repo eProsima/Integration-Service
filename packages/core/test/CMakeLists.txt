@@ -1,24 +1,24 @@
-
 if(NOT BUILD_TESTING)
   return()
 endif()
 
+# TODO (@jamoralp): this definitely needs an improvement. Also, think about more unit test for the core itself.
 include(CTest)
 include(${PROJECT_SOURCE_DIR}/../core/cmake/common/gtest.cmake)
 enable_testing()
 
-add_executable(soss-core-test
+add_executable(is-core-test
   unit/search_test.cpp
 )
 
-target_link_libraries(soss-core-test
+target_link_libraries(is-core-test
   PRIVATE
-    soss-core
+    is-core
   PUBLIC
     libgtest
 )
 
-target_include_directories(soss-core-test
+target_include_directories(is-core-test
   PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../src"
 )
@@ -30,7 +30,7 @@ set(mock_file_name "path/to/some_file.txt")
 set(mock_file_path "${mock_config_directory}/${mock_file_name}")
 file(WRITE "${mock_file_path}" "intentionally blank")
 
-target_compile_definitions(soss-core-test
+target_compile_definitions(is-core-test
   PRIVATE
     "SEARCH_TEST__MOCK_CONFIG_DIRECTORY=\"${mock_config_directory}\""
     "SEARCH_TEST__MOCK_FILE_NAME=\"${mock_file_name}\""

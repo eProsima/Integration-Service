@@ -1,0 +1,16 @@
+# - Config file for the is-@_ARG_IDLE_TYPE@-@middleware@-mix package that enables
+#   @_ARG_IDLE_TYPE@ messages to be translated into the @middleware@ middleware
+
+cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
+
+if(is-@_ARG_IDL_TYPE@-@middleware@-mix_INCLUDED)
+  return()
+endif()
+set(is-@_ARG_IDL_TYPE@-@middleware@-mix_INCLUDED TRUE)
+
+set(IS_@_ARG_IDL_TYPE@_@middleware@_EXTENSION "${CMAKE_CURRENT_LIST_DIR}/is-@_ARG_IDL_TYPE@-@middleware@-mix-extension.cmake")
+set(IS_@_ARG_IDL_TYPE@_@middleware@_TEMPLATE_DIR "${CMAKE_CURRENT_LIST_DIR}/templates")
+
+foreach(dep @_ARG_DEPENDENCIES@)
+  find_package(${dep} REQUIRED)
+endforeach()
