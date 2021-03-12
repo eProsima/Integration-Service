@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 namespace internal {
@@ -132,4 +132,4 @@ void register_system_handle_factory(
 } //  namespace detail
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima

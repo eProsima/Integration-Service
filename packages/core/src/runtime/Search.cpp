@@ -34,9 +34,9 @@
 #define ENV_LIB_PATH "LD_LIBRARY_PATH"
 #define LIB_PATH "is"
 #define IS_NOT_ABSOLUTE_PATH(path) path.at(0) != '/'
-#endif // ifdef WIN32
+#endif //  ifdef WIN32
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -163,14 +163,14 @@ public:
                 };
 
         for (const PathSet& middleware_prefixes :
-                {
-                    _priority_middleware_prefixes,
-                    _global_paths.get_cli_middleware_prefixes(_middleware),
-                    _env_middleware_prefixes,
-                    _global_paths.config_file_prefix,
-                    _home_prefix,
-                    _fallback_middleware_prefixes
-                })
+                    {
+                        _priority_middleware_prefixes,
+                        _global_paths.get_cli_middleware_prefixes(_middleware),
+                        _env_middleware_prefixes,
+                        _global_paths.config_file_prefix,
+                        _home_prefix,
+                        _fallback_middleware_prefixes
+                    })
         {
             if (!middleware_prefixes.active())
             {
@@ -199,11 +199,11 @@ public:
         }
 
         for (const PathSet& is_prefixes :
-                {
-                    _global_paths.cli_is_prefixes,
-                    _env_is_prefixes,
-                    _global_paths.system_is_prefixes
-                })
+                    {
+                        _global_paths.cli_is_prefixes,
+                        _env_is_prefixes,
+                        _global_paths.system_is_prefixes
+                    })
         {
             if (!is_prefixes.active())
             {
@@ -262,10 +262,10 @@ public:
                 };
 
         for (const PathSet& middleware_prefixes :
-                {
-                    _priority_middleware_prefixes,
-                    _global_paths.get_cli_middleware_prefixes(_middleware)
-                })
+                    {
+                        _priority_middleware_prefixes,
+                        _global_paths.get_cli_middleware_prefixes(_middleware)
+                    })
         {
             if (!middleware_prefixes.active())
             {
@@ -283,11 +283,11 @@ public:
         }
 
         for (const PathSet& is_prefixes:
-                {
-                    _global_paths.cli_is_prefixes,
-                    _env_is_prefixes,
-                    _global_paths.system_is_prefixes
-                })
+                    {
+                        _global_paths.cli_is_prefixes,
+                        _env_is_prefixes,
+                        _global_paths.system_is_prefixes
+                    })
         {
             if (!is_prefixes.active())
             {
@@ -504,12 +504,12 @@ private:
         GlobalPathInitializer()
         {
             for (const std::string& path :
-                    {
-                        "/usr/lib",
-                        "/usr/lib/" IS_LIBRARY_ARCHITECTURE,
-                        "/usr/local/lib",
-                        "/usr/local/lib/" IS_LIBRARY_ARCHITECTURE
-                    })
+                        {
+                            "/usr/lib",
+                            "/usr/lib/" IS_LIBRARY_ARCHITECTURE,
+                            "/usr/local/lib",
+                            "/usr/local/lib/" IS_LIBRARY_ARCHITECTURE
+                        })
             {
                 static_default_global_paths
                 .system_is_prefixes.add_path(path);
@@ -918,4 +918,4 @@ Search& Search::ignore_middleware_prefixes(
 
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima

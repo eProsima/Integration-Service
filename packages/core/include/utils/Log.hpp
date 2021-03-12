@@ -15,13 +15,13 @@
  *
  */
 
-#ifndef _IS_CORE_LOG_HPP_
-#define _IS_CORE_LOG_HPP_
+#ifndef _IS_CORE_UTILS_LOG_HPP_
+#define _IS_CORE_UTILS_LOG_HPP_
 
 #include <string>
 #include <is/core/export.hpp>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace utils {
 
@@ -144,8 +144,8 @@ private:
     bool _level_printed;
 };
 
-}        //  namespace utils
-}        //  namespace is
-         // } //  namespace eprosima
+} //  namespace utils
+} //  namespace is
+} //  namespace eprosima
 
-     #endif //  _IS_CORE_LOG_HPP_
+#endif //  _IS_CORE_UTILS_LOG_HPP_

@@ -36,7 +36,7 @@
 
 #include <csignal>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -696,4 +696,4 @@ InstanceHandle run_instance(
 }
 
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima

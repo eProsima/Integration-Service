@@ -24,7 +24,7 @@
 #include <stdexcept>
 
 // TODO jamoralp add Logger
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -166,6 +166,6 @@ private:
 
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima
 
 #endif //  _IS_CORE_RUNTIME_FIELDTOSTRING_HPP_
