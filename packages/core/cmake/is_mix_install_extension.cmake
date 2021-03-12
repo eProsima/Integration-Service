@@ -1,4 +1,5 @@
 # Copyright 2019 Open Source Robotics Foundation, Inc.
+# Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/packages/core/cmake/soss_mix_install_extension.cmake
+# copied from is/packages/core/cmake/is_mix_install_extension.cmake
 
 include(CMakeParseArguments)
 include(GNUInstallDirs)
 
 #################################################
-# soss_mix_install_extension(
+# is_mix_install_extension(
 #   IDL_TYPE   <idl_type>
 #   MIDDLEWARE <middleware>
 #   [MESSAGE
@@ -29,7 +30,7 @@ include(GNUInstallDirs)
 #     [HEADERS <service-header-templates>] ]
 #   [DEPENDENCIES <middleware dependencies>]
 # )
-function(soss_mix_install_extension)
+function(is_mix_install_extension)
 
   cmake_parse_arguments(
     _ARG # prefix
@@ -66,21 +67,21 @@ function(soss_mix_install_extension)
     endforeach()
   endforeach()
 
-  set(config_output "${CMAKE_BINARY_DIR}/soss/${_ARG_IDL_TYPE}/soss-${_ARG_IDL_TYPE}-${middleware}-mixConfig.cmake")
+  set(config_output "${CMAKE_BINARY_DIR}/is/${_ARG_IDL_TYPE}/is-${_ARG_IDL_TYPE}-${middleware}-mixConfig.cmake")
   configure_file(
-    ${SOSS_IDL_MIDDLEWARE_MIX_CONFIG_TEMPLATE}
+    ${IS_IDL_MIDDLEWARE_MIX_CONFIG_TEMPLATE}
     ${config_output}
     @ONLY
   )
 
-  set(extension_output "${CMAKE_BINARY_DIR}/soss/${_ARG_IDL_TYPE}/soss-${_ARG_IDL_TYPE}-${middleware}-mix-extension.cmake")
+  set(extension_output "${CMAKE_BINARY_DIR}/is/${_ARG_IDL_TYPE}/is-${_ARG_IDL_TYPE}-${middleware}-mix-extension.cmake")
   configure_file(
-    ${SOSS_IDL_MIDDLEWARE_MIX_EXTENSION_TEMPLATE}
+    ${IS_IDL_MIDDLEWARE_MIX_EXTENSION_TEMPLATE}
     ${extension_output}
     @ONLY
   )
 
-  set(base_install_dir "${CMAKE_INSTALL_DATADIR}/soss-${_ARG_IDL_TYPE}-${middleware}-mix")
+  set(base_install_dir "${CMAKE_INSTALL_DATADIR}/is-${_ARG_IDL_TYPE}-${middleware}-mix")
 
   install(
     FILES

@@ -1,4 +1,5 @@
 # Copyright 2018 Open Source Robotics Foundation, Inc.
+#Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/packages/core/cmake/soss_install_middleware_plugin.cmake
+# copied from is/packages/core/cmake/is_install_middleware_plugin.cmake
 
 #################################################
-# soss_install_middleware_plugin(
+# is_install_middleware_plugin(
 #   MIDDLEWARE    <middleware_name>
 #   TARGET        <target>
 #   [NO_CONFIG]
@@ -26,7 +27,7 @@
 # )
 #
 # MIDDLEWARE: The name of the middleware. The resulting package will be called
-# soss-<middleware_name>
+# is-<middleware_name>
 #
 # TARGET: The target for the library that should be loaded for this middleware.
 # TODO(MXG): See about supporting multiple libraries per middleware.
@@ -49,10 +50,10 @@
 #
 # BUILD_DIR: The absolute path where the mix files for this middleware should be
 # configured and where the library will be placed. If this argument is not
-# specified, the default will be ${CMAKE_BINARY_DIR}/soss/<middleware-name>/lib.
+# specified, the default will be ${CMAKE_BINARY_DIR}/is/<middleware-name>/lib.
 include(GNUInstallDirs)
 
-function(soss_install_middleware_plugin)
+function(is_install_middleware_plugin)
 
   include(CMakeParseArguments)
   cmake_parse_arguments(
@@ -82,7 +83,7 @@ function(soss_install_middleware_plugin)
   if(_ARG_BUILD_DIR)
     set(mix_build_dir "${_ARG_BUILD_DIR}")
   else()
-    set(mix_build_dir "${CMAKE_BINARY_DIR}/soss/${middleware}/lib")
+    set(mix_build_dir "${CMAKE_BINARY_DIR}/is/${middleware}/lib")
   endif()
 
   set_target_properties(${plugin_library_target} PROPERTIES
@@ -92,15 +93,15 @@ function(soss_install_middleware_plugin)
   set(plugin_library_extension $<IF:$<PLATFORM_ID:Windows>,"dll","dl">)
 
   foreach(type ${system_types})
-    set(plugin_library_mix_template "${mix_build_dir}/soss/${type}/${type}.mix.gen")
+    set(plugin_library_mix_template "${mix_build_dir}/is/${type}/${type}.mix.gen")
     set(plugin_library_directory "../..")
     configure_file(
-      "${SOSS_TEMPLATE_DIR}/plugin_library.mix.in"
+      "${IS_TEMPLATE_DIR}/plugin_library.mix.in"
       "${plugin_library_mix_template}"
       @ONLY
     )
 
-    set(plugin_library_mix "${mix_build_dir}/soss/${type}/${type}.mix")
+    set(plugin_library_mix "${mix_build_dir}/is/${type}/${type}.mix")
 
     file(GENERATE
       OUTPUT ${plugin_library_mix}
@@ -109,14 +110,14 @@ function(soss_install_middleware_plugin)
 
     install(
       FILES ${plugin_library_mix}
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/soss/${type}/
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/is/${type}/
       COMPONENT ${plugin_library_target}
     )
   endforeach()
 
   if(NOT _ARG_NO_CONFIG)
 
-    set(config_install_dir ${CMAKE_INSTALL_LIBDIR}/cmake/soss-${middleware})
+    set(config_install_dir ${CMAKE_INSTALL_LIBDIR}/cmake/is-${middleware})
 
     set(extensions)
     foreach(extension ${_ARG_EXTENSIONS})
@@ -128,13 +129,13 @@ function(soss_install_middleware_plugin)
       EXPORT ${plugin_library_target}
       DESTINATION ${config_install_dir}
       FILE ${plugin_library_target}-target.cmake
-      NAMESPACE soss::
+      NAMESPACE is::
       COMPONENT ${plugin_library_target}
     )
 
     include(CMakePackageConfigHelpers)
-    set(config_file_input "${SOSS_TEMPLATE_DIR}/middleware-config.cmake.in")
-    set(config_file_output "${mix_build_dir}/soss-${middleware}Config.cmake")
+    set(config_file_input "${IS_TEMPLATE_DIR}/middleware-config.cmake.in")
+    set(config_file_output "${mix_build_dir}/is-${middleware}Config.cmake")
     configure_package_config_file(
       ${config_file_input}
       ${config_file_output}
