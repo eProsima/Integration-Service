@@ -1,4 +1,5 @@
 # Copyright 2019 Open Source Robotics Foundation, Inc.
+# Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/packages/core/cmake/soss_mix_generator.cmake
+# copied from is/packages/core/cmake/is_mix_generator.cmake
 
 include(CMakeParseArguments)
 include(GNUInstallDirs)
 
 #################################################
-# soss_mix_generator(
+# is_mix_generator(
 #   IDL_TYPE idl_type
 #   SCRIPT
 #     INTERPRETER <python2|python3|other>
@@ -30,12 +31,12 @@ include(GNUInstallDirs)
 #   [REQUIRED]
 # )
 #
-# Generate a soss middleware interface extension for a set of IDL packages.
+# Generate a is middleware interface extension for a set of IDL packages.
 #
 # ROS2 packages will often contain message and service specifications in the
 # form of rosidl files (.msg and .srv). This cmake utility will convert the
-# messages and services into soss middleware interface extension libraries.
-# That will allow soss to pass those message and service types between two
+# messages and services into is middleware interface extension libraries.
+# That will allow is to pass those message and service types between two
 # different middlewares.
 #
 # The PACKAGES argument specifies the packages whose message and service
@@ -53,7 +54,7 @@ include(GNUInstallDirs)
 # mix libraries from being generated. If REQUIRED is not specified, then this
 # function will instead print warnings and proceed as much as possible whenever
 # an error is encountered.
-function(soss_mix_generator)
+function(is_mix_generator)
 
   cmake_parse_arguments(
     _ARG # prefix
@@ -74,7 +75,7 @@ function(soss_mix_generator)
   if(_ARG_UNPARSED_ARGUMENTS)
     message(AUTHOR_WARNING
       "Unknown arguments passed to "
-      "soss_mix_generator:"
+      "is_mix_generator:"
       "${_ARG_UNPARSED_ARGUMENTS}"
     )
   endif()
@@ -88,7 +89,7 @@ function(soss_mix_generator)
   set(_string_of_middlewares "")
   foreach(middleware ${_ARG_MIDDLEWARES})
 
-    set(_mix_pkg_name soss-${_ARG_IDL_TYPE}-${middleware}-mix)
+    set(_mix_pkg_name is-${_ARG_IDL_TYPE}-${middleware}-mix)
     find_package(${_mix_pkg_name} QUIET)
     if(${_mix_pkg_name}_FOUND)
       list(APPEND _found_middleware_mixes "${middleware}")
@@ -96,7 +97,7 @@ function(soss_mix_generator)
       message(${_problem_output_type}
         "Could not find the ${_ARG_IDL_TYPE} extension for [${middleware}]! "
         "You need to install the package [${_mix_pkg_name}] if such a "
-        "package exists. We will skip generating a soss mix library for that "
+        "package exists. We will skip generating a is mix library for that "
         "middleware."
       )
     endif()
@@ -121,7 +122,7 @@ function(soss_mix_generator)
     if(${requested_pkg}_FOUND)
 
       list(APPEND _queued_dependencies ${requested_pkg})
-      _soss_mix_find_package_info(
+      _is_mix_find_package_info(
         SCRIPT
           INTERPRETER ${_SCRIPT_INTERPRETER}
           FIND ${_SCRIPT_FIND}
@@ -138,7 +139,7 @@ function(soss_mix_generator)
         set(_dependents_of_${dependency}_string "${_dependents_of_${dependency}_string} [${requested_pkg}]")
       endforeach()
 
-      # Add the dependency to the list of packages whose mix soss libraries we
+      # Add the dependency to the list of packages whose mix is libraries we
       # should look for
       list(APPEND _queued_packages ${requested_pkg})
       set(_dependents_of_${requested_pkg}_string " [the user]")
@@ -147,7 +148,7 @@ function(soss_mix_generator)
 
       message(${_problem_output_type}
         "Could not find a ${_ARG_IDL_TYPE} package named [${requested_pkg}]! "
-        "You need to install that package in order to generate soss mix "
+        "You need to install that package in order to generate is mix "
         "libraries for its message and service specifications."
       )
 
@@ -188,7 +189,7 @@ function(soss_mix_generator)
 
     # If this package is going to be built, we will also need its dependency
     # info, so add it to a list of packages on which we will call
-    # _soss_mix_find_package_info
+    # _is_mix_find_package_info
     list(APPEND _queued_dependencies ${dependency})
 
   endforeach()
@@ -203,7 +204,7 @@ function(soss_mix_generator)
   foreach(package ${_queued_packages})
 
     foreach(middleware ${_found_middleware_mixes})
-      set(_package_mix_pkg_name soss-${_ARG_IDL_TYPE}-${middleware}-${package}-mix)
+      set(_package_mix_pkg_name is-${_ARG_IDL_TYPE}-${middleware}-${package}-mix)
       find_package(${_package_mix_pkg_name} QUIET)
       if(${_package_mix_pkg_name}_FOUND)
 
@@ -240,7 +241,7 @@ function(soss_mix_generator)
   # For each of the automatically inferred dependencies, find its package info,
   # because it will be needed if we have to build it.
   foreach(dependency ${_queued_dependencies})
-    _soss_mix_find_package_info(
+    _is_mix_find_package_info(
       SCRIPT
         INTERPRETER ${_SCRIPT_INTERPRETER}
         FIND ${_SCRIPT_FIND}
@@ -256,7 +257,7 @@ function(soss_mix_generator)
   # already have a mix made and installed.
   foreach(middleware ${_found_middleware_mixes})
     foreach(package ${_queued_${middleware}_packages})
-      _soss_configure_mix_package(
+      _is_configure_mix_package(
         IDL_TYPE      ${_ARG_IDL_TYPE}
         SCRIPT
           INTERPRETER ${_SCRIPT_INTERPRETER}
@@ -275,7 +276,7 @@ function(soss_mix_generator)
 endfunction()
 
 #################################################
-# _soss_configure_mix_package(
+# _is_configure_mix_package(
 #   IDL_TYPE      <idl_type>
 #   SCRIPT
 #     INTERPRETER <interpreter>
@@ -287,7 +288,7 @@ endfunction()
 #   SRV_FILES     [srv_files...]
 #   FILE_DEPS     [file_dependencies...]
 # )
-function(_soss_configure_mix_package)
+function(_is_configure_mix_package)
 
   cmake_parse_arguments(
     _ARG # prefix
@@ -309,14 +310,14 @@ function(_soss_configure_mix_package)
     if(NOT ${required_arg})
       message(FATAL_ERROR
         "Missing ${required_arg} argument, which is required! This indicates a "
-        "bug in the soss cmake module, please report this!"
+        "bug in the is cmake module, please report this!"
       )
     endif()
   endforeach()
 
   set(middleware ${_ARG_MIDDLEWARE})
   set(package ${_ARG_PACKAGE})
-  set(mix_target soss-${_ARG_IDL_TYPE}-${middleware}-${package}-mix)
+  set(mix_target is-${_ARG_IDL_TYPE}-${middleware}-${package}-mix)
   if(TARGET ${mix_target})
     # This mix library has already been configured, so we can skip it
     return()
@@ -329,7 +330,7 @@ function(_soss_configure_mix_package)
     )
   endif()
 
-  include("${SOSS_${_ARG_IDL_TYPE}_${middleware}_EXTENSION}")
+  include("${IS_${_ARG_IDL_TYPE}_${middleware}_EXTENSION}")
 
   if(_${middleware}_${package}_mix_cpp_files)
     # If the middleware extension provided these variables explicitly, use them
@@ -337,7 +338,7 @@ function(_soss_configure_mix_package)
   elseif(_${middleware}_${package}_use_templates)
     # If the middleware provided cpp and/or hpp templates instead of explicit
     # source/header files, we can use those to generate the source files.
-    _soss_mix_generate_source_files(
+    _is_mix_generate_source_files(
       IDL_TYPE ${_ARG_IDL_TYPE}
       SCRIPT
         INTERPRETER ${_SCRIPT_INTERPRETER}
@@ -360,39 +361,39 @@ function(_soss_configure_mix_package)
   else()
 
     message(${_problem_output_type}
-      "The soss-${_ARG_IDL_TYPE}-${middleware}.cmake extension is broken or incompatible "
-      "with this version of the soss-${_ARG_IDL_TYPE} generator!"
+      "The is-${_ARG_IDL_TYPE}-${middleware}.cmake extension is broken or incompatible "
+      "with this version of the is-${_ARG_IDL_TYPE} generator!"
     )
 
   endif()
 
-  _soss_mix_get_filenames_list(
+  _is_mix_get_filenames_list(
     _${package}_msg_types
     ${_ARG_MSG_FILES}
   )
 
-  _soss_mix_get_filenames_list(
+  _is_mix_get_filenames_list(
     _${package}_srv_types
     ${_ARG_SRV_FILES}
   )
 
   add_library(${mix_target} SHARED ${_${middleware}_${package}_mix_cpp_files})
 
-  set(_soss_mix_dependencies)
+  set(_is_mix_dependencies)
   set(_pkg_library_dependencies ${${package}_LIBRARIES})
   set(_pkg_include_dirs ${${package}_INCLUDE_DIRS})
   foreach(dep ${_ARG_DEPENDENCIES})
-    list(APPEND _soss_mix_dependencies soss-${_ARG_IDL_TYPE}-${middleware}-${dep}-mix)
+    list(APPEND _is_mix_dependencies is-${_ARG_IDL_TYPE}-${middleware}-${dep}-mix)
     list(APPEND _pkg_library_dependencies ${${dep}_LIBRARIES})
     list(APPEND _pkg_include_dirs ${${dep}_INCLUDE_DIRS})
   endforeach()
 
   target_link_libraries(${mix_target}
     PUBLIC
-      soss::core
-      soss::${middleware}
+      is::core
+      is::${middleware}
       ${_pkg_library_dependencies}
-      ${_soss_mix_dependencies}
+      ${_is_mix_dependencies}
   )
 
   target_include_directories(${mix_target}
@@ -402,7 +403,7 @@ function(_soss_configure_mix_package)
       ${_pkg_include_dirs}
   )
 
-  set(library_build_dir "${CMAKE_BINARY_DIR}/soss/${_ARG_IDL_TYPE}/${middleware}/lib")
+  set(library_build_dir "${CMAKE_BINARY_DIR}/is/${_ARG_IDL_TYPE}/${middleware}/lib")
 
   set_target_properties(${mix_target} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${library_build_dir}
@@ -412,7 +413,7 @@ function(_soss_configure_mix_package)
     TARGETS ${mix_target}
     EXPORT  ${mix_target}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    COMPONENT soss-${_ARG_IDL_TYPE}-mix
+    COMPONENT is-${_ARG_IDL_TYPE}-mix
   )
 
   set(config_install_dir ${CMAKE_INSTALL_LIBDIR}/cmake/${mix_target})
@@ -421,12 +422,12 @@ function(_soss_configure_mix_package)
     EXPORT ${mix_target}
     DESTINATION ${config_install_dir}
     FILE ${mix_target}-target.cmake
-    COMPONENT soss-${_ARG_IDL_TYPE}-mix
+    COMPONENT is-${_ARG_IDL_TYPE}-mix
   )
 
-  set(config_output ${CMAKE_BINARY_DIR}/soss/${_ARG_IDL_TYPE}/config/${mix_target}Config.cmake)
+  set(config_output ${CMAKE_BINARY_DIR}/is/${_ARG_IDL_TYPE}/config/${mix_target}Config.cmake)
   configure_file(
-    "${SOSS_IDL_PKG_MIX_CONFIG_TEMPLATE}"
+    "${IS_IDL_PKG_MIX_CONFIG_TEMPLATE}"
     ${config_output}
     @ONLY
   )
@@ -434,7 +435,7 @@ function(_soss_configure_mix_package)
   install(
     FILES ${config_output}
     DESTINATION ${config_install_dir}
-    COMPONENT soss-${_ARG_IDL_TYPE}-mix
+    COMPONENT is-${_ARG_IDL_TYPE}-mix
   )
 
   if(_${middleware}_${package}_mix_include_dir)
@@ -450,14 +451,14 @@ function(_soss_configure_mix_package)
 
   set(plugin_library_target ${mix_target})
   set(plugin_library_directory ../../../..)
-  set(_plugin_library_gen_template "${CMAKE_BINARY_DIR}/soss/${_ARG_IDL_TYPE}/${middleware}/${package}.mix.gen")
+  set(_plugin_library_gen_template "${CMAKE_BINARY_DIR}/is/${_ARG_IDL_TYPE}/${middleware}/${package}.mix.gen")
   configure_file(
-    ${SOSS_TEMPLATE_DIR}/plugin_library.mix.in
+    ${IS_TEMPLATE_DIR}/plugin_library.mix.in
     ${_plugin_library_gen_template}
     @ONLY
   )
 
-  set(mix_build_dir "${library_build_dir}/soss")
+  set(mix_build_dir "${library_build_dir}/is")
   set(mix_msg_build_dir "${mix_build_dir}/${middleware}/msg/${package}")
   foreach(msg_type ${_${package}_msg_types})
     file(GENERATE
@@ -477,12 +478,12 @@ function(_soss_configure_mix_package)
   install(
     DIRECTORY ${mix_build_dir}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    COMPONENT soss-${_ARG_IDL_TYPE}-mix
+    COMPONENT is-${_ARG_IDL_TYPE}-mix
   )
 
 endfunction()
 
-function(_soss_mix_get_filenames_list var)
+function(_is_mix_get_filenames_list var)
 
   set(output)
   foreach(file ${ARGN})
@@ -495,7 +496,7 @@ function(_soss_mix_get_filenames_list var)
 endfunction()
 
 #################################################
-# _soss_mix_generate_source_files(
+# _is_mix_generate_source_files(
 #   IDL_TYPE <idl_type>
 #   SCRIPT
 #     INTERPRETER <python2|python3|other>
@@ -515,7 +516,7 @@ endfunction()
 #     CPP_FILES <output_cpp_files_variable>
 #     INCLUDE_DIR <output_include_directory_variable>
 # )
-function(_soss_mix_generate_source_files)
+function(_is_mix_generate_source_files)
 
   cmake_parse_arguments(
     _ARG # prefix
@@ -560,8 +561,8 @@ function(_soss_mix_generate_source_files)
   set(middleware ${_ARG_MIDDLEWARE})
   set(package ${_ARG_PACKAGE})
 
-  set(output_src_dir "${PROJECT_BINARY_DIR}/soss/${_ARG_IDL_TYPE}/${middleware}/${package}/src")
-  set(output_include_dir "${PROJECT_BINARY_DIR}/soss/${_ARG_IDL_TYPE}/${middleware}/${package}/include")
+  set(output_src_dir "${PROJECT_BINARY_DIR}/is/${_ARG_IDL_TYPE}/${middleware}/${package}/src")
+  set(output_include_dir "${PROJECT_BINARY_DIR}/is/${_ARG_IDL_TYPE}/${middleware}/${package}/include")
 
   # Generate files from message specifications
   execute_process(
@@ -570,7 +571,7 @@ function(_soss_mix_generate_source_files)
       ${_SCRIPT_GENERATE}
       --package       ${package}
       --source-dir    "${output_src_dir}"
-      --header-dir    "${output_include_dir}/soss/${_ARG_IDL_TYPE}/${middleware}/${package}"
+      --header-dir    "${output_include_dir}/is/${_ARG_IDL_TYPE}/${middleware}/${package}"
       --msg-idl-files ${_ARG_MSG_IDL}
       --msg-cpp-files ${_ARG_MSG_CPP}
       --msg-hpp-files ${_ARG_MSG_HPP}
@@ -605,7 +606,7 @@ function(_soss_mix_generate_source_files)
 endfunction()
 
 #################################################
-# _soss_mix_find_package_info(
+# _is_mix_find_package_info(
 #   SCRIPT
 #     INTERPRETER <python2|python3|other>
 #     FIND find_script
@@ -615,7 +616,7 @@ endfunction()
 #   OUTPUT_SRV_FILE  <package_service_list_var>
 #   OUTPUT_FILE_DEP  <file_dependency_list_var>
 # )
-function(_soss_mix_find_package_info)
+function(_is_mix_find_package_info)
 
   set(output_vars OUTPUT_PKG_DEP OUTPUT_MSG_FILE OUTPUT_SRV_FILE OUTPUT_FILE_DEP)
   set(args PACKAGE ${output_vars})
@@ -639,7 +640,7 @@ function(_soss_mix_find_package_info)
     if(NOT _ARG_${required_arg})
       message(FATAL_ERROR
         "Missing ${required_arg} argument, which is required! This indicates a "
-        "bug in the soss cmake module, please report this!"
+        "bug in the is cmake module, please report this!"
       )
     endif()
   endforeach()
