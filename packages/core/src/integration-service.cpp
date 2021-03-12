@@ -27,5 +27,5 @@ int main(
         int argc,
         char* argv[])
 {
-    return is::run_instance(argc, argv).wait();
+    return eprosima::is::run_instance(argc, argv).wait();
 }

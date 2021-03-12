@@ -21,7 +21,7 @@
 #include <string>
 #include <unordered_map>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -180,4 +180,4 @@ const std::string& UnknownFieldToStringCast::field_name() const
 
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima

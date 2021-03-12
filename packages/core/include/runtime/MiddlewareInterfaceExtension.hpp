@@ -26,7 +26,7 @@
 
 #include <memory>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -162,6 +162,6 @@ using Mix = MiddlewareInterfaceExtension;
 
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima
 
 #endif //  _IS_CORE_RUNTIME_MIDDLEWAREINTERFACEEXTENSION_HPP_

@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 
+namespace eprosima {
 namespace is {
 namespace core {
 /**
@@ -368,5 +369,6 @@ private:
 
 } //  namespace core
 } //  namespace is
+} //  namespace eprosima
 
 #endif //  _IS_CORE_RUNTIME_SEARCH_HPP_

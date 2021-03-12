@@ -24,7 +24,7 @@
 #include <memory>
 #include <type_traits>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 
@@ -80,7 +80,7 @@ public:
 } //  namespace detail
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima
 
 #define DETAIL_IS_REGISTER_SYSTEM_HELPER( \
         UniqueID, middleware_name, HandleType) \

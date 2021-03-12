@@ -22,7 +22,7 @@
 
 #include <iostream>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 namespace internal {
@@ -1886,4 +1886,4 @@ const xtypes::DynamicType* Config::resolve_type(
 } //  namespace internal
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima

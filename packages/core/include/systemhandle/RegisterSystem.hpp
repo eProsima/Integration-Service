@@ -24,7 +24,7 @@
 
 #include <mutex>
 
-// namespace eprosima {
+namespace eprosima {
 namespace is {
 namespace core {
 namespace internal {
@@ -155,6 +155,6 @@ private:
 } //  namespace internal
 } //  namespace core
 } //  namespace is
-// } //  namespace eprosima
+} //  namespace eprosima
 
 #endif //  _IS_CORE_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
