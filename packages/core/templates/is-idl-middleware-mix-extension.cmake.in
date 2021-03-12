@@ -17,7 +17,7 @@ foreach(transport_type msg srv)
       list(
         APPEND
         _@middleware@_${package}_${transport_type}_${file_type}
-        "${SOSS_@_ARG_IDL_TYPE@_@middleware@_TEMPLATE_DIR}/${base}"
+        "${IS_@_ARG_IDL_TYPE@_@middleware@_TEMPLATE_DIR}/${base}"
       )
 
     endforeach()

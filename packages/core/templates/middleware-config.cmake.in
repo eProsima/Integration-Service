@@ -1,27 +1,27 @@
-# - Config file for the soss-@middleware@ package
+# - Config file for the is-@middleware@ package
 #
-# This package helps soss middleware interface extensions to link against
+# This package helps is middleware interface extensions to link against
 
 cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
 
-if(soss-@middleware@_CONFIG_INCLUDED)
+if(is-@middleware@_CONFIG_INCLUDED)
   return()
 endif()
-set(soss-@middleware@_CONFIG_INCLUDED TRUE)
+set(is-@middleware@_CONFIG_INCLUDED TRUE)
 
-if(NOT TARGET soss::@plugin_library_target@)
+if(NOT TARGET is::@plugin_library_target@)
   include("${CMAKE_CURRENT_LIST_DIR}/@plugin_library_target@-target.cmake")
 endif()
 
-if(NOT TARGET soss::@middleware@)
-  add_library(soss::@middleware@ INTERFACE IMPORTED)
-  set_target_properties(soss::@middleware@ PROPERTIES
-    INTERFACE_LINK_LIBRARIES soss::@plugin_library_target@
+if(NOT TARGET is::@middleware@)
+  add_library(is::@middleware@ INTERFACE IMPORTED)
+  set_target_properties(is::@middleware@ PROPERTIES
+    INTERFACE_LINK_LIBRARIES is::@plugin_library_target@
   )
 endif()
 
 include(CMakeFindDependencyMacro)
-find_dependency(soss-core)
+find_dependency(is-core)
 
 foreach(extension @extensions@)
   include(${CMAKE_CURRENT_LIST_DIR}/extensions/${extension})
@@ -31,4 +31,4 @@ foreach(dep @_ARG_DEPENDENCIES@)
   find_package(${dep} REQUIRED)
 endforeach()
 
-set(soss-@middleware@_FOUND TRUE)
+set(is-@middleware@_FOUND TRUE)
