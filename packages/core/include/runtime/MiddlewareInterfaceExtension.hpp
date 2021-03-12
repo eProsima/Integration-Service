@@ -25,7 +25,6 @@
 #include <is/utils/Log.hpp>
 
 #include <memory>
-#include <experimental/filesystem>
 
 // namespace eprosima {
 namespace is {

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +16,16 @@
  *
  */
 
-#include <soss/Instance.hpp>
+#include <is/core/Instance.hpp>
 
-// This very simple translation unit lets us spawn a soss instance and return
-// its exit code once it's finished. This provides the main function for the
-// canonical soss command line program.
+/**
+ * This very simple translation unit lets us spawn an Integration Service instance
+ * and return its exit code once it's finished. This provides the main function
+ * for the canonical `integration-service` command line program.
+ */
 int main(
         int argc,
         char* argv[])
 {
-    return soss::run_instance(argc, argv).wait();
+    return is::run_instance(argc, argv).wait();
 }
