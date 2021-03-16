@@ -17,7 +17,7 @@
  */
 
 #include <is/core/runtime/Search.hpp>
-#include <is/core/utils/Log.hpp>
+#include <is/utils/Log.hpp>
 
 #include <algorithm>
 #include <cctype>

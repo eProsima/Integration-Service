@@ -323,7 +323,7 @@ public:
     /**
      * @brief Constructor.
      */
-    class ServiceClient() = default;
+    ServiceClient() = default;
 
     /**
      * @brief Destructor.
@@ -374,7 +374,7 @@ public:
     /**
      * @brief Constructor.
      */
-    class ServiceClientSystem() = default;
+    ServiceClientSystem() = default;
 
     /**
      * @brief Destructor.
@@ -463,7 +463,7 @@ public:
     /**
      * @brief Constructor.
      */
-    class ServiceProvider() = default;
+    ServiceProvider() = default;
 
     /**
      * @brief Destructor.
@@ -510,7 +510,7 @@ public:
     /**
      * @brief Constructor.
      */
-    class ServiceProviderSystem() = default;
+    ServiceProviderSystem() = default;
 
     /**
      * @brief Destructor.

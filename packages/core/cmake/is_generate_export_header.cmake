@@ -28,7 +28,7 @@ function(is_generate_export_header component_name)
   set(binary_include_dir ${CMAKE_BINARY_DIR}/include)
   generate_export_header(is-${component_name}
     BASE_NAME is_${component_name}
-    EXPORT_MACRO_NAME is_${UPPER_COMPONENT_NAME}_API
+    EXPORT_MACRO_NAME IS_${UPPER_COMPONENT_NAME}_API
     EXPORT_FILE_NAME ${binary_include_dir}/is/${component_name}/export.hpp
   )
 

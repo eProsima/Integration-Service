@@ -20,7 +20,7 @@
 #define _IS_CORE_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
 
 #include <is/core/systemhandle/SystemHandle.hpp>
-#include <is/core/utils/Log.hpp>
+#include <is/utils/Log.hpp>
 
 #include <mutex>
 

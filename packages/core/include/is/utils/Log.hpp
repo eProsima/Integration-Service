@@ -52,6 +52,11 @@ public:
     };
 
     /**
+     * @brief Default constructor.
+     */
+    Logger() = default;
+
+    /**
      * @brief Constructor.
      * @param[in] header The user-defined headed that will be printed
      *            at the begginning of every logger's message.
@@ -109,7 +114,9 @@ public:
      * @returns A reference to this object.
      */
     Logger& operator <<(
-            std::ostream (* func)(std::ostream&));
+            std::basic_ostream<char, std::char_traits<char> >&
+            (*func)(
+                std::basic_ostream<char, std::char_traits<char> >&));
 
 private:
 
@@ -117,22 +124,22 @@ private:
      * Operations for setting on/off ostream bold characters and colors.
      */
 
-    std::ostream& bold_on(
+    static std::ostream& bold_on(
             std::ostream& os);
 
-    std::ostream& bold_off(
+    static std::ostream& bold_off(
             std::ostream& os);
 
-    std::ostream& black(
+    static std::ostream& black(
             std::ostream& os);
 
-    std::ostream& red(
+    static std::ostream& red(
             std::ostream& os);
 
-    std::ostream& green(
+    static std::ostream& green(
             std::ostream& os);
 
-    std::ostream& yellow(
+    static std::ostream& yellow(
             std::ostream& os);
 
     /**
