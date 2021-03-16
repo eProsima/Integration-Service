@@ -29,6 +29,18 @@
 namespace eprosima {
 namespace is {
 namespace core {
+
+/**
+ * @brief Contains a set of which topics and services types are required in order
+ *        to successfully create an *Integration Service* instance, based on the
+ *        provided configuration.
+ */
+struct RequiredTypes
+{
+    std::set<std::string> messages;
+    std::set<std::string> services;
+};
+
 namespace internal {
 
 /**
@@ -128,17 +140,6 @@ struct ServiceConfig
     std::map<std::string, ServiceInfo> remap; //  "key" is middleware alias.
 
     std::map<std::string, YAML::Node> middleware_configs;
-};
-
-/**
- * @brief Contains a set of which topics and services types are required in order
- *        to successfully create an *Integration Service* instance, based on the
- *        provided configuration.
- */
-struct RequiredTypes
-{
-    std::set<std::string> messages;
-    std::set<std::string> services;
 };
 
 /**

@@ -21,7 +21,7 @@
 #include <is/core/runtime/Search.hpp>
 #include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
 #include <is/core/systemhandle/RegisterSystem.hpp>
-#include <is/core/utils/Log.hpp>
+#include <is/utils/Log.hpp>
 
 
 #include <yaml-cpp/yaml.h>
