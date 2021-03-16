@@ -72,7 +72,12 @@ Logger& Logger::operator <<(
             }
         }
 
-        std::cout << " [" << _header "] ";
+        if (!_header.empty())
+        {
+            std::cout << bold_on << "[" << _header << "]" << bold_off;
+        }
+
+        std::cout << " ";
         _level_printed = true;
     }
 
@@ -106,15 +111,14 @@ inline Logger& Logger::operator <<(
 
 //==============================================================================
 Logger& Logger::operator <<(
-        std::ostream (* func)(std::ostream&))
+        std::basic_ostream<char, std::char_traits<char> >&
+        (*func)(
+            std::basic_ostream<char, std::char_traits<char> >&))
 {
     if (_level_printed)
     {
-        if (std::endl == func)
-        {
-            std::cout << black;
-            _level_printed = false;
-        }
+        std::cout << black;
+        _level_printed = false;
     }
 
     std::cout << func;

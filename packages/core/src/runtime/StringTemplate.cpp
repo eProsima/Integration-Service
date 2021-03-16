@@ -15,8 +15,8 @@
  *
  */
 
-#include <is/runtime/StringTemplate.hpp>
-#include <is/runtime/FieldToString.hpp>
+#include <is/core/runtime/StringTemplate.hpp>
+#include <is/core/runtime/FieldToString.hpp>
 
 #include <vector>
 
