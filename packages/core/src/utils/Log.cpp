@@ -43,22 +43,22 @@ Logger& Logger::operator <<(
                 std::cout << bold_on
                           << red
                           << "[Integration Service][ERROR]"
-                          << bold_off;
+                          << reset;
                 break;
             }
             case Level::WARN:
             {
                 std::cout << bold_on
                           << yellow
-                          << "[Integration Service][WARN]"
-                          << bold_off;
+                          << "[Integration Service][WARN] "
+                          << reset;
                 break;
             }
             case Level::INFO:
             {
                 std::cout << bold_on
-                          << "[Integration Service][INFO]"
-                          << bold_off;
+                          << "[Integration Service][INFO] "
+                          << reset;
                 break;
             }
             case Level::DEBUG:
@@ -66,15 +66,14 @@ Logger& Logger::operator <<(
                 std::cout << bold_on
                           << green
                           << "[Integration Service][DEBUG]"
-                          << bold_off
-                          << black;
+                          << reset;
                 break;
             }
         }
 
         if (!_header.empty())
         {
-            std::cout << bold_on << "[" << _header << "]" << bold_off;
+            std::cout << bold_on << "[" << _header << "]" << reset;
         }
 
         std::cout << " ";
@@ -138,7 +137,7 @@ Logger& Logger::operator <<(
         }
         case CurrentLevelStatus::SPECIFIED:
         {
-            std::cout << black;
+            std::cout << reset;
             std::cout << func;
             [[fallthrough]];
         }
@@ -160,17 +159,10 @@ std::ostream& Logger::bold_on(
 }
 
 //==============================================================================
-std::ostream& Logger::bold_off(
+std::ostream& Logger::reset(
         std::ostream& os)
 {
     return os << "\033[0m";
-}
-
-//==============================================================================
-std::ostream& Logger::black(
-        std::ostream& os)
-{
-    return os << "\033[30m";
 }
 
 //==============================================================================
