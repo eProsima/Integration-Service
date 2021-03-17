@@ -15,13 +15,16 @@
  *
  */
 
-#include <soss/mock/api.hpp>
+#include <is/mock/api.hpp>
 
-#include <soss/SystemHandle.hpp>
+#include <is/core/systemhandle/SystemHandle.hpp>
 
 #include <iostream>
 
-namespace soss {
+// TODO(@jamoralp): Document doxygen
+// TODO(@jamoralp): Add logger
+namespace eprosima {
+namespace is {
 namespace mock {
 
 class MockServiceClient;
@@ -48,8 +51,8 @@ public:
     Channels services;
 
 
-    std::map<std::string, TopicSubscriberSystem::SubscriptionCallback> soss_subscription_callbacks;
-    std::map<std::string, ServiceClientSystem::RequestCallback> soss_request_callbacks;
+    std::map<std::string, is::core::TopicSubscriberSystem::SubscriptionCallback> is_subscription_callbacks;
+    std::map<std::string, is::core::ServiceClientSystem::RequestCallback> is_request_callbacks;
 
     std::map<std::string, std::vector<MockSubscriptionCallback> > mock_subscriptions;
     std::map<std::string, MockServiceCallback> mock_services;
@@ -75,7 +78,7 @@ Implementation& impl()
 } // anonymous namespace
 
 //==============================================================================
-class Publisher : public virtual soss::TopicPublisher
+class Publisher : public virtual is::core::TopicPublisher
 {
 public:
 
@@ -87,16 +90,16 @@ public:
     }
 
     bool publish(
-            const xtypes::DynamicData& message) override
+            const eprosima::xtypes::DynamicData& message) override
     {
         // Tests that we have advertised this topic
         const auto pub_it = impl().publishers.find(_topic);
         if (pub_it == impl().publishers.end() || pub_it->second.empty())
         {
             // We'll go ahead and throw an exception here, because this situation
-            // should be considered a bug in SOSS
+            // should be considered a bug in Integration Service
             throw std::runtime_error(
-                      "SOSS attempted to publish to a topic/message pair "
+                      "Integration Service attempted to publish to a topic/message pair "
                       "that it didn't advertise");
         }
 
@@ -120,7 +123,7 @@ public:
 };
 
 //==============================================================================
-class Server : public virtual soss::ServiceProvider
+class Server : public virtual is::core::ServiceProvider
 {
 public:
 
@@ -132,15 +135,15 @@ public:
     }
 
     void call_service(
-            const xtypes::DynamicData& request,
-            ServiceClient& client,
+            const eprosima::xtypes::DynamicData& request,
+            is::core::ServiceClient& client,
             std::shared_ptr<void> call_handle) override
     {
         bool only_service = impl().mock_services.count(_service) > 0;
         const auto it =
                 (only_service
-        ? impl().mock_services.find(_service)
-        : impl().mock_services.find(_service + "_" + request.type().name()));
+                ? impl().mock_services.find(_service)
+                : impl().mock_services.find(_service + "_" + request.type().name()));
 
         if (it == impl().mock_services.end())
         {
@@ -149,7 +152,7 @@ public:
                       + _service);
         }
 
-        xtypes::DynamicData response = it->second(request);
+        eprosima::xtypes::DynamicData response = it->second(request);
         client.receive_response(call_handle, response);
     }
 
@@ -157,14 +160,14 @@ public:
 };
 
 //==============================================================================
-class SystemHandle : public virtual soss::FullSystem
+class SystemHandle : public virtual is::core::FullSystem
 {
 public:
 
     bool configure(
-            const RequiredTypes&,
+            const is::core::RequiredTypes&,
             const YAML::Node&,
-            TypeRegistry&) override
+            is::core::TypeRegistry&) override
     {
         return true;
     }
@@ -185,18 +188,18 @@ public:
 
     bool subscribe(
             const std::string& topic_name,
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             SubscriptionCallback callback,
             const YAML::Node& /*configuration*/) override
     {
         impl().subscriptions[topic_name].insert(message_type.name());
-        impl().soss_subscription_callbacks[topic_name] = std::move(callback);
+        impl().is_subscription_callbacks[topic_name] = std::move(callback);
         return true;
     }
 
-    std::shared_ptr<TopicPublisher> advertise(
+    std::shared_ptr<is::core::TopicPublisher> advertise(
             const std::string& topic_name,
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             const YAML::Node& /*configuration*/) override
     {
         impl().publishers[topic_name].insert(message_type.name());
@@ -205,18 +208,18 @@ public:
 
     bool create_client_proxy(
             const std::string& service_name,
-            const xtypes::DynamicType& service_type,
+            const eprosima::xtypes::DynamicType& service_type,
             RequestCallback callback,
             const YAML::Node& /*configuration*/) override
     {
         impl().clients[service_name].insert(service_type.name());
-        impl().soss_request_callbacks[service_name] = std::move(callback);
+        impl().is_request_callbacks[service_name] = std::move(callback);
         return true;
     }
 
-    std::shared_ptr<ServiceProvider> create_service_proxy(
+    std::shared_ptr<is::core::ServiceProvider> create_service_proxy(
             const std::string& service_name,
-            const xtypes::DynamicType& service_type,
+            const eprosima::xtypes::DynamicType& service_type,
             const YAML::Node& /*configuration*/) override
     {
         impl().services[service_name].insert(service_type.name());
@@ -228,7 +231,7 @@ public:
 //==============================================================================
 bool publish_message(
         const std::string& topic,
-        const xtypes::DynamicData& msg)
+        const eprosima::xtypes::DynamicData& msg)
 {
     const auto it = impl().subscriptions.find(topic);
     if (it == impl().subscriptions.end() ||
@@ -237,8 +240,8 @@ bool publish_message(
         return false;
     }
 
-    const auto cb = impl().soss_subscription_callbacks.find(topic);
-    if (cb == impl().soss_subscription_callbacks.end())
+    const auto cb = impl().is_subscription_callbacks.find(topic);
+    if (cb == impl().is_subscription_callbacks.end())
     {
         return false;
     }
@@ -265,7 +268,7 @@ bool subscribe(
 
 //==============================================================================
 class MockServiceClient
-    : public virtual soss::ServiceClient,
+    : public virtual is::core::ServiceClient,
     public std::enable_shared_from_this<MockServiceClient>
 {
 public:
@@ -279,11 +282,11 @@ public:
 
     std::shared_future<xtypes::DynamicData> request(
             const std::string& topic,
-            const xtypes::DynamicData& request_msg,
+            const eprosima::xtypes::DynamicData& request_msg,
             std::chrono::nanoseconds retry)
     {
-        const auto it = impl().soss_request_callbacks.find(topic);
-        if (it == impl().soss_request_callbacks.end())
+        const auto it = impl().is_request_callbacks.find(topic);
+        if (it == impl().is_request_callbacks.end())
         {
             throw std::runtime_error(
                       "a callback could not be found for the requested service: "
@@ -318,7 +321,7 @@ public:
 
     void receive_response(
             std::shared_ptr<void> call_handle,
-            const xtypes::DynamicData& response) override
+            const eprosima::xtypes::DynamicData& response) override
     {
         std::unique_lock<std::mutex> lock(this->mutex);
         if (response_received)
@@ -352,7 +355,7 @@ public:
 //==============================================================================
 std::shared_future<xtypes::DynamicData> request(
         const std::string& topic,
-        const xtypes::DynamicData& request_msg,
+        const eprosima::xtypes::DynamicData& request_msg,
         std::chrono::nanoseconds retry)
 {
     const auto it = impl().clients.find(topic);
@@ -396,8 +399,9 @@ void serve(
     }
 }
 
-} // namespace mock
-} // namespace soss
+} //  namespace mock
+} //  namespace is
+} //  namespace eprosima
 
 //==============================================================================
-SOSS_REGISTER_SYSTEM("mock", soss::mock::SystemHandle)
+IS_REGISTER_SYSTEM("mock", eprosima::is::mock::SystemHandle)
