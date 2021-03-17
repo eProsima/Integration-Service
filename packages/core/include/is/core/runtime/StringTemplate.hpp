@@ -21,6 +21,7 @@
 
 #include <is/core/Message.hpp>
 #include <is/core/export.hpp>
+#include <is/core/runtime/FieldToString.hpp>
 
 #include <stdexcept>
 
@@ -81,7 +82,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~StringTemplate() = default;
+    ~StringTemplate();
 
     /**
      * @brief Compute the desired output string, given the input message.

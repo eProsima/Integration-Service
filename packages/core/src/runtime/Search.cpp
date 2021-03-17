@@ -17,12 +17,13 @@
  */
 
 #include <is/core/runtime/Search.hpp>
-#include <is/utils/Log.hpp>
 
 #include <algorithm>
 #include <cctype>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <iostream>
+#include <list>
+#include <map>
 
 #include <cstdlib>
 
@@ -40,15 +41,15 @@ namespace eprosima {
 namespace is {
 namespace core {
 
-constexpr const std::string HomeEnvVar = "HOME";
+constexpr char HomeEnvVar[] = "HOME";
 
 // TODO (@jamoralp): Add Logger debug/info traces here.
-class Implementation
+class Search::Implementation
 {
 public:
 
     Implementation(
-            const std::string& middleware)
+            const std::string& middleware = "")
         : _middleware(middleware)
     {
         _global_paths = static_default_global_paths;
@@ -99,7 +100,7 @@ public:
          * but set it to inactive by default.
          */
         _home_prefix.activate(false);
-        const char* home_path = getenv(HomeEnvVar.c_str());
+        const char* home_path = getenv(HomeEnvVar);
         if (home_path)
         {
             _home_prefix.add_path(home_path);
@@ -109,8 +110,14 @@ public:
     Implementation(
             const Implementation& /*other*/) = default;
 
+    Implementation& operator =(
+            const Implementation& other) = default;
+
     Implementation(
             Implementation&& /*other*/) = default;
+
+    Implementation& operator =(
+            Implementation&& other) = default;
 
     ~Implementation() = default;
 
@@ -156,10 +163,10 @@ public:
         }
 
         auto check_and_append =
-                [&](const std::filesystem::path test) -> bool
+                [&](const std::experimental::filesystem::path test) -> bool
                 {
                     checked_paths.push_back(test.string());
-                    return std::filesystem::exists(test);
+                    return std::experimental::filesystem::exists(test);
                 };
 
         for (const PathSet& middleware_prefixes :
@@ -179,7 +186,7 @@ public:
 
             for (const std::string& prefix_str : middleware_prefixes)
             {
-                const std::filesystem::path prefix(prefix_str);
+                const std::experimental::filesystem::path prefix(prefix_str);
 
                 if (!subdir.empty())
                 {
@@ -212,7 +219,7 @@ public:
 
             for (const std::string& is_prefix_str : is_prefixes)
             {
-                const filesystem::path is_prefix(is_prefix_str);
+                const std::experimental::filesystem::path is_prefix(is_prefix_str);
 
                 if (!subdir.empty())
                 {
@@ -255,10 +262,10 @@ public:
         const std::string filename = _middleware + ".mix";
 
         auto check_and_append =
-                [&](const std::filesystem::path test) -> bool
+                [&](const std::experimental::filesystem::path test) -> bool
                 {
                     checked_paths.push_back(test.string());
-                    return std::filesystem::exists(test);
+                    return std::experimental::filesystem::exists(test);
                 };
 
         for (const PathSet& middleware_prefixes :
@@ -274,7 +281,7 @@ public:
 
             for (const std::string& prefix_str : middleware_prefixes)
             {
-                const filesystem::path prefix(prefix_str);
+                const std::experimental::filesystem::path prefix(prefix_str);
                 if (check_and_append(prefix / filename))
                 {
                     return checked_paths.back();
@@ -296,7 +303,7 @@ public:
 
             for (const std::string& is_prefix_str : is_prefixes)
             {
-                const std::filesystem::path is_prefix(is_prefix_str);
+                const std::experimental::filesystem::path is_prefix(is_prefix_str);
 
                 {
                     if (check_and_append(is_prefix / filename))
@@ -327,7 +334,7 @@ public:
     void search_relative_to_config(
             bool toggle)
     {
-        _global_paths.config_file_prefix.activate(toogle);
+        _global_paths.config_file_prefix.activate(toggle);
     }
 
     void search_relative_to_home(
@@ -353,7 +360,23 @@ public:
     void search_middleware_prefixes(
             bool toggle)
     {
-        _global_paths.get_cli_middleware_prefixes(_middleware).active = toggle;
+        _global_paths.get_cli_middleware_prefixes(_middleware).activate(toggle);
+    }
+
+    static const std::string to_env_format(
+            const std::string& str)
+    {
+        std::string env_str(str);
+
+        std::transform(env_str.begin(), env_str.end(), env_str.begin(),
+                [](unsigned char c)
+                {
+                    return std::toupper(c);
+                });
+
+        std::replace(env_str.begin(), env_str.end(), '-', '_');
+
+        return env_str;
     }
 
 private:
@@ -398,9 +421,9 @@ private:
             {
                 utils::Logger logger("is::core::Search::Implementation::PathSet");
 
-                loger << Logger::Level::ERROR
-                      << "Attempting to add a prefix path that is not an absolute path: '"
-                      << path << "'." << std::endl;
+                logger << utils::Logger::Level::ERROR
+                       << "Attempting to add a prefix path that is not an absolute path: '"
+                       << path << "'." << std::endl;
 
                 return;
             }
@@ -576,7 +599,7 @@ private:
         PathSet& get_cli_middleware_prefixes(
                 const std::string& middleware)
         {
-            auto& it = cli_middleware_prefixes.find(middleware);
+            auto it = cli_middleware_prefixes.find(middleware);
             if (it != cli_middleware_prefixes.end())
             {
                 return it->second;
@@ -611,29 +634,6 @@ private:
          */
         PathSet config_file_prefix;
     };
-
-    /**
-     * @brief Convert a given string to environment format.
-     *
-     * @param[in] str The string to be converted.
-     *
-     * @returns A properly formatted string to the env format.
-     */
-    static const std::string to_env_format(
-            const std::string& str)
-    {
-        std::string env_str(str);
-
-        std::transform(env_str.begin(), env_str.end(), env_str.begin(),
-                [](unsigned char c)
-                {
-                    return std::toupper(c);
-                });
-
-        std::replace(env_str.begin(), env_str.end(), '-', '_');
-
-        return env_str;
-    }
 
     /**
      * @brief Get a list of paths which are present in a certain environment variable.
@@ -688,7 +688,7 @@ private:
     /**
      * Static copy of the path initializer, shared by all Search instances.
      */
-    static GlobalPathInitializer _static_global_path_initializer;
+    static GlobalPathInitializer static_global_path_initializer;
 
     /**
      * This is the static copy of the global paths,
@@ -740,21 +740,21 @@ Search::Implementation::static_global_path_initializer;
 //==============================================================================
 Search::Search(
         const std::string& middleware_name)
-    : _pimpl(new Implementation(middleware_name))
+    : _pimpl(new Search::Implementation(middleware_name))
 {
 }
 
 //==============================================================================
 Search::Search(
         const Search& other)
-    : _pimpl(new Implementation(*other._pimpl))
+    : _pimpl(new Search::Implementation(*other._pimpl))
 {
 }
 
 //==============================================================================
 Search::Search(
         Search&& other)
-    : _pimpl(new Implementation(std::move(*other._pimpl)))
+    : _pimpl(new Search::Implementation(std::move(*other._pimpl)))
 {
 }
 
@@ -775,10 +775,16 @@ Search& Search::operator =(
 }
 
 //==============================================================================
+Search::~Search()
+{
+    _pimpl.reset();
+}
+
+//==============================================================================
 void Search::add_cli_is_prefix(
         const std::string& path)
 {
-    _pimpl->add_cli_is_prefix(path);
+    Search::Implementation::add_cli_is_prefix(path);
 }
 
 //==============================================================================
@@ -786,14 +792,14 @@ void Search::add_cli_middleware_prefix(
         const std::string& middleware,
         const std::string& path)
 {
-    _pimpl->add_cli_middleware_prefix(middleware, path);
+    Search::Implementation::add_cli_middleware_prefix(middleware, path);
 }
 
 //==============================================================================
 void Search::set_config_file_directory(
         const std::string& path)
 {
-    _pimpl->set_config_file_directory(path);
+    Search::Implementation::set_config_file_directory(path);
 }
 
 //==============================================================================
@@ -845,7 +851,7 @@ const std::string Search::find_generic_mix(
 
 //==============================================================================
 const std::string Search::find_file(
-        std::string filename,
+        const std::string& filename,
         const std::string& subdir,
         std::vector<std::string>* checked_paths) const
 {
@@ -862,7 +868,7 @@ const std::string Search::find_file(
 }
 
 //==============================================================================
-const std::string find_middleware_mix(
+const std::string Search::find_middleware_mix(
         std::vector<std::string>* checked_paths) const
 {
     std::vector<std::string> _checked_paths;
@@ -914,6 +920,12 @@ Search& Search::ignore_middleware_prefixes(
 {
     _pimpl->search_middleware_prefixes(!toggle);
     return *this;
+}
+
+const std::string Search::to_env_format(
+        const std::string& str)
+{
+    return Search::Implementation::to_env_format(str);
 }
 
 } //  namespace core

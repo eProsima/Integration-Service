@@ -20,6 +20,7 @@
 #define _IS_CORE_RUNTIME_SEARCH_HPP_
 
 #include <is/core/export.hpp>
+#include <is/utils/Log.hpp>
 
 #include <memory>
 #include <set>
@@ -132,7 +133,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~Search() = default;
+    ~Search();
 
     /**
      * @brief Used by the Instance class to set *Integration Service*
@@ -343,6 +344,16 @@ public:
      */
     Search& ignore_middleware_prefixes(
             bool toggle = true);
+
+    /**
+     * @brief Convert a given string to environment format.
+     *
+     * @param[in] str The string to be converted.
+     *
+     * @returns A properly formatted string to the env format.
+     */
+    static const std::string to_env_format(
+            const std::string& str);
 
 private:
 

@@ -19,7 +19,7 @@
 #include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
 
 #include <cassert>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <iostream>
 
 #ifdef WIN32
@@ -47,7 +47,7 @@ namespace eprosima {
 namespace is {
 namespace core {
 
-class Mix::Implementation
+class MiddlewareInterfaceExtension::Implementation
 {
 public:
 
@@ -59,7 +59,7 @@ public:
         , _logger("is::core::Mix")
     {
         assert(_directory.is_absolute());
-        assert(std::filesystem::is_directory(_directory));
+        assert(std::experimental::filesystem::is_directory(_directory));
     }
 
     Implementation(
@@ -70,10 +70,10 @@ public:
 
     ~Implementation() = default;
 
-    bool load() const
+    bool load()
     {
         bool result = true;
-        const YAML::Node& dl = _root[DYNAMIC_LIB_EXTENSION];
+        const YAML::Node& dl = _mix_content[DYNAMIC_LIB_EXTENSION];
 
         if (dl.IsSequence())
         {
@@ -104,16 +104,16 @@ private:
      */
     bool load_if_exists(
             const std::string& path,
-            const std::filesystem::path& relative_to) const
+            const std::experimental::filesystem::path& relative_to)
     {
-        filesystem::path fpath(path);
+        std::experimental::filesystem::path fpath(path);
 
         if (fpath.is_relative())
         {
             fpath = relative_to / fpath;
         }
 
-        if (filesystem::exists(path))
+        if (std::experimental::filesystem::exists(path))
         {
             void* handle = OPEN_DYNAMIC_LIB(fpath.c_str());
             auto loading_error = GET_LAST_ERROR();
@@ -150,14 +150,14 @@ private:
      */
 
     YAML::Node _mix_content;
-    std::filesystem::path _directory;
+    std::experimental::filesystem::path _directory;
     utils::Logger _logger;
 
 };
 
 //==============================================================================
-Mix::Mix(
-        YAML::Node mix_content,
+MiddlewareInterfaceExtension::MiddlewareInterfaceExtension(
+        YAML::Node&& mix_content,
         const std::string& absolute_file_directory_path)
     : _pimpl(new Implementation(
                 std::move(mix_content),
@@ -166,38 +166,44 @@ Mix::Mix(
 }
 
 //==============================================================================
-Mix::Mix(
+MiddlewareInterfaceExtension::MiddlewareInterfaceExtension(
         MiddlewareInterfaceExtension&& other)
     : _pimpl(std::move(other._pimpl))
 {
 }
 
 //==============================================================================
-Mix Mix::from_file(
-        const std::string& filename)
+MiddlewareInterfaceExtension::~MiddlewareInterfaceExtension()
 {
-    auto parentpath = std::filesystem::path(filename).parent_path();
-    return Mix(YAML::LoadFile(filename), parentpath.string());
+    _pimpl.reset();
 }
 
 //==============================================================================
-Mix Mix::from_string(
+MiddlewareInterfaceExtension MiddlewareInterfaceExtension::from_file(
+        const std::string& filename)
+{
+    auto parentpath = std::experimental::filesystem::path(filename).parent_path();
+    return MiddlewareInterfaceExtension(YAML::LoadFile(filename), parentpath.string());
+}
+
+//==============================================================================
+MiddlewareInterfaceExtension MiddlewareInterfaceExtension::from_string(
         const std::string& mix_text,
         const std::string& absolute_file_directory_path)
 {
-    return Mix(YAML::Load(text), absolute_file_directory_path);
+    return MiddlewareInterfaceExtension(YAML::Load(mix_text), absolute_file_directory_path);
 }
 
 //==============================================================================
-Mix Mix::from_node(
-        YAML::Node node,
+MiddlewareInterfaceExtension MiddlewareInterfaceExtension::from_node(
+        YAML::Node&& node,
         const std::string& absolute_file_directory_path)
 {
-    return Mix(std::move(node), absolute_file_directory_path);
+    return MiddlewareInterfaceExtension(std::move(node), absolute_file_directory_path);
 }
 
 //==============================================================================
-bool Mix::load() const
+bool MiddlewareInterfaceExtension::load()
 {
     return _pimpl->load();
 }

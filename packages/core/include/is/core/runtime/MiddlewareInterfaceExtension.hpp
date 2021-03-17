@@ -84,7 +84,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~MiddlewareInterfaceExtension() = default;
+    ~MiddlewareInterfaceExtension();
 
     /**
      * @brief Create a MiddlewareInterfaceExtension representation from a *mix* file path.
@@ -133,7 +133,7 @@ public:
      * @returns `true` if the dynamic libraries were loaded successfully, or
      *          `false` otherwise.
      */
-    bool load() const;
+    bool load();
 
 private:
 

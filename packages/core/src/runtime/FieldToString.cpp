@@ -30,9 +30,9 @@ class FieldToString::Implementation
 public:
 
     /**
-     * @brief Get a const reference to this Factory class instance.
+     * @brief Get a reference to this Factory class instance.
      */
-    static const Implementation& instance()
+    static Implementation& instance()
     {
         static Implementation instance;
         return instance;
@@ -41,14 +41,14 @@ public:
     const std::string to_string(
             eprosima::xtypes::ReadableDynamicDataRef field,
             const std::string& field_name,
-            const std::string& details) const
+            const std::string& details)
     {
         const std::string& type =
                 (field.type().name().find("std::string") != std::string::npos)
                 ? "std::string"
                 : field.type().name();
 
-        _logger << Logger::Level::DEBUG << "Trying to convert type '" << type
+        _logger << utils::Logger::Level::DEBUG << "Trying to convert type '" << type
                 << "' to string" << std::endl;
         const auto it = _conversions.find(type);
 
@@ -57,7 +57,7 @@ public:
             return it->second(field);
         }
 
-        _logger << Logger::Level::ERROR << "Failed convert type '" << type
+        _logger << utils::Logger::Level::ERROR << "Failed convert type '" << type
                 << "' to string" << std::endl;
 
         throw UnknownFieldToStringCast(type, field_name, details);
@@ -127,8 +127,24 @@ private:
 //==============================================================================
 FieldToString::FieldToString(
         const std::string& usage_details)
-    : _details(usage_details)
-    , _pimpl(new Implementation::instance())
+    : _pimpl(Implementation::instance())
+    , _details(usage_details)
+{
+}
+
+//==============================================================================
+FieldToString::FieldToString(
+        const FieldToString& other)
+    : _pimpl(Implementation::instance())
+    , _details(other._details)
+{
+}
+
+//==============================================================================
+FieldToString::FieldToString(
+        FieldToString&& other)
+    : _pimpl(Implementation::instance())
+    , _details(std::move(other._details))
 {
 }
 
@@ -137,7 +153,7 @@ const std::string FieldToString::to_string(
         eprosima::xtypes::ReadableDynamicDataRef field,
         const std::string& field_name) const
 {
-    return _pimpl->to_string(field, field_name, _details);
+    return _pimpl.to_string(field, field_name, _details);
 }
 
 //==============================================================================

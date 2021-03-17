@@ -20,6 +20,8 @@
 #define _IS_CORE_RUNTIME_FIELDTOSTRING_HPP_
 
 #include <is/core/Message.hpp>
+#include <is/utils/Log.hpp>
+
 
 #include <stdexcept>
 
@@ -46,6 +48,22 @@ public:
      */
     FieldToString(
             const std::string& usage_details);
+
+    /**
+     * @brief Copy Constructor.
+     *
+     * @param[in] other The instance to be copied.
+     */
+    FieldToString(
+            const FieldToString& other);
+
+    /**
+     * @brief Move Constructor.
+     *
+     * @param[in] other The instance to be moved.
+     */
+    FieldToString(
+            FieldToString&& other);
 
     /**
      * @brief Destructor.
@@ -99,7 +117,7 @@ private:
      * Class members.
      */
 
-    std::unique_ptr<Implementation> _pimpl;
+    Implementation& _pimpl;
 
     /**
      * If an unknown conversion is requested, this string will get passed along
