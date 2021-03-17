@@ -368,8 +368,10 @@ bool add_topic_or_service_config(
             }
             else
             {
-                set_type(config, request_type.as<std::string>());
-                set_reply_type(config, reply_type.as<std::string>());
+                std::string request_type_str = request_type.as<std::string>();
+                set_type(config, std::move(request_type_str));
+                std::string reply_type_str = reply_type.as<std::string>();
+                set_reply_type(config, std::move(reply_type_str));
             }
         }
         else
@@ -382,7 +384,8 @@ bool add_topic_or_service_config(
     }
     else
     {
-        set_type(config, type.as<std::string>());
+        std::string type_str = type.as<std::string>();
+        set_type(config, std::move(type_str));
     }
 
     const YAML::Node& route = node["route"];
