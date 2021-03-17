@@ -16,7 +16,6 @@
  */
 
 #include <is/core/runtime/StringTemplate.hpp>
-#include <is/core/runtime/FieldToString.hpp>
 
 #include <vector>
 
@@ -66,6 +65,12 @@ public:
         }
     }
 
+    Implementation(
+            const Implementation& /*other*/) = default;
+
+    Implementation(
+            Implementation&& /*other*/) = default;
+
     ~Implementation() = default;
 
     const std::string compute_string(
@@ -74,10 +79,10 @@ public:
         std::string result;
         if (!_components.empty())
         {
-            result = components[0];
+            result = _components[0];
         }
 
-        SubstitutionMap::const_iterator substitute_it = substitutions.begin();
+        SubstitutionMap::const_iterator substitute_it = _substitutions.begin();
         for (std::size_t i = 1; i < _components.size(); ++i)
         {
             if (substitute_it != _substitutions.end() && substitute_it->first == i)
@@ -88,7 +93,7 @@ public:
 
                 if (!type.has_member(field_name))
                 {
-                    throw UnavailableMessageField(field_name, converter.details);
+                    throw UnavailableMessageField(field_name, _converter.details());
                 }
 
                 xtypes::ReadableDynamicDataRef data = message[field_name];
@@ -101,6 +106,16 @@ public:
         }
 
         return result;
+    }
+
+    const FieldToString& converter() const
+    {
+        return _converter;
+    }
+
+    FieldToString& converter()
+    {
+        return _converter;
     }
 
 private:
@@ -142,19 +157,25 @@ StringTemplate::StringTemplate(
 //==============================================================================
 StringTemplate::StringTemplate(
         const StringTemplate& other)
-    : _pimpl(new Implementation(*other.pimpl))
+    : _pimpl(new Implementation(*other._pimpl))
 {
 }
 
 //==============================================================================
 StringTemplate::StringTemplate(
         StringTemplate&& other)
-    : _pimpl(new Implementation(std::move(*other.pimpl)))
+    : _pimpl(new Implementation(std::move(*other._pimpl)))
 {
 }
 
 //==============================================================================
-std::string StringTemplate::compute_string(
+StringTemplate::~StringTemplate()
+{
+    _pimpl.reset();
+}
+
+//==============================================================================
+const std::string StringTemplate::compute_string(
         const eprosima::xtypes::DynamicData& message) const
 {
     return _pimpl->compute_string(message);
@@ -163,13 +184,13 @@ std::string StringTemplate::compute_string(
 //==============================================================================
 std::string& StringTemplate::usage_details()
 {
-    return _pimpl->_converter.details();
+    return _pimpl->converter().details();
 }
 
 //==============================================================================
 const std::string& StringTemplate::usage_details() const
 {
-    return _pimpl->_converter.details();
+    return _pimpl->converter().details();
 }
 
 //==============================================================================

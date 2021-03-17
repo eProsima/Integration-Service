@@ -19,6 +19,7 @@
 #define _IS_CORE_UTILS_LOG_HPP_
 
 #include <string>
+#include <iostream>
 #include <is/core/export.hpp>
 
 namespace eprosima {
@@ -52,12 +53,25 @@ public:
     };
 
     /**
+     * @class CurrentLevelStatus
+     *        Enumeration class which stores all the possible statuses
+     *        for the current operation in the logger.
+     */
+    enum class CurrentLevelStatus : uint8_t
+    {
+        NON_SPECIFIED,
+        SPECIFIED,
+        SPECIFIED_BUT_HIDDEN
+    };
+
+    /**
      * @brief Default constructor.
      */
     Logger() = default;
 
     /**
      * @brief Constructor.
+     *
      * @param[in] header The user-defined headed that will be printed
      *            at the begginning of every logger's message.
      */
@@ -85,7 +99,9 @@ public:
      * @brief Operator << overload for a certain logging Level.
      *        Sets the logging level for the char/string messages
      *        streamed aferwards, until std::endl is received.
+     *
      * @param[in] level The logging Level of a new upcoming message.
+     *
      * @returns A reference to this object.
      */
     Logger& operator <<(
@@ -93,7 +109,9 @@ public:
 
     /**
      * @brief Operator << overload for a certain message.
+     *
      * @param[in] message The message to be printed to stdout.
+     *
      * @returns A reference to this object.
      */
     Logger& operator <<(
@@ -101,16 +119,55 @@ public:
 
     /**
      * @brief Operator << overload for a certain message.
+     *
      * @param[in] message The message to be printed to stdout.
+     *
      * @returns A reference to this object.
      */
     Logger& operator <<(
             const std::string& message);
 
     /**
+     * @brief Operator << overload for arithmetic types.
+     *
+     * @param[in] value A const reference to the numeric value.
+     *
+     * @returns A reference to this object.
+     */
+    template<typename T>
+    Logger& operator <<(
+            const T& value)
+    {
+        switch (_status)
+        {
+            case CurrentLevelStatus::NON_SPECIFIED:
+            {
+                // By default, INFO level will be used if the user has not specified it.
+                operator <<(Level::INFO);
+                return operator <<(value);
+                break;
+            }
+            case CurrentLevelStatus::SPECIFIED:
+            {
+                std::cout << value;
+                break;
+            }
+            case CurrentLevelStatus::SPECIFIED_BUT_HIDDEN:
+            {
+                // Do nothing
+                break;
+            }
+        }
+
+        return *this;
+    }
+
+    /**
      * @brief Operator << overload for ostream function pointer.
      *        Useful for streaming special operations, such as std::endl.
+     *
      * @param[in] func Pointer to std::ostream function.
+     *
      * @returns A reference to this object.
      */
     Logger& operator <<(
@@ -148,7 +205,7 @@ private:
 
     const std::string _header;
     Level _max_level;
-    bool _level_printed;
+    CurrentLevelStatus _status;
 };
 
 } //  namespace utils

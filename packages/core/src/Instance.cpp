@@ -15,14 +15,7 @@
  * limitations under the License.
  *
  */
-
-#include <is/core/Config.hpp>
 #include <is/core/Instance.hpp>
-#include <is/core/runtime/Search.hpp>
-#include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
-#include <is/core/systemhandle/RegisterSystem.hpp>
-#include <is/utils/Log.hpp>
-
 
 #include <yaml-cpp/yaml.h>
 
@@ -30,7 +23,7 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <iostream>
 #include <thread>
 
@@ -243,6 +236,8 @@ public:
 
 private:
 
+    friend class Instance::Implementation;
+
     void _finished()
     {
         {
@@ -315,9 +310,9 @@ public:
         else
         {
             _config_file = config_file;
-            const auto abs_config_path = std::filesystem::absolute(config_file);
+            const auto abs_config_path = std::experimental::filesystem::absolute(config_file);
 
-            if (std::filesystem::exists(abs_config_path))
+            if (std::experimental::filesystem::exists(abs_config_path))
             {
                 Search::set_config_file_directory(abs_config_path.parent_path().string());
             }
@@ -369,7 +364,7 @@ public:
 
         ArgumentStack arg_stack;
 
-        auto parse_middleware_prefix_paths =
+        std::function<std::pair<std::string, std::string>(const std::string&)> parse_middleware_prefix_paths =
                 [&](const std::string& arg) -> std::pair<std::string, std::string>
                 {
                     if (!arg_stack.begun)
@@ -407,14 +402,14 @@ public:
                     return std::make_pair(arg_stack.current_flag, arg);
                 };
 
-        boost_program_options::variables_map vm;
-        boost_program_options::store(boost::program_options::command_line_parser(argc, argv)
+        boost::program_options::variables_map vm;
+        boost::program_options::store(boost::program_options::command_line_parser(argc, argv)
                 .options(desc)
                 .positional(p)
                 .extra_parser(parse_middleware_prefix_paths)
                 .run(), vm);
 
-        boost_program_options::notify(vm);
+        boost::program_options::notify(vm);
 
         if (vm.count("help") > 0)
         {
@@ -466,7 +461,7 @@ public:
         }
 
         _config_file = vm["config-file"].as<std::string>();
-        if (!std::filesystem::exists(_config_file))
+        if (!std::experimental::filesystem::exists(_config_file))
         {
             std::cerr << "The requested config-file does not exist: " << _config_file
                       << std::endl;
@@ -474,7 +469,8 @@ public:
         }
 
         Search::set_config_file_directory(
-            std::filesystem::absolute(std::filesystem::path(_config_file).parent_path()).string());
+            std::experimental::filesystem::absolute(std::experimental::filesystem::path(
+                _config_file).parent_path()).string());
 
         return true;
     }
@@ -543,7 +539,7 @@ private:
     std::atomic_bool _run_instance;
     std::atomic_int _early_return_code;
 
-    std::weak_ptr<InstanceHandle::Implementation> _run_handle;
+    std::weak_ptr<InstanceHandle::Implementation> _run_handle; // TODO(@jamoralp): think of a better way to do this.
     std::mutex _run_mutex;
 
     utils::Logger _logger;
@@ -556,6 +552,8 @@ InstanceHandle::~InstanceHandle()
     {
         quit().wait();
     }
+
+    _pimpl.reset();
 }
 
 //==============================================================================
@@ -565,7 +563,7 @@ bool InstanceHandle::running() const
 }
 
 //==============================================================================
-inline InstanceHandle::operator bool() const
+InstanceHandle::operator bool() const
 {
     return running();
 }
@@ -662,6 +660,12 @@ Instance::Instance(
 }
 
 //==============================================================================
+Instance::~Instance()
+{
+    _pimpl.reset();
+}
+
+//==============================================================================
 InstanceHandle Instance::run()
 {
     return _pimpl->run();
@@ -670,29 +674,29 @@ InstanceHandle Instance::run()
 } //  namespace core
 
 //==============================================================================
-InstanceHandle run_instance(
+core::InstanceHandle run_instance(
         int argc,
         char* argv[])
 {
-    return Instance(argc, argv).run();
+    return core::Instance(argc, argv).run();
 }
 
 //==============================================================================
-InstanceHandle run_instance(
+core::InstanceHandle run_instance(
         const YAML::Node& config_node,
         const std::vector<std::string>& is_prefixes,
-        const MiddlewarePrefixPathMap& middleware_prefixes)
+        const core::MiddlewarePrefixPathMap& middleware_prefixes)
 {
-    return Instance(config_node, is_prefixes, middleware_prefixes).run();
+    return core::Instance(config_node, is_prefixes, middleware_prefixes).run();
 }
 
 //==============================================================================
-InstanceHandle run_instance(
+core::InstanceHandle run_instance(
         const std::string& config_file_path,
         const std::vector<std::string>& is_prefixes,
-        const MiddlewarePrefixPathMap& middleware_prefixes)
+        const core::MiddlewarePrefixPathMap& middleware_prefixes)
 {
-    return Instance(config_file_path, is_prefixes, middleware_prefixes).run();
+    return core::Instance(config_file_path, is_prefixes, middleware_prefixes).run();
 }
 
 } //  namespace is

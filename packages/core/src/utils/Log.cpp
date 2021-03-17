@@ -26,7 +26,7 @@ Logger::Logger(
         const std::string& header)
     : _header(header)
     , _max_level(Level::INFO) // TODO (@jamoralp): make this configurable by the user and by CMAKE_BUILD_TYPE flag
-    , _level_printed(false)
+    , _status(CurrentLevelStatus::NON_SPECIFIED)
 {
 }
 
@@ -78,7 +78,11 @@ Logger& Logger::operator <<(
         }
 
         std::cout << " ";
-        _level_printed = true;
+        _status = CurrentLevelStatus::SPECIFIED;
+    }
+    else
+    {
+        _status = CurrentLevelStatus::SPECIFIED_BUT_HIDDEN;
     }
 
     return *this;
@@ -88,22 +92,32 @@ Logger& Logger::operator <<(
 Logger& Logger::operator <<(
         const char* message)
 {
-    if (!_level_printed)
+    switch (_status)
     {
-        // By default, INFO level will be used if the user has not specified it.
-        operator <<(Level::INFO);
-    }
-
-    if (_level_printed)
-    {
-        std::cout << message;
+        case CurrentLevelStatus::NON_SPECIFIED:
+        {
+            // By default, INFO level will be used if the user has not specified it.
+            operator <<(Level::INFO);
+            return operator <<(message);
+            break;
+        }
+        case CurrentLevelStatus::SPECIFIED:
+        {
+            std::cout << message;
+            break;
+        }
+        case CurrentLevelStatus::SPECIFIED_BUT_HIDDEN:
+        {
+            // Do nothing
+            break;
+        }
     }
 
     return *this;
 }
 
 //==============================================================================
-inline Logger& Logger::operator <<(
+Logger& Logger::operator <<(
         const std::string& message)
 {
     return operator <<(message.c_str());
@@ -115,53 +129,66 @@ Logger& Logger::operator <<(
         (*func)(
             std::basic_ostream<char, std::char_traits<char> >&))
 {
-    if (_level_printed)
+    switch (_status)
     {
-        std::cout << black;
-        _level_printed = false;
+        case CurrentLevelStatus::NON_SPECIFIED:
+        {
+            // Do nothing
+            break;
+        }
+        case CurrentLevelStatus::SPECIFIED:
+        {
+            std::cout << black;
+            std::cout << func;
+            [[fallthrough]];
+        }
+        case CurrentLevelStatus::SPECIFIED_BUT_HIDDEN:
+        {
+            _status = CurrentLevelStatus::NON_SPECIFIED;
+            break;
+        }
     }
 
-    std::cout << func;
     return *this;
 }
 
 //==============================================================================
-inline std::ostream& Logger::bold_on(
+std::ostream& Logger::bold_on(
         std::ostream& os)
 {
     return os << "\033[1m";
 }
 
 //==============================================================================
-inline std::ostream& Logger::bold_off(
+std::ostream& Logger::bold_off(
         std::ostream& os)
 {
     return os << "\033[0m";
 }
 
 //==============================================================================
-inline std::ostream& Logger::black(
+std::ostream& Logger::black(
         std::ostream& os)
 {
     return os << "\033[30m";
 }
 
 //==============================================================================
-inline std::ostream& Logger::red(
+std::ostream& Logger::red(
         std::ostream& os)
 {
     return os << "\033[31m";
 }
 
 //==============================================================================
-inline std::ostream& Logger::green(
+std::ostream& Logger::green(
         std::ostream& os)
 {
     return os << "\033[32m";
 }
 
 //==============================================================================
-inline std::ostream& Logger::yellow(
+std::ostream& Logger::yellow(
         std::ostream& os)
 {
     return os << "\033[33m";

@@ -20,6 +20,8 @@
 #define _IS_CORE_INTERNAL_CONFIG_HPP_
 
 #include <is/core/systemhandle/RegisterSystem.hpp>
+#include <is/core/runtime/Search.hpp>
+#include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -108,6 +110,18 @@ struct ServiceRoute
  */
 struct TopicInfo
 {
+    TopicInfo() = default;
+
+    TopicInfo(
+            const std::string& m_name,
+            const std::string& m_type,
+            const std::string& m_reply_type = "")
+        : name(m_name)
+        , type(m_type)
+        , reply_type(m_reply_type)
+    {
+    }
+
     std::string name;
     std::string type; //  AKA request_type for Services with request + reply types.
     std::string reply_type; //  Only used for Services with reply_type.

@@ -28,22 +28,6 @@ cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 # TODO (@jamoralp): which version do we want to release?
 project(is-core VERSION "0.1.0" LANGUAGES CXX)
 
-if(NOT is_CONFIGURE_AS_SUBPROJECT)
-
-  if(NOT CMAKE_CXX_STANDARD)
-    # TODO(MXG): Remove this block and use target_compile_features(~)
-    # instead when we no longer need to support Ubuntu 16.04.
-    set(CMAKE_CXX_STANDARD 17)
-  endif()
-
-  if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
-  endif()
-
-  include(GNUInstallDirs)
-
-endif()
-
 ###############################################################################
 # Load external CMake Modules.
 ###############################################################################
@@ -114,6 +98,7 @@ target_compile_options(${PROJECT_NAME}
   )
 
 # Generate the export macro header
+include(GNUInstallDirs)
 include(cmake/is_generate_export_header.cmake)
 is_generate_export_header(core)
 
@@ -148,7 +133,8 @@ add_executable(integration-service src/integration-service.cpp)
 
 target_link_libraries(integration-service
   PRIVATE
-    ${PROJECT_NAME}
+    is-core
+    #${PROJECT_NAME}
 )
 
 ###############################################################################
@@ -245,4 +231,5 @@ install(
 ###############################################################################
 # Add the Integration Service Core testing subdirectory
 ###############################################################################
+#TODO (@jamoralp): test compilation conditioned to future option IS_BUILD_TESTS
 add_subdirectory(test)

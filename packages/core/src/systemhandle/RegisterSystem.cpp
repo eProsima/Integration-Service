@@ -49,7 +49,7 @@ SystemHandleInfo::SystemHandleInfo(
 }
 
 //==============================================================================
-inline SystemHandleInfo::operator bool () const
+SystemHandleInfo::operator bool () const
 {
     return static_cast<bool>(handle);
 }
@@ -123,10 +123,10 @@ namespace detail {
 
 //==============================================================================
 void register_system_handle_factory(
-        const std::string& middleware,
+        std::string&& middleware,
         SystemHandleFactoryBuilder&& handle_factory)
 {
-    internal::Register::insert(middleware, std::move(handle_factory));
+    internal::Register::insert(std::move(middleware), std::move(handle_factory));
 }
 
 } //  namespace detail

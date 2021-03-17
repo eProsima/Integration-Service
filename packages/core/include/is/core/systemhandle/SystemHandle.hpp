@@ -33,6 +33,14 @@ namespace eprosima {
 namespace is {
 namespace core {
 
+/**
+ * @brief Forward declaration.
+ */
+struct RequiredTypes;
+
+/**
+ * @brief Map used to store the DynamicType name mapped to its representation.
+ */
 using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
 
 /**
@@ -146,7 +154,7 @@ public:
      *
      * @returns `true` if the SystemHandle is under normal behaviour, or `false` otherwise.
      */
-    inline operator bool() const
+    operator bool() const
     {
         return okay();
     }
