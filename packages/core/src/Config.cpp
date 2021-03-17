@@ -17,8 +17,6 @@
  */
 
 #include <is/core/Config.hpp>
-#include <is/core/runtime/Search.hpp>
-#include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
 
 #include <iostream>
 
@@ -177,7 +175,7 @@ bool add_types(
     {
         for (auto& path : node["types"]["paths"])
         {
-            Config::logger << utils::Loger::Level::DEBUG
+            Config::logger << utils::Logger::Level::DEBUG
                            << "Adding path '" << path.as<std::string>()
                            << "' to the IDL file database." << std::endl;
 
@@ -214,7 +212,7 @@ bool add_types(
             }
             if (types.empty())
             {
-                Config::logger << utils::Loger::Level::ERROR
+                Config::logger << utils::Logger::Level::ERROR
                                << "Parsing the IDL number '" << idl_index
                                << "' placed in the YAML config. "
                                << "The parsing was successful but no types were found."
@@ -222,7 +220,7 @@ bool add_types(
             }
             else
             {
-                Config::logger << utils::Loger::Level::DEBUG
+                Config::logger << utils::Logger::Level::DEBUG
                                << "Parsing the IDL number '" << idl_index
                                << "' placed in the YAML config. "
                                << "The parsing was successful."
@@ -231,7 +229,7 @@ bool add_types(
         }
         else
         {
-            Config::logger << utils::Loger::Level::ERROR
+            Config::logger << utils::Logger::Level::ERROR
                            << "Error parsing the IDL number '" << idl_index
                            << "' placed in the YAML config. "
                            << "Please, review and fix your IDL specification syntax."
@@ -264,7 +262,7 @@ bool add_named_route(
         }
 
         Config::logger << utils::Logger::Level::DEBUG
-                       << "Add topic route '" << name "'." << std::endl;
+                       << "Add topic route '" << name << "'." << std::endl;
 
         inserted = topic_routes.insert(std::make_pair(name, *route)).second;
     }
@@ -281,7 +279,7 @@ bool add_named_route(
         }
 
         Config::logger << utils::Logger::Level::DEBUG
-                       << "Add service route '" << name "'." << std::endl;
+                       << "Add service route '" << name << "'." << std::endl;
 
         inserted = service_routes.insert(std::make_pair(name, *route)).second;
     }
@@ -344,9 +342,9 @@ bool add_topic_or_service_config(
         const YAML::Node& node,
         const std::map<std::string, RouteType>& predefined_routes,
         std::map<std::string, ConfigType>& config_map,
-        std::function<void(ConfigType&, std::string)> set_type,
-        std::function<void(ConfigType&, std::string)> set_reply_type,
-        std::function<void(ConfigType&, RouteType)> set_route,
+        std::function<void(ConfigType&, std::string &&)> set_type,
+        std::function<void(ConfigType&, std::string &&)> set_reply_type,
+        std::function<void(ConfigType&, const RouteType&)> set_route,
         std::function<std::unique_ptr<RouteType>(const YAML::Node&)> parse_route)
 {
     bool valid = true;
@@ -427,7 +425,7 @@ bool add_topic_or_service_config(
             }
             else
             {
-                set_route(config, std::move(*route_config));
+                set_route(config, *route_config);
             }
         }
     }
@@ -447,22 +445,22 @@ bool add_topic_or_service_config(
         {
             for (YAML::const_iterator it = remap.begin(); it != remap.end(); ++it)
             {
-                TopicInfo& remap = config.remap[it->first.as<std::string>()];
+                TopicInfo& remap_info = config.remap[it->first.as<std::string>()];
                 if (it->second["topic"])
                 {
-                    remap.name = it->second["topic"].as<std::string>();
+                    remap_info.name = it->second["topic"].as<std::string>();
                 }
                 if (it->second["type"])
                 {
-                    remap.type = it->second["type"].as<std::string>();
+                    remap_info.type = it->second["type"].as<std::string>();
                 }
                 if (it->second["request_type"])
                 {
-                    remap.type = it->second["request_type"].as<std::string>();
+                    remap_info.type = it->second["request_type"].as<std::string>();
                 }
                 if (it->second["reply_type"])
                 {
-                    remap.reply_type = it->second["reply_type"].as<std::string>();
+                    remap_info.reply_type = it->second["reply_type"].as<std::string>();
                 }
             }
         }
@@ -502,7 +500,7 @@ bool add_topic_config(
 {
     return add_topic_or_service_config<TopicConfig, TopicRoute>(
         "topic", name, node, topic_routes, topic_configs,
-        [](TopicConfig& config, std::string type)
+        [=](TopicConfig& config, std::string&& type)
         {
             Config::logger << utils::Logger::Level::DEBUG
                            << "Set type '" << type << "' for topic '"
@@ -510,10 +508,10 @@ bool add_topic_config(
 
             config.message_type = std::move(type);
         },
-        [](TopicConfig&, std::string)
+        [=](TopicConfig&, std::string&&)
         {
         },
-        [](TopicConfig& config, TopicRoute route)
+        [=](TopicConfig& config, const TopicRoute& route)
         {
             Config::logger << utils::Logger::Level::DEBUG;
             Config::logger << "Set route '{ from: ";
@@ -531,11 +529,11 @@ bool add_topic_config(
 
             Config::logger << "}' for topic '" << name << "'." << std::endl;
 
-            config.route = std::move(route);
+            config.route = route;
         },
-        [](const YAML::Node& node)
+        [](const YAML::Node& route)
         {
-            return parse_topic_route(node);
+            return parse_topic_route(route);
         });
 }
 
@@ -548,7 +546,7 @@ bool add_service_config(
 {
     return add_topic_or_service_config<ServiceConfig, ServiceRoute>(
         "service", name, node, service_routes, service_configs,
-        [](ServiceConfig& config, std::string type)
+        [=](ServiceConfig& config, std::string&& type)
         {
             Config::logger << utils::Logger::Level::DEBUG
                            << "Set request type '" << type
@@ -557,7 +555,7 @@ bool add_service_config(
 
             config.request_type = std::move(type);
         },
-        [](ServiceConfig& config, std::string type)
+        [=](ServiceConfig& config, std::string&& type)
         {
             Config::logger << utils::Logger::Level::DEBUG
                            << "Set reply type '" << type
@@ -566,7 +564,7 @@ bool add_service_config(
 
             config.reply_type = std::move(type);
         },
-        [](ServiceConfig& config, ServiceRoute route)
+        [=](ServiceConfig& config, const ServiceRoute& route)
         {
             Config::logger << utils::Logger::Level::DEBUG;
             Config::logger << "Set route '{ server: " << route.server;
@@ -579,11 +577,11 @@ bool add_service_config(
 
             Config::logger << "}' for service '" << name << "'." << std::endl;
 
-            config.route = std::move(route);
+            config.route = route;
         },
-        [](const YAML::Node& node)
+        [](const YAML::Node& route)
         {
-            return parse_service_route(node);
+            return parse_service_route(route);
         });
 }
 
@@ -676,10 +674,12 @@ TopicInfo remap_if_needed(
 } //  anonymous namespace
 
 //==============================================================================
+utils::Logger Config::logger("is::core::Config");
+
+//==============================================================================
 Config::Config(
         const YAML::Node& node,
         const std::string& filename)
-    : logger("is::core::internal::Config")
 {
     if (node && !node.IsNull())
     {
@@ -833,7 +833,7 @@ bool Config::parse(
     auto read_service =
             [&](const std::string& key, const YAML::Node& node) -> bool
             {
-                return add_service_config(key, n, _m_service_routes, _m_service_configs);
+                return add_service_config(key, node, _m_service_routes, _m_service_configs);
             };
 
     if (!read_dictionary(config_node, "services", file, read_service))
@@ -987,7 +987,7 @@ bool Config::okay() const
 }
 
 //==============================================================================
-bool Config::operator bool() const
+Config::operator bool() const
 {
     return _okay;
 }
@@ -1024,7 +1024,7 @@ bool Config::load_middlewares(
          * Look for the middleware's SystemHandle dynamic library.
          */
         std::vector<std::string> checked_paths;
-        const std::string path = search.find_middleware_mix(checked_paths);
+        const std::string path = search.find_middleware_mix(&checked_paths);
 
         if (path.empty())
         {
@@ -1034,11 +1034,11 @@ bool Config::load_middlewares(
 
             for (const std::string& checked_path : checked_paths)
             {
-                logger << "\n\t- " << checked;
+                logger << "\n\t- " << checked_path;
             }
 
             logger << "\nTry adding your middleware's install path to IS_PREFIX_PATH "
-                   << "or IS_" << to_env_format(middleware_type) << "_PREFIX_PATH "
+                   << "or IS_" << Search::to_env_format(middleware_type) << "_PREFIX_PATH "
                    << "environment variables." << std::endl;
 
             return false;
@@ -1222,6 +1222,14 @@ bool Config::configure_topics(
          */
         struct PublisherData
         {
+            PublisherData(
+                    std::shared_ptr<TopicPublisher> m_publisher,
+                    const eprosima::xtypes::DynamicType& m_type)
+                : publisher(m_publisher)
+                , type(m_type)
+            {
+            }
+
             std::shared_ptr<TopicPublisher> publisher;
             const eprosima::xtypes::DynamicType& type;
         };
@@ -1254,7 +1262,7 @@ bool Config::configure_topics(
              * Do remapping and type resolution, if applicable.
              */
             TopicInfo topic_info = remap_if_needed(
-                to, topic_config.remap, TopicInfo(topic_name, topic_config.message_type, ""));
+                to, topic_config.remap, TopicInfo(topic_name, topic_config.message_type));
 
             const eprosima::xtypes::DynamicType* pub_type = resolve_type(
                 it_to->second.types, topic_info.type);
@@ -1318,7 +1326,7 @@ bool Config::configure_topics(
              * Do remapping and type resolution, if applicable.
              */
             TopicInfo topic_info = remap_if_needed(
-                from, topic_config.remap, TopicInfo(topic_name, topic_config.message_type, ""));
+                from, topic_config.remap, TopicInfo(topic_name, topic_config.message_type));
 
             const eprosima::xtypes::DynamicType* sub_type = resolve_type(
                 it_from->second.types, topic_info.type);
@@ -1331,6 +1339,15 @@ bool Config::configure_topics(
              */
             struct Publication
             {
+                Publication(
+                        const PublisherData& publisher_data,
+                        const eprosima::xtypes::DynamicType& sub_type)
+                    : publisher(publisher_data.publisher)
+                    , type(publisher_data.type)
+                    , consistency(publisher_data.type.is_compatible(sub_type))
+                {
+                }
+
                 std::shared_ptr<TopicPublisher> publisher;
                 const eprosima::xtypes::DynamicType& type;
                 eprosima::xtypes::TypeConsistency consistency;
@@ -1341,8 +1358,7 @@ bool Config::configure_topics(
 
             for (const auto& pub : publishers)
             {
-                publications.emplace_back(
-                    Publication(pub.publisher, pub.type, pub.type.is_compatible(*sub_type)));
+                publications.emplace_back(Publication(pub, *sub_type));
             }
 
             /**
@@ -1393,7 +1409,7 @@ bool Config::configure_topics(
                 logger << utils::Logger::Level::ERROR
                        << "[" << from << " SystemHandle] failed to subscribe "
                        << "to topic '" << topic_name << "', with message type '"
-                       << topic_config.message_tye << "'." << std::endl;
+                       << topic_config.message_type << "'." << std::endl;
             }
 
             valid &= subscribed;
@@ -1456,10 +1472,10 @@ bool Config::configure_services(
         if (!service_config.reply_type.empty())
         {
             const eprosima::xtypes::DynamicType* server_reply_type = resolve_type(
-                it->second.types, server_info.reply_type);
+                it_server->second.types, server_info.reply_type);
 
             provider =
-                    it->second.service_provider->create_service_proxy(
+                    it_server->second.service_provider->create_service_proxy(
                 server_info.name,
                 (server_info.type.find(".") == std::string::npos
                 ? *server_type
@@ -1467,17 +1483,17 @@ bool Config::configure_services(
                 (server_info.reply_type.find(".") == std::string::npos
                 ? *server_reply_type
                 : *_m_types.at(server_info.reply_type.substr(0, server_info.reply_type.find(".")))),
-                config_or_empty_node(server, config.middleware_configs));
+                config_or_empty_node(server, service_config.middleware_configs));
         }
         else
         {
             provider =
-                    it->second.service_provider->create_service_proxy(
+                    it_server->second.service_provider->create_service_proxy(
                 server_info.name,
                 (server_info.type.find(".") == std::string::npos
                 ? *server_type
                 : *_m_types.at(server_info.type.substr(0, server_info.type.find(".")))),
-                config_or_empty_node(server, config.middleware_configs));
+                config_or_empty_node(server, service_config.middleware_configs));
         }
 
         if (!provider)
@@ -1485,7 +1501,7 @@ bool Config::configure_services(
             logger << utils::Logger::Level::ERROR
                    << "The system '" << server << "' failed to create a service provider "
                    << "for the service '" << service_name << "', with request type '"
-                   << service_config.type << "'";
+                   << service_config.request_type << "'";
 
             if (!service_config.reply_type.empty())
             {
@@ -1500,7 +1516,7 @@ bool Config::configure_services(
             logger << utils::Logger::Level::INFO
                    << " [" << server << " SystemHandle] produced a service provider "
                    << "for the service '" << service_name << "', with request type '"
-                   << service_config.type << "'";
+                   << service_config.request_type << "'";
 
             if (!service_config.reply_type.empty())
             {
@@ -1557,17 +1573,17 @@ bool Config::configure_services(
             eprosima::xtypes::TypeConsistency consistency = client_type->is_compatible(*server_type);
             ServiceClientSystem::RequestCallback callback =
                     [=](const eprosima::xtypes::DynamicData& request,
-                            ServiceClient& client,
+                            ServiceClient& service_client,
                             const std::shared_ptr<void>& call_handle)
                     {
                         if (consistency == eprosima::xtypes::TypeConsistency::EQUALS)
                         {
-                            provider->call_service(request, client, call_handle);
+                            provider->call_service(request, service_client, call_handle);
                         }
                         else //previously ensured that TypeConsistency is not NONE
                         {
                             eprosima::xtypes::DynamicData compatible_request(request, *server_type);
-                            provider->call_service(compatible_request, client, call_handle);
+                            provider->call_service(compatible_request, service_client, call_handle);
                         }
                     };
 
@@ -1579,21 +1595,21 @@ bool Config::configure_services(
 
             if (client_info.reply_type.empty())
             {
-                created_client_proxy = it->second.service_client->create_client_proxy(
+                created_client_proxy = it_client->second.service_client->create_client_proxy(
                     client_info.name,
                     //*client_type,
                     (client_info.type.find(".") == std::string::npos
                     ? *client_type
                     : *_m_types.at(client_info.type.substr(0, client_info.type.find(".")))),
                     callback,
-                    config_or_empty_node(client, config.middleware_configs));
+                    config_or_empty_node(client, service_config.middleware_configs));
             }
             else
             {
                 const eprosima::xtypes::DynamicType* client_reply_type = resolve_type(
-                    it->second.types, client_info.reply_type);
+                    it_client->second.types, client_info.reply_type);
 
-                created_client_proxy = it->second.service_client->create_client_proxy(
+                created_client_proxy = it_client->second.service_client->create_client_proxy(
                     client_info.name,
                     //*client_type,
                     (client_info.type.find(".") == std::string::npos
@@ -1603,7 +1619,7 @@ bool Config::configure_services(
                     ? *client_reply_type
                     : *_m_types.at(client_info.reply_type.substr(0, client_info.reply_type.find(".")))),
                     callback,
-                    config_or_empty_node(client, config.middleware_configs));
+                    config_or_empty_node(client, service_config.middleware_configs));
             }
 
             if (created_client_proxy)
@@ -1611,7 +1627,7 @@ bool Config::configure_services(
                 logger << utils::Logger::Level::INFO
                        << " [" << client << " SystemHandle] produced a service client "
                        << "for the service '" << service_name << "', with request type '"
-                       << service_config.type << "'";
+                       << service_config.request_type << "'";
 
                 if (!service_config.reply_type.empty())
                 {
@@ -1624,7 +1640,7 @@ bool Config::configure_services(
                 logger << utils::Logger::Level::ERROR
                        << "The system '" << client << "' failed to create a service client "
                        << "for the service '" << service_name << "', with request type '"
-                       << service_config.type << "'";
+                       << service_config.request_type << "'";
 
                 if (!service_config.reply_type.empty())
                 {
@@ -1652,14 +1668,14 @@ bool Config::check_topic_compatibility(
     {
         const auto it_from = info_map.find(from);
 
-        TopicInfo topic_info_from = remap_if_needed(from, config.remap, TopicInfo(topic_name, config.message_type, ""));
+        TopicInfo topic_info_from = remap_if_needed(from, config.remap, TopicInfo(topic_name, config.message_type));
         const eprosima::xtypes::DynamicType* from_type = resolve_type(it_from->second.types, topic_info_from.type);
 
         for (const std::string& to : config.route.to)
         {
             const auto it_to = info_map.find(to);
 
-            TopicInfo topic_info_to = remap_if_needed(to, config.remap, TopicInfo(topic_name, config.message_type, ""));
+            TopicInfo topic_info_to = remap_if_needed(to, config.remap, TopicInfo(topic_name, config.message_type));
             const eprosima::xtypes::DynamicType* to_type = resolve_type(it_from->second.types, topic_info_from.type);
 
             /**
@@ -1758,7 +1774,7 @@ bool Config::check_service_compatibility(
         if (request_consistency == eprosima::xtypes::TypeConsistency::NONE)
         {
             logger << utils::Logger::Level::ERROR
-                std::cerr << "Remapping error: service request type '" << topic_info_client.type
+                   << "Remapping error: service request type '" << topic_info_client.type
                    << "' from '" << it_client->first << "' is not compatible with '"
                    << topic_info_server.type << "' in '" << it_server->first << "'." << std::endl;
 

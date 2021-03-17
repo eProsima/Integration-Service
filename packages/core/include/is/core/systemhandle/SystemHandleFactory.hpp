@@ -44,7 +44,7 @@ using SystemHandleFactoryBuilder = std::function<std::unique_ptr<SystemHandle>()
  *            SystemHandle instance.
  */
 void IS_CORE_API register_system_handle_factory(
-        const std::string& middleware,
+        std::string&& middleware,
         SystemHandleFactoryBuilder&& handle);
 
 /**
@@ -65,10 +65,10 @@ public:
      * @param[in] middleware The middleware name we want to register into the factory.
      */
     SystemHandleRegistrar(
-            const std::string& middleware)
+            std::string&& middleware)
     {
         register_system_handle_factory(
-            middleware,
+            std::move(middleware),
             []()
             {
                 return std::make_unique<SystemHandleImplType>();

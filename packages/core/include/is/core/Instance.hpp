@@ -21,8 +21,14 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <is/core/systemhandle/SystemHandle.hpp>
 #include <is/core/export.hpp>
+
+#include <is/core/Config.hpp>
+#include <is/core/runtime/Search.hpp>
+#include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
+#include <is/core/systemhandle/SystemHandle.hpp>
+#include <is/core/systemhandle/RegisterSystem.hpp>
+#include <is/utils/Log.hpp>
 
 #include <chrono>
 #include <memory>
@@ -35,138 +41,9 @@ namespace is {
 namespace core {
 
 /**
- * @class InstanceHandle
- *        This is the class responsible of handling an *Integration Service* instance.
- *
- *        It allows to perform several actions on the *Integration Service*
- *        instance, such as asking whether it is running or not or handling
- *        the threads that are launched each time a SystemHandle is launched from
- *        the core.
- *
- *        It also allows to quit the instance in a safe way, waiting for the pending
- *        jobs to finish.
+ * @brief Forward declaration.
  */
-
-class IS_CORE_API InstanceHandle
-{
-public:
-
-    /**
-     * @brief Destructor.
-     *
-     * @details The destructor will call `quit()` and then `wait()`, because
-     *          the *Integration Service* instance cannot run without the handle active.
-     */
-    ~InstanceHandle();
-
-    /**
-     * @brief It allows to check if the instance is still running.
-     *
-     * @returns `true` if the *Integration Service* instance is still running,
-     *          or `false` otherwise.
-     */
-    bool running() const;
-
-    /**
-     * @brief `bool()` operator overload. It performs an implicit cast to `running()`.
-     *
-     * @returns `true` if the *Integration Service* instance is still running,
-     *          or `false` otherwise.
-     */
-    operator bool() const;
-
-    /**
-     * @brief Wait for the instance to finish running.
-     *
-     *        The instance may be stopped by calling `quit()` or by sending `SIGINT`
-     *        (*ctrl+C* from the terminal).
-     *
-     * @returns The return code for this instance execution process.
-     */
-    int wait();
-
-    /**
-     * @brief Wait for the instance to finish running, or until the max time has
-     *        been reached.
-     *
-     * @param[in] max_time Time, in milliseconds, to wait for the instance to finish running.
-     *
-     * @returns A reference to this instance handle, so that it can be chained
-     *          with `quit()` or `wait()`.
-     */
-    InstanceHandle& wait_for(
-            const std::chrono::milliseconds& max_time);
-
-    /**
-     * @brief Instruct the node handle to quit (this will not occur instantly).
-     *
-     *        Follow this with a call to `wait()` in order to wait until the instance has
-     *        finished running, and retrieve the return code.
-     *
-     * @returns A reference to this instance handle so that it can be chained
-     *          with `wait_for()` or `wait()`.
-     */
-    InstanceHandle& quit();
-
-    /**
-     * @brief Request the TypeRegitry for a given middleware.
-     *
-     * @param[in] middleware_name The middleware whose TypeRegistry is wanted to be retrieved.
-     *
-     * @returns A pointer to the TypeRegistry, or `nullptr` if the middleware does not exist.
-     */
-    const TypeRegistry* type_registry(
-            const std::string& middleware_name);
-
-private:
-
-    /**
-     * @class Implementation
-     *        Defines the actual implementation of the InstanceHandle class.
-     *
-     *        Allows to use the *pimpl* procedure to separate the implementation
-     *        from the interface of InstanceHandle.
-     *
-     *        Methods named equal to some InstanceHandle method will not be
-     *        documented again. Usually, the interface class will call to
-     *        `_pimpl->method()`, but the functionality and parameters
-     *        are exactly the same.
-     */
-    class Implementation;
-
-    /**
-     * @brief Constructor.
-     *
-     * @details This class cannot be constructed directly, hence the private constructors.
-     *          Use `Instance::run()` or r`run_instance()` to get an InstanceHandle.
-     *
-     * @param[in] impl A pointer to the Implementation class.
-     */
-    InstanceHandle(
-            std::shared_ptr<Implementation> impl);
-
-    /**
-     * @brief Copy constructor.
-     *
-     * @param[in] other The InstanceHandle object we want to copy.
-     */
-    InstanceHandle(
-            const InstanceHandle& other);
-
-    /**
-     * @brief Move constructor.
-     *
-     * @param[in] other Movable reference to another InstanceHandle object.
-     */
-    InstanceHandle(
-            InstanceHandle&&);
-
-    /**
-     * Class members.
-     */
-
-    std::shared_ptr<Implementation> _pimpl; // TODO (@jamoralp): shouldn't this be unique_ptr? Does it make sense to share InstanceHandle?
-};
+class InstanceHandle;
 
 /**
  * @brief MiddlewarePrefixPathMap contains a map of prefixes that are available
@@ -251,7 +128,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~Instance() = default;
+    ~Instance();
 
     /**
      * @brief Run the *Integration Service* instance in its own thread.
@@ -280,8 +157,6 @@ public:
      */
     InstanceHandle run();
 
-private:
-
     /**
      * @class Implementation
      *        Defines the actual implementation of the Instance class.
@@ -296,11 +171,149 @@ private:
      */
     class Implementation;
 
+private:
+
     /**
      * Class members.
      */
 
     std::unique_ptr<Implementation> _pimpl;
+};
+
+/**
+ * @class InstanceHandle
+ *        This is the class responsible of handling an *Integration Service* instance.
+ *
+ *        It allows to perform several actions on the *Integration Service*
+ *        instance, such as asking whether it is running or not or handling
+ *        the threads that are launched each time a SystemHandle is launched from
+ *        the core.
+ *
+ *        It also allows to quit the instance in a safe way, waiting for the pending
+ *        jobs to finish.
+ */
+
+class IS_CORE_API InstanceHandle
+{
+public:
+
+    /**
+     * @brief Destructor.
+     *
+     * @details The destructor will call `quit()` and then `wait()`, because
+     *          the *Integration Service* instance cannot run without the handle active.
+     */
+    ~InstanceHandle();
+
+    /**
+     * @brief It allows to check if the instance is still running.
+     *
+     * @returns `true` if the *Integration Service* instance is still running,
+     *          or `false` otherwise.
+     */
+    bool running() const;
+
+    /**
+     * @brief `bool()` operator overload. It performs an implicit cast to `running()`.
+     *
+     * @returns `true` if the *Integration Service* instance is still running,
+     *          or `false` otherwise.
+     */
+    operator bool() const;
+
+    /**
+     * @brief Wait for the instance to finish running.
+     *
+     *        The instance may be stopped by calling `quit()` or by sending `SIGINT`
+     *        (*ctrl+C* from the terminal).
+     *
+     * @returns The return code for this instance execution process.
+     */
+    int wait();
+
+    /**
+     * @brief Wait for the instance to finish running, or until the max time has
+     *        been reached.
+     *
+     * @param[in] max_time Time, in nanoseconds, to wait for the instance to finish running.
+     *
+     * @returns A reference to this instance handle, so that it can be chained
+     *          with `quit()` or `wait()`.
+     */
+    InstanceHandle& wait_for(
+            const std::chrono::nanoseconds& max_time);
+
+    /**
+     * @brief Instruct the node handle to quit (this will not occur instantly).
+     *
+     *        Follow this with a call to `wait()` in order to wait until the instance has
+     *        finished running, and retrieve the return code.
+     *
+     * @returns A reference to this instance handle so that it can be chained
+     *          with `wait_for()` or `wait()`.
+     */
+    InstanceHandle& quit();
+
+    /**
+     * @brief Request the TypeRegitry for a given middleware.
+     *
+     * @param[in] middleware_name The middleware whose TypeRegistry is wanted to be retrieved.
+     *
+     * @returns A pointer to the TypeRegistry, or `nullptr` if the middleware does not exist.
+     */
+    const TypeRegistry* type_registry(
+            const std::string& middleware_name);
+
+private:
+
+    friend class Instance::Implementation;
+
+    /**
+     * @class Implementation
+     *        Defines the actual implementation of the InstanceHandle class.
+     *
+     *        Allows to use the *pimpl* procedure to separate the implementation
+     *        from the interface of InstanceHandle.
+     *
+     *        Methods named equal to some InstanceHandle method will not be
+     *        documented again. Usually, the interface class will call to
+     *        `_pimpl->method()`, but the functionality and parameters
+     *        are exactly the same.
+     */
+    class Implementation;
+
+    /**
+     * @brief Constructor.
+     *
+     * @details This class cannot be constructed directly, hence the private constructors.
+     *          Use `Instance::run()` or r`run_instance()` to get an InstanceHandle.
+     *
+     * @param[in] impl A pointer to the Implementation class.
+     */
+    InstanceHandle(
+            std::shared_ptr<Implementation> impl);
+
+    /**
+     * @brief Copy constructor.
+     *
+     * @param[in] other The InstanceHandle object we want to copy.
+     */
+    InstanceHandle(
+            const InstanceHandle& other);
+
+    /**
+     * @brief Move constructor.
+     *
+     * @param[in] other Movable reference to another InstanceHandle object.
+     */
+    InstanceHandle(
+            InstanceHandle&&);
+
+    /**
+     * Class members.
+     */
+
+    std::shared_ptr<Implementation> _pimpl; // TODO (@jamoralp): shouldn't this be unique_ptr? Does it make sense to share InstanceHandle?
 };
 
 } //  namespace core
@@ -316,7 +329,7 @@ private:
  *
  * @returns An InstanceHandle to manage the running *Integration Service* instance.
  */
-IS_CORE_API InstanceHandle run_instance(
+IS_CORE_API core::InstanceHandle run_instance(
         int argc,
         char* argv[]);
 
@@ -340,10 +353,10 @@ IS_CORE_API InstanceHandle run_instance(
  *
  * @returns An InstanceHandle to manage the running *Integration Service* instance.
  */
-IS_CORE_API InstanceHandle run_instance(
+IS_CORE_API core::InstanceHandle run_instance(
         const YAML::Node& config_node,
         const std::vector<std::string>& is_prefixes = {},
-        const MiddlewarePrefixPathMap& middleware_prefixes = {});
+        const core::MiddlewarePrefixPathMap& middleware_prefixes = {});
 
 /**
  * @brief Create an *Integration Service* instance and run it in its own thread.
@@ -365,10 +378,10 @@ IS_CORE_API InstanceHandle run_instance(
  *
  * @returns An InstanceHandle to manage the running *Integration Service* instance.
  */
-IS_CORE_API InstanceHandle run_instance(
+IS_CORE_API core::InstanceHandle run_instance(
         const std::string& config_file_path,
         const std::vector<std::string>& is_prefixes = {},
-        const MiddlewarePrefixPathMap& middleware_prefixes = {});
+        const core::MiddlewarePrefixPathMap& middleware_prefixes = {});
 
 } //  namespace is
 } //  namespace eprosima
