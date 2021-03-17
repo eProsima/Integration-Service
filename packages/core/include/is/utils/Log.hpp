@@ -184,10 +184,7 @@ private:
     static std::ostream& bold_on(
             std::ostream& os);
 
-    static std::ostream& bold_off(
-            std::ostream& os);
-
-    static std::ostream& black(
+    static std::ostream& reset(
             std::ostream& os);
 
     static std::ostream& red(
