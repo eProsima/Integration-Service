@@ -265,7 +265,7 @@ private:
 
     internal::Config _configuration;
 
-    internal::SystemHandleInfoMap _info_map;
+    is::internal::SystemHandleInfoMap _info_map;
 
     std::atomic_bool _quit;
 

@@ -16,10 +16,10 @@
  *
  */
 
-#ifndef _IS_CORE_SYSTEMHANDLE_HPP_
-#define _IS_CORE_SYSTEMHANDLE_HPP_
+#ifndef _IS_SYSTEMHANDLE_HPP_
+#define _IS_SYSTEMHANDLE_HPP_
 
-#include <is/core/systemhandle/SystemHandleFactory.hpp>
+#include <is/systemhandle/SystemHandleFactory.hpp>
 #include <is/core/Message.hpp>
 
 #include <yaml-cpp/yaml.h>
@@ -31,12 +31,15 @@
 
 namespace eprosima {
 namespace is {
+
 namespace core {
 
 /**
  * @brief Forward declaration.
  */
 struct RequiredTypes;
+
+} //  namespace core
 
 /**
  * @brief Map used to store the DynamicType name mapped to its representation.
@@ -138,7 +141,7 @@ public:
      * @returns `true` if the configuration process was successful, or `false` otherwise.
      */
     virtual bool configure(
-            const RequiredTypes& types,
+            const core::RequiredTypes& types,
             const YAML::Node& configuration,
             TypeRegistry& type_registry) = 0;
 
@@ -625,8 +628,7 @@ public:
     virtual ~FullSystem() = default;
 };
 
-} //  namespace core
 } //  namespace is
 } //  namespace eprosima
 
-#endif //  _IS_CORE_SYSTEMHANDLE_HPP_
+#endif //  _IS_SYSTEMHANDLE_HPP_
