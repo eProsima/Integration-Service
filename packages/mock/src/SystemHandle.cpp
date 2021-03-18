@@ -17,7 +17,7 @@
 
 #include <is/sh/mock/api.hpp>
 
-#include <is/core/systemhandle/SystemHandle.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
 
 #include <iostream>
 
@@ -52,8 +52,8 @@ public:
     Channels services;
 
 
-    std::map<std::string, is::core::TopicSubscriberSystem::SubscriptionCallback> is_subscription_callbacks;
-    std::map<std::string, is::core::ServiceClientSystem::RequestCallback> is_request_callbacks;
+    std::map<std::string, TopicSubscriberSystem::SubscriptionCallback> is_subscription_callbacks;
+    std::map<std::string, ServiceClientSystem::RequestCallback> is_request_callbacks;
 
     std::map<std::string, std::vector<MockSubscriptionCallback> > mock_subscriptions;
     std::map<std::string, MockServiceCallback> mock_services;
@@ -79,7 +79,7 @@ Implementation& impl()
 } // anonymous namespace
 
 //==============================================================================
-class Publisher : public virtual is::core::TopicPublisher
+class Publisher : public virtual TopicPublisher
 {
 public:
 
@@ -124,7 +124,7 @@ public:
 };
 
 //==============================================================================
-class Server : public virtual is::core::ServiceProvider
+class Server : public virtual ServiceProvider
 {
 public:
 
@@ -137,7 +137,7 @@ public:
 
     void call_service(
             const eprosima::xtypes::DynamicData& request,
-            is::core::ServiceClient& client,
+            ServiceClient& client,
             std::shared_ptr<void> call_handle) override
     {
         bool only_service = impl().mock_services.count(_service) > 0;
@@ -161,14 +161,14 @@ public:
 };
 
 //==============================================================================
-class SystemHandle : public virtual is::core::FullSystem
+class SystemHandle : public virtual FullSystem
 {
 public:
 
     bool configure(
-            const is::core::RequiredTypes&,
+            const core::RequiredTypes&,
             const YAML::Node&,
-            is::core::TypeRegistry&) override
+            TypeRegistry&) override
     {
         return true;
     }
@@ -198,7 +198,7 @@ public:
         return true;
     }
 
-    std::shared_ptr<is::core::TopicPublisher> advertise(
+    std::shared_ptr<TopicPublisher> advertise(
             const std::string& topic_name,
             const eprosima::xtypes::DynamicType& message_type,
             const YAML::Node& /*configuration*/) override
@@ -218,7 +218,7 @@ public:
         return true;
     }
 
-    std::shared_ptr<is::core::ServiceProvider> create_service_proxy(
+    std::shared_ptr<ServiceProvider> create_service_proxy(
             const std::string& service_name,
             const eprosima::xtypes::DynamicType& service_type,
             const YAML::Node& /*configuration*/) override
@@ -269,7 +269,7 @@ bool subscribe(
 
 //==============================================================================
 class MockServiceClient
-    : public virtual is::core::ServiceClient,
+    : public virtual ServiceClient,
     public std::enable_shared_from_this<MockServiceClient>
 {
 public:
