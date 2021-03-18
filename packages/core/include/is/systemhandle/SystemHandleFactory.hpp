@@ -83,7 +83,7 @@ public:
 #define DETAIL_IS_REGISTER_SYSTEM_HELPER( \
         UniqueID, middleware_name, HandleType) \
     namespace { \
-    ::is::detail::SystemHandleRegistrar<HandleType> \
+    eprosima::is::detail::SystemHandleRegistrar<HandleType> \
     execute_at_load_ ## UniqueID (middleware_name); \
     } /* anonymous namespace */
 
