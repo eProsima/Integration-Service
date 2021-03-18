@@ -1,4 +1,5 @@
 # Copyright 2019 Open Source Robotics Foundation, Inc.
+# Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/packages/rosidl/cmake/soss_rosidl_install_extension.cmake
-
 include(CMakeParseArguments)
 include(GNUInstallDirs)
 
 #################################################
-# soss_rosidl_install_extension(
+# is_sh_ros2_rosidl_install_extension(
 #   MIDDLEWARE <middleware>
 #   [MESSAGE
 #     [SOURCES <message-source-templates>]
@@ -28,9 +27,9 @@ include(GNUInstallDirs)
 #     [HEADERS <service-header-templates>] ]
 #   [DEPENDENCIES <middleware dependencies>]
 # )
-function(soss_rosidl_install_extension)
+function(is_sh_ros2_rosidl_install_extension)
 
-  soss_mix_install_extension(
+  is_mix_install_extension(
     IDL_TYPE rosidl
     ${ARGN}
   )

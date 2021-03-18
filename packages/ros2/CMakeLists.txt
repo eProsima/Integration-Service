@@ -1,41 +1,91 @@
-cmake_minimum_required(VERSION 3.5.0)
+# Copyright 2019 Open Source Robotics Foundation, Inc.
+# Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# is-core library and integration-service executable CMake project
 
-project(soss-ros2)
+##################################################################################
+# CMake build rules for the Integration Service ROS 2 SystemHandle library
+##################################################################################
+cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
-find_package(xtypes REQUIRED)
-find_package(soss-core REQUIRED)
-find_package(soss-rosidl REQUIRED)
+project(ros2-is-sh VERSION "0.1.0" LANGUAGES CXX)
+
+find_package(is-core REQUIRED)
+find_package(ros2-is-sh-rosidl REQUIRED)
 find_package(rclcpp REQUIRED)
 
-if(NOT CMAKE_CXX_STANDARD)
-  # TODO(MXG): Remove this block and use target_compile_features(~)
-  # instead when we no longer need to support Ubuntu 16.04.
-  set(CMAKE_CXX_STANDARD 14)
+find_package(Sanitizers QUIET)
+
+if(SANITIZE_ADDRESS)
+    message(STATUS "Preloading AddressSanitizer library could be done using \"${ASan_WRAPPER}\" to run your program.")
 endif()
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+##################################################################################
+# Configure the Integration Service ROS 2 SystemHandle library
+##################################################################################
+message(STATUS "Configuring [${PROJECT_NAME}]...")
+
+add_library(${PROJECT_NAME}
+  SHARED
+    src/Factory.cpp
+    src/SystemHandle.cpp
+    src/MetaPublisher.cpp
+  )
+
+if (Sanitizers_FOUND)
+  add_sanitizers(${PROJECT_NAME})
 endif()
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  VERSION
+    ${PROJECT_VERSION}
+  SOVERSION
+    ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+  CXX_STANDARD
+    17
+  CXX_STANDARD_REQUIRED
+    YES
+  )
+
+target_compile_options(${PROJECT_NAME}
+  PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:-pedantic>
+    $<$<CXX_COMPILER_ID:GNU>:-fstrict-aliasing>
+    $<$<CXX_COMPILER_ID:GNU>:-Wall>
+    $<$<CXX_COMPILER_ID:GNU>:-Wextra>
+    $<$<CXX_COMPILER_ID:GNU>:-Wcast-align>
+    $<$<CXX_COMPILER_ID:GNU>:-Wshadow>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4700>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4820>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4255>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4668>
+  )
+
+# Generate the export macro header
 include(GNUInstallDirs)
+is_generate_export_header(ros2)
 
-message(STATUS "Configuring [soss-ros2]")
-
-add_library(soss-ros2 SHARED
-  src/Factory.cpp
-  src/SystemHandle.cpp
-  src/MetaPublisher.cpp
-)
-
-soss_generate_export_header(ros2)
-
-target_link_libraries(soss-ros2
+target_link_libraries(${PROJECT_NAME}
   PUBLIC
-    soss::core
+    is::core
     ${rclcpp_LIBRARIES}
-)
+  )
 
-target_include_directories(soss-ros2
+target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -43,35 +93,43 @@ target_include_directories(soss-ros2
 )
 
 if (NOT rosidl_runtime_cpp_FOUND)
-  target_compile_definitions(soss-ros2
+  target_compile_definitions(${PROJECT_NAME}
     PUBLIC
-      "SOSS_ROS2__ROSIDL_GENERATOR_CPP"
+      "ROS2_IS_SH__ROSIDL_GENERATOR_CPP"
   )
 endif()
 
-
-###############################
-# Install soss-ros2
-soss_install_middleware_plugin(
-  MIDDLEWARE ros2
-  TARGET soss-ros2
-  DEPENDENCIES rclcpp
-)
+##################################################################################
+# Install the Integration Service Mock SystemHandle library
+##################################################################################
+is_install_middleware_plugin(
+  MIDDLEWARE
+    ros2
+  TARGET
+    ${PROJECT_NAME}
+  DEPENDENCIES
+    rclcpp
+  )
 
 install(
-  DIRECTORY   ${CMAKE_CURRENT_LIST_DIR}/include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  COMPONENT soss-ros2
-)
+  DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/include/
+  DESTINATION
+    ${CMAKE_INSTALL_INCLUDEDIR}
+  COMPONENT
+    ${PROJECT_NAME}
+  )
 
 
-###############################
-# Install soss-rosidl-ros2-mix
-soss_rosidl_install_extension(
-  MIDDLEWARE ros2
+  ##################################################################################
+# Install the Integration Service ros2-is-sh-rosidl-mix plugin
+##################################################################################
+ros2_is_sh_rosidl_install_extension(
+  MIDDLEWARE
+    ros2
   MESSAGE
     SOURCES "${CMAKE_CURRENT_LIST_DIR}/resources/convert__msg.cpp.em"
     HEADERS "${CMAKE_CURRENT_LIST_DIR}/resources/convert__msg.hpp.em"
   SERVICE
     SOURCES "${CMAKE_CURRENT_LIST_DIR}/resources/convert__srv.cpp.em"
-)
+  )

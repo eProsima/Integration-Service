@@ -20,21 +20,21 @@
 
 #include <soss/utilities.hpp>
 
-#ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
+#ifdef ROS2_IS_SH__ROSIDL_GENERATOR_CPP
 #include <rosidl_generator_cpp/bounded_vector.hpp>
 #else
 #include <rosidl_runtime_cpp/bounded_vector.hpp>
-#endif // ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
+#endif // ifdef ROS2_IS_SH__ROSIDL_GENERATOR_CPP
 
 namespace soss {
 
-#ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
+#ifdef ROS2_IS_SH__ROSIDL_GENERATOR_CPP
 template<typename T, std::size_t U, typename V>
 using BoundedVector = rosidl_generator_cpp::BoundedVector<T, U, V>;
 #else
 template<typename T, std::size_t U, typename V>
 using BoundedVector = rosidl_runtime_cpp::BoundedVector<T, U, V>;
-#endif // ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
+#endif // ifdef ROS2_IS_SH__ROSIDL_GENERATOR_CPP
 
 //==============================================================================
 template<typename ElementType, std::size_t UpperBound, typename Allocator>

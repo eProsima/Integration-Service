@@ -15,7 +15,7 @@
  *
  */
 
-#include <is/mock/api.hpp>
+#include <is/sh/mock/api.hpp>
 
 #include <is/core/systemhandle/SystemHandle.hpp>
 
@@ -25,6 +25,7 @@
 // TODO(@jamoralp): Add logger
 namespace eprosima {
 namespace is {
+namespace sh {
 namespace mock {
 
 class MockServiceClient;
@@ -400,8 +401,9 @@ void serve(
 }
 
 } //  namespace mock
+} //  namespace sh
 } //  namespace is
 } //  namespace eprosima
 
 //==============================================================================
-IS_REGISTER_SYSTEM("mock", eprosima::is::mock::SystemHandle)
+IS_REGISTER_SYSTEM("mock", eprosima::is::sh::mock::SystemHandle)

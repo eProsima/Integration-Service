@@ -105,7 +105,7 @@ private:
     std::shared_ptr<rclcpp::Context> _context;
     std::shared_ptr<rclcpp::NodeOptions> _node_options;
     std::shared_ptr<rclcpp::Node> _node;
-#ifdef SOSS_ROS2__ROSIDL_GENERATOR_CPP
+#ifdef ROS2_IS_SH__ROSIDL_GENERATOR_CPP
     std::unique_ptr<rclcpp::executor::Executor> _executor;
 #else
     std::unique_ptr<rclcpp::Executor> _executor;

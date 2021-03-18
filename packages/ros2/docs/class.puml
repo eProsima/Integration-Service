@@ -1,14 +1,14 @@
 @startuml
 
 actor other_sh
-actor soss_core
+actor is_core
 participant SystemHandle
 participant Factory
 collections type_libs
 entity rclcpp
 
 == initialization ==
-soss_core -> SystemHandle: configure
+is_core -> SystemHandle: configure
 activate SystemHandle
 SystemHandle -> rclcpp: __init__()
 SystemHandle -> rclcpp: node()
@@ -16,15 +16,15 @@ activate rclcpp
 activate rclcpp /'This represents the new created thread'/
 SystemHandle <-- rclcpp: status
 deactivate rclcpp
-SystemHandle -> soss_core: search("ros2")
-activate soss_core
-SystemHandle <-- soss_core
-deactivate soss_core
+SystemHandle -> is_core: search("ros2")
+activate is_core
+SystemHandle <-- is_core
+deactivate is_core
 loop for all required type
-    SystemHandle -> soss_core: find_message_lib()
-    activate soss_core
-    SystemHandle <-- soss_core: status
-    deactivate soss_core
+    SystemHandle -> is_core: find_message_lib()
+    activate is_core
+    SystemHandle <-- is_core: status
+    deactivate is_core
     SystemHandle -> Factory: create_type()
     activate Factory
     Factory -> type_libs: type()
@@ -34,10 +34,10 @@ loop for all required type
     SystemHandle <-- Factory: type
     deactivate Factory
 end
-soss_core <-- SystemHandle: status
+is_core <-- SystemHandle: status
 deactivate SystemHandle
 
-soss_core -> SystemHandle: advertise
+is_core -> SystemHandle: advertise
 activate SystemHandle
 SystemHandle -> Factory: create_publisher()
 activate Factory
@@ -51,10 +51,10 @@ Factory <-- type_libs: Publisher
 deactivate type_libs
 SystemHandle <-- Factory: Publisher
 deactivate Factory
-soss_core <-- SystemHandle: status
+is_core <-- SystemHandle: status
 deactivate SystemHandle
 
-soss_core -> SystemHandle: subscribe
+is_core -> SystemHandle: subscribe
 activate SystemHandle
 SystemHandle -> Factory: create_subscriber()
 activate Factory
@@ -68,14 +68,14 @@ Factory <-- type_libs: Subscriber
 deactivate type_libs
 SystemHandle <-- Factory: Subscriber
 deactivate Factory
-soss_core <-- SystemHandle: status
+is_core <-- SystemHandle: status
 deactivate SystemHandle
 
 == to ros2 ==
 rclcpp -> type_libs: subscription_callback()
 activate type_libs
 type_libs -> type_libs: convert_to_xtype()
-type_libs -> other_sh: soss_subscription_cb()
+type_libs -> other_sh: is_subscription_cb()
 activate other_sh
 type_libs <-- other_sh: status
 deactivate other_sh
@@ -94,13 +94,13 @@ other_sh <-- type_libs: status
 deactivate type_libs
 
 == while running ==
-soss_core -> SystemHandle: spin_once()
+is_core -> SystemHandle: spin_once()
 activate SystemHandle
 SystemHandle -> rclcpp: ok()
 activate rclcpp
 SystemHandle <-- rclcpp: status
 deactivate rclcpp
-soss_core <-- SystemHandle: status
+is_core <-- SystemHandle: status
 deactivate SystemHandle
 
 

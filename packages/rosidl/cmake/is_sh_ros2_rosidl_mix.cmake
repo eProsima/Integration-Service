@@ -1,4 +1,5 @@
 # Copyright 2018 Open Source Robotics Foundation, Inc.
+# Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,25 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# copied from soss/packages/rosidl/cmake/soss_rosidl_mix.cmake
-
 include(CMakeParseArguments)
 include(GNUInstallDirs)
 
 #################################################
-# soss_rosidl_mix(
+# is_sh_ros2_rosidl_mix(
 #   PACKAGES rosidl_packages...
 #   MIDDLEWARES [ros2|websocket|hl7]...
 #   [QUIET]
 #   [REQUIRED]
 # )
 #
-# Generate a soss middleware interface extension for a set of rosidl packages.
+# Generate an Integration Service middleware interface extension,
+# for a set of rosidl packages.
 #
 # ROS2 packages will often contain message and service specifications in the
 # form of rosidl files (.msg and .srv). This cmake utility will convert the
-# messages and services into soss middleware interface extension libraries.
-# That will allow soss to pass those message and service types between two
+# messages and services into Integration Service middleware interface extension libraries.
+# That will allow the Integration Service to pass those message and service types between two
 # different middlewares.
 #
 # The PACKAGES argument specifies the packages whose message and service
@@ -48,7 +48,7 @@ include(GNUInstallDirs)
 # mix libraries from being generated. If REQUIRED is not specified, then this
 # function will instead print warnings and proceed as much as possible whenever
 # an error is encountered.
-function(soss_rosidl_mix)
+function(is_sh_ros2_rosidl_mix)
 
   set(possible_options QUIET REQUIRED)
 
@@ -67,12 +67,12 @@ function(soss_rosidl_mix)
     endif()
   endforeach()
 
-  soss_mix_generator(
+  is_mix_generator(
     IDL_TYPE rosidl
     SCRIPT
       INTERPRETER ${PYTHON_EXECUTABLE}
-      FIND ${SOSS_ROSIDL_FIND_PACKAGE_INFO_SCRIPT}
-      GENERATE ${SOSS_ROSIDL_GENERATE_SCRIPT}
+      FIND ${IS_SH_ROS2_ROSIDL_FIND_PACKAGE_INFO_SCRIPT}
+      GENERATE ${IS_SH_ROS2_ROSIDL_GENERATE_SCRIPT}
     PACKAGES ${_ARG_PACKAGES}
     MIDDLEWARES ${_ARG_MIDDLEWARES}
     ${options}
