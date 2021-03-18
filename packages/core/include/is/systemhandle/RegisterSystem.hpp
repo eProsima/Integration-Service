@@ -16,17 +16,16 @@
  *
  */
 
-#ifndef _IS_CORE_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
-#define _IS_CORE_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
+#ifndef _IS_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
+#define _IS_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
 
-#include <is/core/systemhandle/SystemHandle.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
 #include <is/utils/Log.hpp>
 
 #include <mutex>
 
 namespace eprosima {
 namespace is {
-namespace core {
 namespace internal {
 
 /**
@@ -153,8 +152,7 @@ private:
 };
 
 } //  namespace internal
-} //  namespace core
 } //  namespace is
 } //  namespace eprosima
 
-#endif //  _IS_CORE_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_
+#endif //  _IS_INTERNAL_SYSTEMHANDLE_REGISTER_SYSTEM_HPP_

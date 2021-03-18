@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _IS_CORE_DETAIL_SYSTEMHANDLE_SYSTEMHANDLEFACTORY_HPP_
-#define _IS_CORE_DETAIL_SYSTEMHANDLE_SYSTEMHANDLEFACTORY_HPP_
+#ifndef _IS_DETAIL_SYSTEMHANDLE_SYSTEMHANDLEFACTORY_HPP_
+#define _IS_DETAIL_SYSTEMHANDLE_SYSTEMHANDLEFACTORY_HPP_
 
 #include <is/core/export.hpp>
 #include <functional>
@@ -26,7 +26,6 @@
 
 namespace eprosima {
 namespace is {
-namespace core {
 
 // Forward declaration
 class SystemHandle;
@@ -51,7 +50,7 @@ void IS_CORE_API register_system_handle_factory(
  * @class SystemHandleRegistrar
  *         Builder class to help register any SystemHandle kind, during runtime.
  *
- * @tparam SystemHandleImplType The is::core::SystemHandle overriden
+ * @tparam SystemHandleImplType The is::SystemHandle overriden
  *         implementation kind, for a certain middleware.
  */
 template<typename SystemHandleImplType>
@@ -78,14 +77,13 @@ public:
 };
 
 } //  namespace detail
-} //  namespace core
 } //  namespace is
 } //  namespace eprosima
 
 #define DETAIL_IS_REGISTER_SYSTEM_HELPER( \
         UniqueID, middleware_name, HandleType) \
     namespace { \
-    ::is::core::detail::SystemHandleRegistrar<HandleType> \
+    ::is::detail::SystemHandleRegistrar<HandleType> \
     execute_at_load_ ## UniqueID (middleware_name); \
     } /* anonymous namespace */
 
@@ -103,4 +101,4 @@ public:
     DETAIL_IS_REGISTER_SYSTEM_WITH_COUNTER( \
         __COUNTER__, middleware_name, HandleType)
 
-#endif //  _IS_CORE_DETAIL_SYSTEMHANDLE_SYSTEMHANDLEFACTORY_HPP_
+#endif //  _IS_DETAIL_SYSTEMHANDLE_SYSTEMHANDLEFACTORY_HPP_
