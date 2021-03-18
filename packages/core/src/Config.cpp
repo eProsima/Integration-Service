@@ -997,7 +997,7 @@ Config::operator bool() const
 
 //==============================================================================
 bool Config::load_middlewares(
-        SystemHandleInfoMap& info_map) const
+        is::internal::SystemHandleInfoMap& info_map) const
 {
     /**
      * Sort middlewares according to their dependencies in the `types-from``department.
@@ -1061,7 +1061,7 @@ bool Config::load_middlewares(
          * loaded, and it should be possible to find the middleware info in the
          * internal Register.
          */
-        internal::SystemHandleInfo info = internal::Register::get(middleware_type);
+        is::internal::SystemHandleInfo info = is::internal::Register::get(middleware_type);
 
         if (!info)
         {
@@ -1111,7 +1111,7 @@ bool Config::load_middlewares(
              * import the types from.
              *
              * Check that this middleware already exists in the
-             * SystemHandleInfoMap, and iterate over its types to copy them into the
+             * is::internal::SystemHandleInfoMap, and iterate over its types to copy them into the
              * target middleware, that is, `mw_name`.
              */
             if (!mw_config.types_from.empty())
@@ -1200,7 +1200,7 @@ bool Config::load_middlewares(
 
 //==============================================================================
 bool Config::configure_topics(
-        const SystemHandleInfoMap& info_map) const
+        const is::internal::SystemHandleInfoMap& info_map) const
 {
     bool valid = true;
 
@@ -1424,7 +1424,7 @@ bool Config::configure_topics(
 
 //==============================================================================
 bool Config::configure_services(
-        const SystemHandleInfoMap& info_map) const
+        const is::internal::SystemHandleInfoMap& info_map) const
 {
     bool valid = true;
 
@@ -1661,7 +1661,7 @@ bool Config::configure_services(
 
 //==============================================================================
 bool Config::check_topic_compatibility(
-        const SystemHandleInfoMap& info_map,
+        const is::internal::SystemHandleInfoMap& info_map,
         const std::string& topic_name,
         const TopicConfig& config) const
 {
@@ -1739,7 +1739,7 @@ bool Config::check_topic_compatibility(
 
 //==============================================================================
 bool Config::check_service_compatibility(
-        const SystemHandleInfoMap& info_map,
+        const is::internal::SystemHandleInfoMap& info_map,
         const std::string& service_name,
         const ServiceConfig& config) const
 {

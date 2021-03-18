@@ -19,7 +19,7 @@
 #ifndef _IS_CORE_INTERNAL_CONFIG_HPP_
 #define _IS_CORE_INTERNAL_CONFIG_HPP_
 
-#include <is/core/systemhandle/RegisterSystem.hpp>
+#include <is/systemhandle/RegisterSystem.hpp>
 #include <is/core/runtime/Search.hpp>
 #include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
 
@@ -290,7 +290,7 @@ public:
      * @return Boolean value indicating whether the load process was successful or not.
      */
     bool load_middlewares(
-            SystemHandleInfoMap& info_map) const;
+            is::internal::SystemHandleInfoMap& info_map) const;
 
     /**
      * @brief Configure topics communication, according to the specified route,
@@ -325,7 +325,7 @@ public:
      * @returns `true` if all the topics were successfully configured, or `false` otherwise.
      */
     bool configure_topics(
-            const SystemHandleInfoMap& info_map) const;
+            const is::internal::SystemHandleInfoMap& info_map) const;
 
     /**
      * @brief Configure services, according to the specified route, type and remapping
@@ -361,7 +361,7 @@ public:
      * @returns `true` if all the services were successfully configured, or `false` otherwise.
      */
     bool configure_services(
-            const SystemHandleInfoMap& info_map) const;
+            const is::internal::SystemHandleInfoMap& info_map) const;
 
     /**
      * @brief Check compatibility between the TopicInfo registered in the endpoints responsible
@@ -385,7 +385,7 @@ public:
      * @returns `true` if the topic is compatible among the defined systems, or `false` otherwise.
      */
     bool check_topic_compatibility(
-            const SystemHandleInfoMap& info_map,
+            const is::internal::SystemHandleInfoMap& info_map,
             const std::string& topic_name,
             const TopicConfig& config) const;
 
@@ -413,7 +413,7 @@ public:
      * @returns `true` if the service is compatible among the defined systems, or `false` otherwise.
      */
     bool check_service_compatibility(
-            const SystemHandleInfoMap& info_map,
+            const is::internal::SystemHandleInfoMap& info_map,
             const std::string& service_name,
             const ServiceConfig& config) const;
 

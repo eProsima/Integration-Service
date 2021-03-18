@@ -26,8 +26,8 @@
 #include <is/core/Config.hpp>
 #include <is/core/runtime/Search.hpp>
 #include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
-#include <is/core/systemhandle/SystemHandle.hpp>
-#include <is/core/systemhandle/RegisterSystem.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
+#include <is/systemhandle/RegisterSystem.hpp>
 #include <is/utils/Log.hpp>
 
 #include <chrono>
