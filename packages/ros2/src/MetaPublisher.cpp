@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +18,24 @@
 
 #include "MetaPublisher.hpp"
 
-#include <soss/StringTemplate.hpp>
+#include <is/core/runtime/StringTemplate.hpp>
 
-#include <soss/ros2/Factory.hpp>
+#include <is/sh/ros2/Factory.hpp>
 
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace ros2 {
 
 //==============================================================================
-class MetaPublisher : public soss::TopicPublisher
+class MetaPublisher : public is::TopicPublisher
 {
 public:
 
     MetaPublisher(
-            const StringTemplate&& topic_template,
-            const xtypes::DynamicType& message_type,
+            const core::StringTemplate&& topic_template,
+            const eprosima::xtypes::DynamicType& message_type,
             rclcpp::Node& node,
             const rmw_qos_profile_t& qos_profile,
             const YAML::Node& /*unused*/)
@@ -45,7 +48,7 @@ public:
     }
 
     bool publish(
-            const xtypes::DynamicData& message) override final
+            const eprosima::xtypes::DynamicData& message) override final
     {
         const std::string topic_name = _topic_template.compute_string(message);
 
@@ -65,8 +68,8 @@ public:
 
 private:
 
-    const StringTemplate _topic_template;
-    const xtypes::DynamicType& _message_type;
+    const core::StringTemplate _topic_template;
+    const eprosima::xtypes::DynamicType& _message_type;
     rclcpp::Node& _node;
     const rmw_qos_profile_t _qos_profile;
 
@@ -90,17 +93,19 @@ std::string make_detail_string(
 } // anonymous namespace
 
 //==============================================================================
-std::shared_ptr<soss::TopicPublisher> make_meta_publisher(
-        const xtypes::DynamicType& message_type,
+std::shared_ptr<is::TopicPublisher> make_meta_publisher(
+        const eprosima::xtypes::DynamicType& message_type,
         rclcpp::Node& node,
         const std::string& topic_name,
         const rmw_qos_profile_t& qos_profile,
         const YAML::Node& configuration)
 {
     return std::make_shared<MetaPublisher>(
-        StringTemplate(topic_name, make_detail_string(topic_name, message_type.name())),
+        core::StringTemplate(topic_name, make_detail_string(topic_name, message_type.name())),
         message_type, node, qos_profile, configuration);
 }
 
-} // namespace ros2
-} // namespace soss
+} //  namespace ros2
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima

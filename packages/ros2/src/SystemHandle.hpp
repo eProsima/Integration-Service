@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +16,25 @@
  *
  */
 
-#ifndef SOSS__ROS2__INTERNAL__SYSTEMHANDLE_HPP
-#define SOSS__ROS2__INTERNAL__SYSTEMHANDLE_HPP
+#ifndef _IS_SH_ROS2_INTERNAL_SYSTEMHANDLE_HPP_
+#define _IS_SH_ROS2_INTERNAL_SYSTEMHANDLE_HPP_
 
-#include <soss/SystemHandle.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
+
 #include <rclcpp/rclcpp.hpp>
 
-#include <soss/ros2/Factory.hpp>
+#include <is/sh/ros2/Factory.hpp>
 
 #include <rclcpp/executors/single_threaded_executor.hpp>
 
 #include <vector>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace ros2 {
 
+// TODO(@jamoralp): doxygen and add utils::Logger
 //==============================================================================
 class SystemHandle : public virtual FullSystem
 {
@@ -40,7 +45,7 @@ public:
 
     // Documentation inherited
     bool configure(
-            const RequiredTypes& types,
+            const core::RequiredTypes& types,
             const YAML::Node& configuration,
             TypeRegistry& type_registry) override;
 
@@ -56,28 +61,28 @@ public:
     // Documentation inherited
     bool subscribe(
             const std::string& topic_name,
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             SubscriptionCallback callback,
             const YAML::Node& configuration) override;
 
     // Documentation inherited
     std::shared_ptr<TopicPublisher> advertise(
             const std::string& topic_name,
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             const YAML::Node& configuration) override;
 
     // Documentation inherited
     bool create_client_proxy(
             const std::string& service_name,
-            const xtypes::DynamicType& service_type,
+            const eprosima::xtypes::DynamicType& service_type,
             RequestCallback callback,
             const YAML::Node& configuration) override;
 
     // Documentation inherited
     bool create_client_proxy(
             const std::string& service_name,
-            const xtypes::DynamicType&,
-            const xtypes::DynamicType& reply_type,
+            const eprosima::xtypes::DynamicType&,
+            const eprosima::xtypes::DynamicType& reply_type,
             RequestCallback callback,
             const YAML::Node& configuration) override
     {
@@ -87,14 +92,14 @@ public:
     // Documentation inherited
     std::shared_ptr<ServiceProvider> create_service_proxy(
             const std::string& service_name,
-            const xtypes::DynamicType& service_type,
+            const eprosima::xtypes::DynamicType& service_type,
             const YAML::Node& configuration) override;
 
     // Documentation inherited
     std::shared_ptr<ServiceProvider> create_service_proxy(
             const std::string& service_name,
-            const xtypes::DynamicType& request_type,
-            const xtypes::DynamicType&,
+            const eprosima::xtypes::DynamicType& request_type,
+            const eprosima::xtypes::DynamicType&,
             const YAML::Node& configuration) override
     {
         return create_service_proxy(service_name, request_type, configuration);
@@ -116,8 +121,10 @@ private:
 };
 
 
-} // namespace ros2
-} // namespace soss
+} //  namespace ros2
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima
 
 
-#endif // SOSS__ROS2__INTERNAL__SYSTEMHANDLE_HPP
+#endif //  _IS_SH_ROS2_INTERNAL_SYSTEMHANDLE_HPP_

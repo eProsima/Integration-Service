@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +16,20 @@
  *
  */
 
-#ifndef SOSS__ROS2__UTILITIES_HPP
-#define SOSS__ROS2__UTILITIES_HPP
+#ifndef _IS_SH_ROS2_UTILITIES_HPP_
+#define _IS_SH_ROS2_UTILITIES_HPP_
 
-#include <soss/utilities.hpp>
+#include <is/utils/Convert.hpp>
 
-#ifdef ROS2_IS_SH__ROSIDL_GENERATOR_CPP
+#ifdef IS_SH_ROS2__ROSIDL_GENERATOR_CPP
 #include <rosidl_generator_cpp/bounded_vector.hpp>
 #else
 #include <rosidl_runtime_cpp/bounded_vector.hpp>
-#endif // ifdef ROS2_IS_SH__ROSIDL_GENERATOR_CPP
+#endif //  IS_SH_ROS2__ROSIDL_GENERATOR_CPP
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace utils {
 
 #ifdef ROS2_IS_SH__ROSIDL_GENERATOR_CPP
 template<typename T, std::size_t U, typename V>
@@ -45,6 +48,8 @@ struct Convert<BoundedVector<ElementType, UpperBound, Allocator> >
         std::vector<typename Convert<ElementType>::soss_type>,
         soss::convert_bounded_vector<ElementType, UpperBound> > { };
 
-} // namespace soss
+} //  namespace utils
+} //  namespace is
+} //  namespace eprosima
 
-#endif // SOSS__ROS2__UTILITIES_HPP
+#endif //  _IS_SH_ROS2_UTILITIES_HPP_

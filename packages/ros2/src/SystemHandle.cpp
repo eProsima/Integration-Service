@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +19,26 @@
 #include "SystemHandle.hpp"
 #include "MetaPublisher.hpp"
 
-#include <soss/ros2/Factory.hpp>
+#include <is/sh/ros2/Factory.hpp>
 
-#include <soss/MiddlewareInterfaceExtension.hpp>
-#include <soss/Search.hpp>
+#include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
+#include <is/core/runtime/Search.hpp>
 
 #include <rclcpp/executors/single_threaded_executor.hpp>
 #include <rcl/logging.h>
 
 #include <thread>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace ros2 {
 
+// TODO(@jamoralp): Add utils::Logger class
 namespace {
 
-#define soss_ros2_cout std::cout << "[soss-ros2] "
-#define soss_ros2_cerr std::cerr << "[soss-ros2] "
+#define is_sh_ros2_cout std::cout << "[is-sh-ros2] "
+#define is_sh_ros2_cerr std::cerr << "[is-sh-ros2] "
 
 bool set_platform_env(
         const std::string& variable,
@@ -82,14 +86,14 @@ inline void print_missing_mix_file(
         const std::string& type,
         const std::vector<std::string>& /*checked_paths*/)
 {
-    soss_ros2_cerr << "Could not find .mix file for "
-                   << msg_or_srv << " type: '"
-                   << type << "'" << std::endl
-                   << " -- Make sure that you have generated "
-                   << "the 'soss-ros2' extension for "
-                   << "that message type by calling "
-                   << "'soss_rosidl_mix(PACKAGES <package> MIDDLEWARES ros2)' "
-                   << "in your build system!" << std::endl;
+    is_sh_ros2_cerr << "Could not find .mix file for "
+                    << msg_or_srv << " type: '"
+                    << type << "'" << std::endl
+                    << " -- Make sure that you have generated "
+                    << "the 'is-sh-ros2' extension for "
+                    << "that message type by calling "
+                    << "'is_sh_ros2_rosidl_mix(PACKAGES <package> MIDDLEWARES ros2)' "
+                    << "in your build system!" << std::endl;
 
     //  // TODO(MXG): Introduce a way for users to request a "debug", especially from
     //  // the command line. When debug mode is active, this should be printed out.
@@ -100,14 +104,14 @@ inline void print_missing_mix_file(
 
 //==============================================================================
 bool SystemHandle::configure(
-        const RequiredTypes& types,
+        const core::RequiredTypes& types,
         const YAML::Node& configuration,
         TypeRegistry& type_registry)
 {
     const int argc = 1;
     const char* argv[argc];
     bool success = true;
-    argv[0] = "soss";
+    argv[0] = "is_sh_ros2";
 
     if (!rclcpp::ok())
     {
@@ -121,7 +125,7 @@ bool SystemHandle::configure(
     }
 
     std::stringstream node_name_ss;
-    node_name_ss << "soss_ros2_node_" << rand();
+    node_name_ss << "is_sh_ros2_node_" << rand();
     std::string name = node_name_ss.str();
 
     if (const YAML::Node name_node = configuration["node_name"])
@@ -133,10 +137,10 @@ bool SystemHandle::configure(
     {
         if (!configuration["node_name"])
         {
-            soss_ros2_cout << "It is recommended to set the 'node_name' attribute "
-                           << "in the YAML file when using the 'domain' option. "
-                           << "The default node name will be '"
-                           << name << "'." << std::endl;
+            is_sh_ros2_cout << "It is recommended to set the 'node_name' attribute "
+                            << "in the YAML file when using the 'domain' option. "
+                            << "The default node name will be '"
+                            << name << "'." << std::endl;
         }
         // TODO(@jamoralp) Warn if not set a custom node name unique for each node.
         std::string previous_domain;
@@ -165,7 +169,7 @@ bool SystemHandle::configure(
         }
 
         const char* context_argv[1];
-        const std::string context_name("soss_ros2_context_" + name);
+        const std::string context_name("is_sh_ros2_context_" + name);
         context_argv[0] = context_name.c_str();
 
         _context = std::make_shared<rclcpp::Context>();
@@ -176,11 +180,11 @@ bool SystemHandle::configure(
 
         _node = std::make_shared<rclcpp::Node>(name, ns, *_node_options);
 
-        soss_ros2_cout << "Created node '"
-                       << ns << "/" << name << "'"
-                       << " with Domain ID: "
-                       << _node_options->get_rcl_node_options()->domain_id
-                       << std::endl;
+        is_sh_ros2_cout << "Created node '"
+                        << ns << "/" << name << "'"
+                        << " with Domain ID: "
+                        << _node_options->get_rcl_node_options()->domain_id
+                        << std::endl;
 
         if (previous_domain.empty())
         {
@@ -194,7 +198,7 @@ bool SystemHandle::configure(
     else
     {
         // Using default DOMAIN_ID, the node can be added to the default context.
-        soss_ros2_cout << "Created node '" << ns << "/" << name << "'" << std::endl;
+        is_sh_ros2_cout << "Created node '" << ns << "/" << name << "'" << std::endl;
         _node = std::make_shared<rclcpp::Node>(name, ns);
     }
 
@@ -203,18 +207,18 @@ bool SystemHandle::configure(
 
     auto register_type = [&](const std::string& type_name) -> bool
             {
-                xtypes::DynamicType::Ptr type = Factory::instance().create_type(type_name);
+                eprosima::xtypes::DynamicType::Ptr type = Factory::instance().create_type(type_name);
                 if (type.get() == nullptr)
                 {
-                    soss_ros2_cerr << "Failed to register the required DynamicType ["
-                                   << type_name << "]" << std::endl;
+                    is_sh_ros2_cerr << "Failed to register the required DynamicType ["
+                                    << type_name << "]" << std::endl;
                     return false;
                 }
                 type_registry.emplace(type_name, std::move(type));
                 return true;
             };
 
-    soss::Search search("ros2");
+    core::Search search("ros2");
     for (const std::string& type_name : types.messages)
     {
         std::vector<std::string> checked_paths;
@@ -228,10 +232,10 @@ bool SystemHandle::configure(
             continue;
         }
 
-        if (!Mix::from_file(msg_mix_path).load())
+        if (!core::Mix::from_file(msg_mix_path).load())
         {
-            soss_ros2_cerr << "Failed to load extension for message type ["
-                           << type_name << "] using mix file: " << msg_mix_path << std::endl;
+            is_sh_ros2_cerr << "Failed to load extension for message type ["
+                            << type_name << "] using mix file: " << msg_mix_path << std::endl;
             success = false;
             continue;
         }
@@ -253,11 +257,11 @@ bool SystemHandle::configure(
             continue;
         }
 
-        if (!Mix::from_file(srv_mix_path).load())
+        if (!core::Mix::from_file(srv_mix_path).load())
         {
-            soss_ros2_cerr << "Failed to load extension for service type ["
-                           << type_name << "] using mix file: '"
-                           << srv_mix_path << "'." << std::endl;
+            is_sh_ros2_cerr << "Failed to load extension for service type ["
+                            << type_name << "] using mix file: '"
+                            << srv_mix_path << "'." << std::endl;
             success = false;
             continue;
         }
@@ -298,7 +302,7 @@ SystemHandle::~SystemHandle()
 //==============================================================================
 bool SystemHandle::subscribe(
         const std::string& topic_name,
-        const xtypes::DynamicType& message_type,
+        const eprosima::xtypes::DynamicType& message_type,
         SubscriptionCallback callback,
         const YAML::Node& configuration)
 {
@@ -313,17 +317,17 @@ bool SystemHandle::subscribe(
 
     _subscriptions.emplace_back(std::move(subscription));
 
-    soss_ros2_cout << "Created subscription for topic: '"
-                   << topic_name << "' on node: '"
-                   << _node->get_namespace() << _node->get_name()
-                   << "'" << std::endl;
+    is_sh_ros2_cout << "Created subscription for topic: '"
+                    << topic_name << "' on node: '"
+                    << _node->get_namespace() << _node->get_name()
+                    << "'" << std::endl;
     return true;
 }
 
 //==============================================================================
 std::shared_ptr<TopicPublisher> SystemHandle::advertise(
         const std::string& topic_name,
-        const xtypes::DynamicType& message_type,
+        const eprosima::xtypes::DynamicType& message_type,
         const YAML::Node& configuration)
 {
     std::shared_ptr<TopicPublisher> publisher;
@@ -346,10 +350,10 @@ std::shared_ptr<TopicPublisher> SystemHandle::advertise(
 
     if (nullptr != publisher)
     {
-        soss_ros2_cout << "Created publisher for topic: '"
-                       << topic_name << "' on node: '"
-                       << _node->get_namespace() << _node->get_name()
-                       << "'" << std::endl;
+        is_sh_ros2_cout << "Created publisher for topic: '"
+                        << topic_name << "' on node: '"
+                        << _node->get_namespace() << _node->get_name()
+                        << "'" << std::endl;
     }
     return publisher;
 }
@@ -357,7 +361,7 @@ std::shared_ptr<TopicPublisher> SystemHandle::advertise(
 //==============================================================================
 bool SystemHandle::create_client_proxy(
         const std::string& service_name,
-        const xtypes::DynamicType& service_type,
+        const eprosima::xtypes::DynamicType& service_type,
         RequestCallback callback,
         const YAML::Node& configuration)
 {
@@ -378,7 +382,7 @@ bool SystemHandle::create_client_proxy(
 //==============================================================================
 std::shared_ptr<ServiceProvider> SystemHandle::create_service_proxy(
         const std::string& service_name,
-        const xtypes::DynamicType& service_type,
+        const eprosima::xtypes::DynamicType& service_type,
         const YAML::Node& configuration)
 {
     return Factory::instance().create_server_proxy(
@@ -386,8 +390,10 @@ std::shared_ptr<ServiceProvider> SystemHandle::create_service_proxy(
         parse_rmw_qos_configuration(configuration));
 }
 
-} // namespace ros2
-} // namespace soss
+} //  namespace ros2
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima
 
 //==============================================================================
-SOSS_REGISTER_SYSTEM("ros2", soss::ros2::SystemHandle)
+IS_REGISTER_SYSTEM("ros2", eprosima::is::sh::ros2::SystemHandle)

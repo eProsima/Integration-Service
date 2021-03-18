@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +16,26 @@
  *
  */
 
-#ifndef SOSS__ROS2__FACTORY_HPP
-#define SOSS__ROS2__FACTORY_HPP
+#ifndef _IS_SH_ROS2_FACTORY_HPP_
+#define _IS_SH_ROS2_FACTORY_HPP_
 
-#include <soss/SystemHandle.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
 
-#include <soss/ros2/export.hpp>
+#include <is/sh-ros2/export.hpp> // TODO (@jamoralp): convert this to is/sh/ros2
 
 #include <rclcpp/node.hpp>
 
 #include <functional>
 #include <memory>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace ros2 {
 
+// TODO(@jamoralp) Doxygen docs
 //==============================================================================
-class SOSS_ROS2_API Factory
+class IS_SH_ROS2_API Factory
 {
 public:
 
@@ -43,16 +47,16 @@ public:
 
     /// \brief Signature for subscription factories
     using TypeFactory =
-            std::function<xtypes::DynamicType::Ptr()>;
+            std::function<eprosima::xtypes::DynamicType::Ptr()>;
 
     /// \brief Register a subscription factory
     void register_type_factory(
             const std::string& message_type,
-            TypeFactory type_factory);
+            TypeFactory&& type_factory);
 
     /// \brief Create a subscription using the factory for the relevant message
     /// type
-    xtypes::DynamicType::Ptr create_type(
+    eprosima::xtypes::DynamicType::Ptr create_type(
             const std::string& message_type);
 
 
@@ -61,22 +65,22 @@ public:
             std::function<std::shared_ptr<void>(
                         rclcpp::Node& node,
                         const std::string& topic_name,
-                        const xtypes::DynamicType& message_type,
-                        TopicSubscriberSystem::SubscriptionCallback callback,
+                        const eprosima::xtypes::DynamicType& message_type,
+                        TopicSubscriberSystem::SubscriptionCallback && callback,
                         const rmw_qos_profile_t& qos_profile)>;
 
     /// \brief Register a subscription factory
     void register_subscription_factory(
             const std::string& message_type,
-            SubscriptionFactory subscriber_factory);
+            SubscriptionFactory&& subscriber_factory);
 
     /// \brief Create a subscription using the factory for the relevant message
     /// type
     std::shared_ptr<void> create_subscription(
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             rclcpp::Node& node,
             const std::string& topic_name,
-            TopicSubscriberSystem::SubscriptionCallback callback,
+            TopicSubscriberSystem::SubscriptionCallback&& callback,
             const rmw_qos_profile_t& qos_profile);
 
 
@@ -90,11 +94,11 @@ public:
     /// \brief Register a publisher factory
     void register_publisher_factory(
             const std::string& message_type,
-            PublisherFactory publisher_factory);
+            PublisherFactory&& publisher_factory);
 
     /// \brief Create a publisher using the factory for the relevant message type
     std::shared_ptr<TopicPublisher> create_publisher(
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             rclcpp::Node& node,
             const std::string& topic_name,
             const rmw_qos_profile_t& qos_profile);
@@ -111,7 +115,7 @@ public:
     /// \brief Register a client proxy factory
     void register_client_proxy_factory(
             const std::string& service_type,
-            ServiceClientFactory client_proxy_factory);
+            ServiceClientFactory&& client_proxy_factory);
 
     /// \brief Create a client proxy using the factory for the relevant service
     /// type
@@ -133,7 +137,7 @@ public:
     /// \brief Register a server proxy factory
     void register_server_proxy_factory(
             const std::string& service_type,
-            ServiceProviderFactory server_proxy_factory);
+            ServiceProviderFactory&& server_proxy_factory);
 
     /// \brief Create a server proxy using the factory for the relevant service
     /// type
@@ -147,7 +151,7 @@ private:
 
     /// \brief The private constructor ensures that this class can only be
     /// constructed using the instance() function.
-    Factory();
+    Factory() = default;
 
     class Implementation;
     /// \brief Pointer to the implementation of the Factory class.
@@ -156,14 +160,14 @@ private:
 };
 
 //==============================================================================
-template<typename FactoryType, void(Factory::* register_func)(const std::string&, FactoryType)>
+template<typename FactoryType, void(Factory::* register_func)(const std::string&, FactoryType &&)>
 struct FactoryRegistrar
 {
     FactoryRegistrar(
             const std::string& type,
-            FactoryType factory)
+            FactoryType&& factory)
     {
-        (Factory::instance().*register_func)(type, factory);
+        (Factory::instance().*register_func)(type, std::move(factory));
     }
 
 };
@@ -188,7 +192,9 @@ using ServiceClientFactoryRegistrar =
 using ServiceProviderFactoryRegistrar =
         FactoryRegistrar<Factory::ServiceProviderFactory, &Factory::register_server_proxy_factory>;
 
-} // namespace ros2
-} // namespace soss
+} //  namespace ros2
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima
 
-#endif // SOSS__ROS2__FACTORY_HPP
+#endif //  _IS_SH_ROS2_FACTORY_HPP_

@@ -20,10 +20,10 @@
 ##################################################################################
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
-project(ros2-is-sh VERSION "0.1.0" LANGUAGES CXX)
+project(is-sh-ros2 VERSION "0.1.0" LANGUAGES CXX)
 
 find_package(is-core REQUIRED)
-find_package(ros2-is-sh-rosidl REQUIRED)
+find_package(is-sh-ros2-rosidl REQUIRED)
 find_package(rclcpp REQUIRED)
 
 find_package(Sanitizers QUIET)
@@ -77,7 +77,7 @@ target_compile_options(${PROJECT_NAME}
 
 # Generate the export macro header
 include(GNUInstallDirs)
-is_generate_export_header(ros2)
+is_generate_export_header(sh-ros2)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
@@ -95,7 +95,7 @@ target_include_directories(${PROJECT_NAME}
 if (NOT rosidl_runtime_cpp_FOUND)
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC
-      "ROS2_IS_SH__ROSIDL_GENERATOR_CPP"
+      "IS_SH_ROS2__ROSIDL_GENERATOR_CPP"
   )
 endif()
 
@@ -122,9 +122,9 @@ install(
 
 
   ##################################################################################
-# Install the Integration Service ros2-is-sh-rosidl-mix plugin
+# Install the Integration Service is-sh-ros2-rosidl-mix plugin
 ##################################################################################
-ros2_is_sh_rosidl_install_extension(
+is_sh_ros2_rosidl_install_extension(
   MIDDLEWARE
     ros2
   MESSAGE

@@ -55,10 +55,10 @@ alphabetical_fields = sorted(spec.fields, key=lambda x: x.name)
 #include <stdexcept>
 
 // Include the header for the generic message type
-#include <soss/Message.hpp>
+#include <is/core/Message.hpp>
 
 // Include the header for the conversions
-#include <soss/utilities.hpp>
+#include <is/utils/Convert.hpp>
 
 // Include the header for the concrete ros2 message type
 #include <@(ros2_msg_dependency)>

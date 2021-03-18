@@ -1,5 +1,5 @@
 {
-    "name": "is-ros2",
+    "name": "is-sh-ros2",
     "type": "ros.cmake",
-    "dependencies": ["xtypes", "is-core", "is-rosidl"]
+    "dependencies": ["xtypes", "is-core", "is-sh-ros2-rosidl"]
 }
