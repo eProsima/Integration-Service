@@ -17,6 +17,7 @@
  */
 
 #include <is/core/Config.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
 
 #include <iostream>
 

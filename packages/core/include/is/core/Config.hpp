@@ -33,15 +33,9 @@ namespace is {
 namespace core {
 
 /**
- * @brief Contains a set of which topics and services types are required in order
- *        to successfully create an *Integration Service* instance, based on the
- *        provided configuration.
+ * @brief Forward declaration.
  */
-struct RequiredTypes
-{
-    std::set<std::string> messages;
-    std::set<std::string> services;
-};
+struct RequiredTypes;
 
 namespace internal {
 
