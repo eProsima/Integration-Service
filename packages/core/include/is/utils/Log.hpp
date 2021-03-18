@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef _IS_CORE_UTILS_LOG_HPP_
-#define _IS_CORE_UTILS_LOG_HPP_
+#ifndef _IS_UTILS_LOG_HPP_
+#define _IS_UTILS_LOG_HPP_
 
 #include <string>
 #include <iostream>
@@ -209,4 +209,4 @@ private:
 } //  namespace is
 } //  namespace eprosima
 
-#endif //  _IS_CORE_UTILS_LOG_HPP_
+#endif //  _IS_UTILS_LOG_HPP_
