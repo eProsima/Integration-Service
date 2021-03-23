@@ -37,7 +37,6 @@ using TcpClient = websocketpp::client<TcpConfig>;
 
 using TlsEndpoint = websocketpp::endpoint<TlsConnection, TlsConfig>;
 using TcpEndpoint = websocketpp::endpoint<TcpConnection, TcpConfig>;
-//using WsCppEndpointPtr = std::unique_ptr<WsCppEndpoint>;
 
 using ConnectionHandlePtr = websocketpp::connection_hdl;
 using TlsMessagePtr = TlsEndpoint::message_ptr;

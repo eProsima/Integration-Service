@@ -254,330 +254,344 @@ public:
             return nullptr;
         }
 
-    if(!configure_server(uport, "", "", format))
-      return nullptr;
+        if (!configure_server(uport, "", "", format))
+        {
+            return nullptr;
+        }
 
-    return _tcp_server.get();
-  }
-
-  bool configure_server(
-      const uint16_t port,
-      const std::string& cert_file,
-      const std::string& key_file,
-      const boost::asio::ssl::context::file_format format)
-  {
-    namespace asio = boost::asio;
-
-    _context = std::make_shared<SslContext>(asio::ssl::context::tls);
-    _context->set_options(
-          asio::ssl::context::default_workarounds |
-          asio::ssl::context::no_sslv2 |
-          asio::ssl::context::no_sslv3);
-
-    boost::system::error_code ec;
-    if (!cert_file.empty())
-    {
-    	_context->use_certificate_file(cert_file, format, ec);
-    	if(ec)
-    	{
-      	     std::cerr << "[soss::websocket::Server] Failed to load certificate file ["
-                 << cert_file << "]: " << ec.message() << std::endl;
-    	     return false;
-    	}
+        return _tcp_server.get();
     }
 
-    // TODO(MXG): There is an alternative function
-    // _context->use_private_key(key_file, format, ec);
-    // which I guess is supposed to be used for keys that do not label
-    // themselves as rsa private keys? We're currently using rsa private
-    // keys, but this is probably something we should allow users to
-    // configure from the soss config file.
-    if (!key_file.empty())
+    bool configure_server(
+            const uint16_t port,
+            const std::string& cert_file,
+            const std::string& key_file,
+            const boost::asio::ssl::context::file_format format)
     {
-    	_context->use_rsa_private_key_file(key_file, format, ec);
-    	if(ec)
-    	{
-   	    std::cerr << "[soss::websocket::Server] Failed to load private key file ["
-                << key_file << "]: " << ec.message() << std::endl;
-      	    return false;
-    	}
+        namespace asio = boost::asio;
+
+        _context = std::make_shared<SslContext>(asio::ssl::context::tls);
+        _context->set_options(
+            asio::ssl::context::default_workarounds |
+            asio::ssl::context::no_sslv2 |
+            asio::ssl::context::no_sslv3);
+
+        boost::system::error_code ec;
+        if (!cert_file.empty())
+        {
+            _context->use_certificate_file(cert_file, format, ec);
+            if (ec)
+            {
+                std::cerr << "[soss::websocket::Server] Failed to load certificate file ["
+                          << cert_file << "]: " << ec.message() << std::endl;
+                return false;
+            }
+        }
+
+        // TODO(MXG): There is an alternative function
+        // _context->use_private_key(key_file, format, ec);
+        // which I guess is supposed to be used for keys that do not label
+        // themselves as rsa private keys? We're currently using rsa private
+        // keys, but this is probably something we should allow users to
+        // configure from the soss config file.
+        if (!key_file.empty())
+        {
+            _context->use_rsa_private_key_file(key_file, format, ec);
+            if (ec)
+            {
+                std::cerr << "[soss::websocket::Server] Failed to load private key file ["
+                          << key_file << "]: " << ec.message() << std::endl;
+                return false;
+            }
+        }
+        // TODO(MXG): This helps to rerun soss more quickly if the server fell down
+        // gracelessly. Is this something we really want? Are there any dangers to
+        // using this?
+        if (_use_security)
+        {
+            initialize_tls_server(port);
+        }
+        else
+        {
+            initialize_tcp_server(port);
+        }
+
+        return true;
     }
-    // TODO(MXG): This helps to rerun soss more quickly if the server fell down
-    // gracelessly. Is this something we really want? Are there any dangers to
-    // using this?
-    if (_use_security)
+
+    void initialize_tls_server(
+            uint16_t port)
     {
-      initialize_tls_server(port);
+        _tls_server->set_reuse_addr(true);
+
+        _tls_server->clear_access_channels(
+            websocketpp::log::alevel::frame_header |
+            websocketpp::log::alevel::frame_payload);
+
+        _tls_server->init_asio();
+        _tls_server->start_perpetual();
+
+        _tls_server->set_message_handler(
+            [&](ConnectionHandlePtr handle, TlsMessagePtr message)
+            {
+                this->_handle_tls_message(handle, message);
+            });
+
+        _tls_server->set_close_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_close(std::move(handle));
+            });
+
+        _tls_server->set_open_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_opening(std::move(handle));
+            });
+
+        _tls_server->set_fail_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_failed_connection(std::move(handle));
+            });
+
+        _tls_server->set_tls_init_handler(
+            [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
+            {
+                return _context;
+            });
+
+        _tls_server->set_validate_handler(
+            [&](ConnectionHandlePtr handle) -> bool
+            {
+                return this->_handle_validate(std::move(handle));
+            });
+
+        _tls_server->listen(port);
+
+        _server_thread = std::thread([&]()
+                        {
+                            this->_tls_server->run();
+                        });
+
     }
-    else
-    {
-      initialize_tcp_server(port);
-    }
-
-    return true;
-  }
-
-  void initialize_tls_server(
-      uint16_t port)
-  {
-    _tls_server->set_reuse_addr(true);
-
-    _tls_server->clear_access_channels(
-          websocketpp::log::alevel::frame_header |
-          websocketpp::log::alevel::frame_payload);
-
-    _tls_server->init_asio();
-    _tls_server->start_perpetual();
-
-    _tls_server->set_message_handler(
-          [&](ConnectionHandlePtr handle, TlsMessagePtr message)
-    {
-      this->_handle_tls_message(handle, message);
-    });
-
-    _tls_server->set_close_handler(
-          [&](ConnectionHandlePtr handle)
-    {
-      this->_handle_close(std::move(handle));
-    });
-
-    _tls_server->set_open_handler(
-          [&](ConnectionHandlePtr handle)
-    {
-      this->_handle_opening(std::move(handle));
-    });
-
-    _tls_server->set_fail_handler(
-          [&](ConnectionHandlePtr handle)
-    {
-      this->_handle_failed_connection(std::move(handle));
-    });
-
-    _tls_server->set_tls_init_handler(
-          [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
-    {
-      return _context;
-    });
-
-    _tls_server->set_validate_handler(
-          [&](ConnectionHandlePtr handle) -> bool
-    {
-      return this->_handle_validate(std::move(handle));
-    });
-
-    _tls_server->listen(port);
-
-    _server_thread = std::thread([&](){ this->_tls_server->run(); });
-
-  }
 
     void initialize_tcp_server(
-        uint16_t port)
-  {
-    _tcp_server->set_reuse_addr(true);
-
-    _tcp_server->clear_access_channels(
-          websocketpp::log::alevel::frame_header |
-          websocketpp::log::alevel::frame_payload);
-
-    _tcp_server->init_asio();
-    _tcp_server->start_perpetual();
-
-    _tcp_server->set_message_handler(
-          [&](ConnectionHandlePtr handle, TlsMessagePtr message)
+            uint16_t port)
     {
-      this->_handle_tcp_message(handle, message);
-    });
+        _tcp_server->set_reuse_addr(true);
 
-    _tcp_server->set_close_handler(
-          [&](ConnectionHandlePtr handle)
+        _tcp_server->clear_access_channels(
+            websocketpp::log::alevel::frame_header |
+            websocketpp::log::alevel::frame_payload);
+
+        _tcp_server->init_asio();
+        _tcp_server->start_perpetual();
+
+        _tcp_server->set_message_handler(
+            [&](ConnectionHandlePtr handle, TlsMessagePtr message)
+            {
+                this->_handle_tcp_message(handle, message);
+            });
+
+        _tcp_server->set_close_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_close(std::move(handle));
+            });
+
+        _tcp_server->set_open_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_opening(std::move(handle));
+            });
+
+        _tcp_server->set_fail_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_failed_connection(std::move(handle));
+            });
+
+        _tcp_server->set_tcp_init_handler(
+            [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
+            {
+                return _context;
+            });
+
+        _tcp_server->set_validate_handler(
+            [&](ConnectionHandlePtr handle) -> bool
+            {
+                return this->_handle_validate(std::move(handle));
+            });
+
+        _tcp_server->listen(port);
+
+        _server_thread = std::thread([&]()
+                        {
+                            this->_tcp_server->run();
+                        });
+
+    }
+
+    ~Server() override
     {
-      this->_handle_close(std::move(handle));
-    });
+        _closing_down = true;
 
-    _tcp_server->set_open_handler(
-          [&](ConnectionHandlePtr handle)
-    {
-      this->_handle_opening(std::move(handle));
-    });
+        // NOTE(MXG): _open_connections can get modified in other threads so we'll
+        // make a copy of it here before using it.
+        // TODO(MXG): We should probably be using mutexes to protect the operations
+        // on these connections.
 
-    _tcp_server->set_fail_handler(
-          [&](ConnectionHandlePtr handle)
-    {
-      this->_handle_failed_connection(std::move(handle));
-    });
-
-    _tcp_server->set_tcp_init_handler(
-          [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
-    {
-      return _context;
-    });
-
-    _tcp_server->set_validate_handler(
-          [&](ConnectionHandlePtr handle) -> bool
-    {
-      return this->_handle_validate(std::move(handle));
-    });
-
-    _tcp_server->listen(port);
-
-    _server_thread = std::thread([&](){ this->_tcp_server->run(); });
-
-  }
-
-  ~Server() override
-  {
-    _closing_down = true;
-
-    // NOTE(MXG): _open_connections can get modified in other threads so we'll
-    // make a copy of it here before using it.
-    // TODO(MXG): We should probably be using mutexes to protect the operations
-    // on these connections.
-
-    // First instruct all connections to close
-    if (_use_security)
-    {
-      _mutex.lock();
-      for(const auto& connection : _open_tls_connections)
-      {
-         if (connection->get_state() != websocketpp::session::state::closed)
-         {
-             try
-             {
-                 connection->close(websocketpp::close::status::normal, "shutdown");
-             }
-             catch (websocketpp::exception& e)
-             {
-                std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" << std::endl;
-             }
-         }
-      }
-
-      // Then wait for all of them to close
-
-      using namespace std::chrono_literals;
-      const auto start_time = std::chrono::steady_clock::now();
-      // TODO(MXG): Make these timeout parameters something that can be
-      // configured by users.
-      while(!all_tls_closed(_open_tls_connections))
-      {
-        std::this_thread::sleep_for(200ms);
-
-        if(std::chrono::steady_clock::now() - start_time > 10s)
+        // First instruct all connections to close
+        if (_use_security)
         {
-          std::cerr << "[soss::websocket::Server] Timed out while waiting for "
-                    << "the remote clients to acknowledge the connection "
-                    << "shutdown request" << std::endl;
-          break;
+            _mutex.lock();
+            for (const auto& connection : _open_tls_connections)
+            {
+                if (connection->get_state() != websocketpp::session::state::closed)
+                {
+                    try
+                    {
+                        connection->close(websocketpp::close::status::normal, "shutdown");
+                    }
+                    catch (websocketpp::exception& e)
+                    {
+                        std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" <<
+                                        std::endl;
+                    }
+                }
+            }
+
+            // Then wait for all of them to close
+
+            using namespace std::chrono_literals;
+            const auto start_time = std::chrono::steady_clock::now();
+            // TODO(MXG): Make these timeout parameters something that can be
+            // configured by users.
+            while (!all_tls_closed(_open_tls_connections))
+            {
+                std::this_thread::sleep_for(200ms);
+
+                if (std::chrono::steady_clock::now() - start_time > 10s)
+                {
+                    std::cerr << "[soss::websocket::Server] Timed out while waiting for "
+                              << "the remote clients to acknowledge the connection "
+                              << "shutdown request" << std::endl;
+                    break;
+                }
+            }
+            _mutex.unlock();
         }
-      }
-      _mutex.unlock();
-    }
-    else 
-    {
-      _mutex.lock();
-      for(const auto& connection : _open_tcp_connections)
-      {
-         if (connection->get_state() != websocketpp::session::state::closed)
-         {
-             try
-             {
-                connection->close(websocketpp::close::status::normal, "shutdown");
-             }
-             catch (websocketpp::exception& e)
-             {
-                std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" << std::endl;
-             }
-         }
-      }
-      // Then wait for all of them to close
-
-      using namespace std::chrono_literals;
-      const auto start_time = std::chrono::steady_clock::now();
-      // TODO(MXG): Make these timeout parameters something that can be
-      // configured by users.
-      while(!all_tcp_closed(_open_tcp_connections))
-      {
-        std::this_thread::sleep_for(200ms);
-
-        if(std::chrono::steady_clock::now() - start_time > 10s)
+        else
         {
-          std::cerr << "[soss::websocket::Server] Timed out while waiting for "
-                    << "the remote clients to acknowledge the connection "
-                    << "shutdown request" << std::endl;
-          break;
+            _mutex.lock();
+            for (const auto& connection : _open_tcp_connections)
+            {
+                if (connection->get_state() != websocketpp::session::state::closed)
+                {
+                    try
+                    {
+                        connection->close(websocketpp::close::status::normal, "shutdown");
+                    }
+                    catch (websocketpp::exception& e)
+                    {
+                        std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" <<
+                                        std::endl;
+                    }
+                }
+            }
+            // Then wait for all of them to close
+
+            using namespace std::chrono_literals;
+            const auto start_time = std::chrono::steady_clock::now();
+            // TODO(MXG): Make these timeout parameters something that can be
+            // configured by users.
+            while (!all_tcp_closed(_open_tcp_connections))
+            {
+                std::this_thread::sleep_for(200ms);
+
+                if (std::chrono::steady_clock::now() - start_time > 10s)
+                {
+                    std::cerr << "[soss::websocket::Server] Timed out while waiting for "
+                              << "the remote clients to acknowledge the connection "
+                              << "shutdown request" << std::endl;
+                    break;
+                }
+            }
+            _mutex.unlock();
         }
-      }
-      _mutex.unlock();
+
+        if (_server_thread.joinable())
+        {
+            if (_use_security)
+            {
+                _tls_server->stop();
+            }
+            else
+            {
+                _tcp_server->stop();
+            }
+
+            _server_thread.join();
+        }
     }
 
-    if(_server_thread.joinable())
+    bool okay() const override
     {
-      if (_use_security)
-      {
-        _tls_server->stop();
-      }
-      else
-      {
-       _tcp_server->stop();
-      }
-
-      _server_thread.join();
+        // TODO(MXG): How do we know if the server is okay?
+        return true;
     }
-  }
 
-  bool okay() const override
-  {
-    // TODO(MXG): How do we know if the server is okay?
-    return true;
-  }
-
-  bool spin_once() override
-  {
-    if(!_has_spun_once)
+    bool spin_once() override
     {
-      _has_spun_once = true;
-      if (_use_security)
-      {
-        _tls_server->start_accept();
-      }
-      else
-      {
-         _tcp_server->start_accept();
-      }
+        if (!_has_spun_once)
+        {
+            _has_spun_once = true;
+            if (_use_security)
+            {
+                _tls_server->start_accept();
+            }
+            else
+            {
+                _tcp_server->start_accept();
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        // TODO(MXG): How do we know if the server is okay?
+        return true;
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    // TODO(MXG): How do we know if the server is okay?
-    return true;
-  }
-
-  void runtime_advertisement(
-      const std::string& topic,
-      const xtypes::DynamicType& message_type,
-      const std::string& id,
-      const YAML::Node& configuration) override
-  {
-    const std::string advertise_msg =
-        get_encoding().encode_advertise_msg(
-              topic, message_type.name(), id, configuration);
-
-    if (_use_security)
+    void runtime_advertisement(
+            const std::string& topic,
+            const xtypes::DynamicType& message_type,
+            const std::string& id,
+            const YAML::Node& configuration) override
     {
-      _mutex.lock();
-      for(const TlsConnectionPtr& connection : _open_tls_connections)
-        connection->send(advertise_msg);
-       _mutex.unlock();
+        const std::string advertise_msg =
+                get_encoding().encode_advertise_msg(
+            topic, message_type.name(), id, configuration);
+
+        if (_use_security)
+        {
+            _mutex.lock();
+            for (const TlsConnectionPtr& connection : _open_tls_connections)
+            {
+                connection->send(advertise_msg);
+            }
+            _mutex.unlock();
+        }
+        else
+        {
+            _mutex.lock();
+            for (const TcpConnectionPtr& connection : _open_tcp_connections)
+            {
+                connection->send(advertise_msg);
+            }
+            _mutex.unlock();
+        }
     }
-    else
-    {
-      _mutex.lock();
-      for(const TcpConnectionPtr& connection : _open_tcp_connections)
-        connection->send(advertise_msg);
-       _mutex.unlock();
-    }
-  }
 
 private:
 

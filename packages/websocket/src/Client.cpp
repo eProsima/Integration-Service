@@ -272,7 +272,7 @@ public:
                         });
     }
 
-        void initialize_tcp_client()
+    void initialize_tcp_client()
     {
         _tcp_client->clear_access_channels(
             websocketpp::log::alevel::frame_header |

@@ -179,82 +179,83 @@ public:
 
 protected:
 
-  const Encoding& get_encoding() const;
+    const Encoding& get_encoding() const;
 
-  void notify_connection_opened(
-      const TlsConnectionPtr& connection_handle);
+    void notify_connection_opened(
+            const TlsConnectionPtr& connection_handle);
 
-  void notify_connection_opened(
-      const TcpConnectionPtr& connection_handle);
+    void notify_connection_opened(
+            const TcpConnectionPtr& connection_handle);
 
     void notify_connection_closed(
             const std::shared_ptr<void>& connection_handle);
 
 private:
 
-  virtual TlsEndpoint* configure_tls_endpoint(
-      const RequiredTypes& types,
-      const YAML::Node& configuration) = 0;
+    virtual TlsEndpoint* configure_tls_endpoint(
+            const RequiredTypes& types,
+            const YAML::Node& configuration) = 0;
 
-  virtual TcpEndpoint* configure_tcp_endpoint(
-      const RequiredTypes& types,
-      const YAML::Node& configuration) = 0;
+    virtual TcpEndpoint* configure_tcp_endpoint(
+            const RequiredTypes& types,
+            const YAML::Node& configuration) = 0;
 
-  EncodingPtr _encoding;
-  std::shared_ptr<TlsEndpoint> _tls_endpoint;
-  std::shared_ptr<TcpEndpoint> _tcp_endpoint;
-  bool _use_security;
+    EncodingPtr _encoding;
+    std::shared_ptr<TlsEndpoint> _tls_endpoint;
+    std::shared_ptr<TcpEndpoint> _tcp_endpoint;
+    bool _use_security;
 
-  struct TopicSubscribeInfo
-  {
-    std::string type;
-    SubscriptionCallback callback;
+    struct TopicSubscribeInfo
+    {
+        std::string type;
+        SubscriptionCallback callback;
 
-    // Connections whose publications we will ignore because their message type
-    // does not match the one we expect.
-    std::unordered_set<std::shared_ptr<void>> blacklist;
-  };
+        // Connections whose publications we will ignore because their message type
+        // does not match the one we expect.
+        std::unordered_set<std::shared_ptr<void> > blacklist;
+    };
 
-  struct TopicPublishInfo
-  {
-    std::string type;
+    struct TopicPublishInfo
+    {
+        std::string type;
 
-    using ListenerMap = std::unordered_map<
-        std::shared_ptr<void>,
-        std::unordered_set<std::string>>;
+        using ListenerMap = std::unordered_map<
+            std::shared_ptr<void>,
+            std::unordered_set<std::string> >;
 
-    // Map from connection handle to id of listeners
-    ListenerMap listeners;
-  };
+        // Map from connection handle to id of listeners
+        ListenerMap listeners;
+    };
 
-  struct ClientProxyInfo
-  {
-    std::string type;
-    RequestCallback callback;
-  };
+    struct ClientProxyInfo
+    {
+        std::string type;
+        RequestCallback callback;
+    };
 
-  struct ServiceProviderInfo
-  {
-    std::string type;
-    std::shared_ptr<void> connection_handle;
-    YAML::Node configuration;
-  };
+    struct ServiceProviderInfo
+    {
+        std::string req_type;
+        std::string reply_type;
+        std::shared_ptr<void> connection_handle;
+        YAML::Node configuration;
+    };
 
-  struct ServiceRequestInfo
-  {
-    ServiceClient* client;
-    std::shared_ptr<void> call_handle;
-  };
+    struct ServiceRequestInfo
+    {
+        ServiceClient* client;
+        std::shared_ptr<void> call_handle;
+    };
 
-  std::vector<std::string> _startup_messages;
-  std::unordered_map<std::string, TopicSubscribeInfo> _topic_subscribe_info;
-  std::unordered_map<std::string, TopicPublishInfo> _topic_publish_info;
-  std::unordered_map<std::string, ClientProxyInfo> _client_proxy_info;
-  std::unordered_map<std::string, ServiceProviderInfo> _service_provider_info;
-  std::unordered_map<std::string, ServiceRequestInfo> _service_request_info;
-  std::unordered_map<std::string, xtypes::DynamicType::Ptr> _message_types;
+    std::vector<std::string> _startup_messages;
+    std::unordered_map<std::string, TopicSubscribeInfo> _topic_subscribe_info;
+    std::unordered_map<std::string, TopicPublishInfo> _topic_publish_info;
+    std::unordered_map<std::string, ClientProxyInfo> _client_proxy_info;
+    std::unordered_map<std::string, ServiceProviderInfo> _service_provider_info;
+    std::unordered_map<std::string, ServiceRequestInfo> _service_request_info;
+    std::unordered_map<std::string, xtypes::DynamicType::Ptr> _message_types;
 
-  std::size_t _next_service_call_id;
+    std::size_t _next_service_call_id;
 
 };
 
