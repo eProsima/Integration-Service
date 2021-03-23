@@ -19,21 +19,21 @@
 #include <soss/Instance.hpp>
 #include <soss/utilities.hpp>
 
-#include <catch2/catch.hpp>
+#include <gtest/gtest.h>
 
 #include <iostream>
 
-TEST_CASE("Transmit and receive all test messages", "[websocket]")
+TEST(WebSocket, Transmit_and_receive_all_test_messages)
 {
     using namespace std::chrono_literals;
 
     soss::InstanceHandle server_handle =
             soss::run_instance(WEBSOCKET__ROUNDTRIP_SERVER__TEST_CONFIG);
-    REQUIRE(server_handle);
+    ASSERT_TRUE(server_handle);
 
     soss::InstanceHandle client_handle =
             soss::run_instance(WEBSOCKET__ROUNDTRIP_CLIENT__TEST_CONFIG);
-    REQUIRE(client_handle);
+    ASSERT_TRUE(client_handle);
 
     std::cout << " -- Waiting to make sure the client has time to connect"
               << std::endl;
@@ -45,7 +45,7 @@ TEST_CASE("Transmit and receive all test messages", "[websocket]")
     // soss. A soss::mock subscription will never receive a soss::mock publication
     // from soss::mock::publish_message(~), so any messages that this subscription
     // receives will have come from the server_handle.
-    REQUIRE(soss::mock::subscribe(
+    ASSERT_TRUE(soss::mock::subscribe(
                 "client_to_server",
                 [&](const xtypes::DynamicData& message)
                 {
@@ -60,16 +60,16 @@ TEST_CASE("Transmit and receive all test messages", "[websocket]")
     soss::mock::publish_message("client_to_server", msg_to_server);
 
     auto client_to_server_future = client_to_server_promise.get_future();
-    REQUIRE(client_to_server_future.wait_for(5s) == std::future_status::ready);
+    ASSERT_EQ(client_to_server_future.wait_for(5s), std::future_status::ready);
     const xtypes::DynamicData client_to_server_result = client_to_server_future.get();
-    REQUIRE(client_to_server_result.size() > 0);
+    ASSERT_GT(client_to_server_result.size(), 0);
 
     float apple_result = client_to_server_result["apple"];
-    CHECK(apple_result == apple);
+    EXPECT_EQ(apple_result, apple);
 
 
     std::promise<xtypes::DynamicData> server_to_client_promise;
-    REQUIRE(soss::mock::subscribe(
+    ASSERT_TRUE(soss::mock::subscribe(
                 "server_to_client",
                 [&](const xtypes::DynamicData& message)
                 {
@@ -84,18 +84,26 @@ TEST_CASE("Transmit and receive all test messages", "[websocket]")
     soss::mock::publish_message("server_to_client", msg_to_client);
 
     auto server_to_client_future = server_to_client_promise.get_future();
-    REQUIRE(server_to_client_future.wait_for(5s) == std::future_status::ready);
+    ASSERT_EQ(server_to_client_future.wait_for(5s), std::future_status::ready);
     const xtypes::DynamicData server_to_client_result = server_to_client_future.get();
-    REQUIRE(server_to_client_result.size() > 0);
+    ASSERT_GT(server_to_client_result.size(), 0);
 
     std::string banana_result;
     banana_result = server_to_client_result["banana"].value<std::string>();
-    CHECK(banana_result == banana);
+    EXPECT_EQ(banana_result, banana);
 
-    CHECK(client_handle.quit().wait() == 0);
-    CHECK(server_handle.quit().wait() == 0);
+    EXPECT_EQ(client_handle.quit().wait(), 0);
+    EXPECT_EQ(server_handle.quit().wait(), 0);
 
     // NOTE(MXG) It seems the error
     // `[info] asio async_shutdown error: asio.misc:2 (End of file)`
     // is normal and to be expected as far as I can tell.
+}
+
+int main(
+        int argc,
+        char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
