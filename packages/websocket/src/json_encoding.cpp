@@ -35,6 +35,8 @@ const std::string JsonOpKey = "op";
 const std::string JsonIdKey = "id";
 const std::string JsonTopicNameKey = "topic";
 const std::string JsonTypeNameKey = "type";
+const std::string JsonRequestTypeNameKey = "request_type";
+const std::string JsonReplyTypeNameKey = "reply_type";
 const std::string JsonMsgKey = "msg";
 const std::string JsonServiceKey = "service";
 const std::string JsonArgsKey = "args";
@@ -168,6 +170,20 @@ struct service_response
 
 )";
 
+// This function patches the problem with types, which do not admit '/' in their type name.
+std::string transform_type(
+        const std::string& message_type)
+{
+    std::string type = message_type;
+
+    for (size_t i = type.find('/'); i != std::string::npos; i = type.find('/', i))
+    {
+        type.replace(i, 1, "__");
+    }
+
+    return type;
+}
+
 //==============================================================================
 static void throw_missing_key(
         const Json& object,
@@ -288,10 +304,10 @@ public:
         // message to be received, so we'll check for that type next.
         if (op_str == JsonOpServiceRequestKey)
         {
-            std::string topic_name = get_required_string(msg, JsonServiceKey);
-            const xtypes::DynamicType& dest_type = get_type_by_topic(topic_name);
+            std::string service_name = get_required_string(msg, JsonServiceKey);
+            const xtypes::DynamicType& dest_type = get_req_type_from_service(service_name);
             endpoint.receive_service_request_ws(
-                topic_name,
+                service_name,
                 get_required_msg(msg, dest_type, JsonArgsKey),
                 get_optional_string(msg, JsonIdKey),
                 std::move(connection_handle));
@@ -302,8 +318,8 @@ public:
         // message to be received, so we'll check for that type next.
         if (op_str == JsonOpServiceResponseKey)
         {
-            std::string topic_name = get_required_string(msg, JsonServiceKey);
-            const xtypes::DynamicType& dest_type = get_type_by_topic(topic_name);
+            std::string service_name = get_required_string(msg, JsonServiceKey);
+            const xtypes::DynamicType& dest_type = get_rep_type_from_service(service_name);
             endpoint.receive_service_response_ws(
                 get_required_string(msg, JsonServiceKey),
                 get_required_msg(msg, dest_type, JsonValuesKey),
@@ -354,11 +370,18 @@ public:
 
         if (op_str == JsonOpAdvertiseServiceKey)
         {
-            const xtypes::DynamicType& topic_type = get_type(get_required_string(msg, JsonTypeNameKey));
+            const xtypes::DynamicType& req_type = get_type(get_required_string(msg, JsonRequestTypeNameKey));
+            const xtypes::DynamicType& reply_type = get_type(get_required_string(msg, JsonReplyTypeNameKey));
             endpoint.receive_service_advertisement_ws(
                 get_required_string(msg, JsonServiceKey),
-                topic_type,
+                req_type,
+                reply_type,
                 std::move(connection_handle));
+
+            types_by_service_[get_required_string(msg, JsonServiceKey)] =
+                    std::pair<std::string, std::string>(
+                transform_type(get_required_string(msg, JsonRequestTypeNameKey)),
+                transform_type(get_required_string(msg, JsonReplyTypeNameKey)));
             return;
         }
 
@@ -387,7 +410,7 @@ public:
             output[JsonIdKey] = id;
         }
 
-        types_by_topic_[topic_name] = topic_type;
+        types_by_topic_[topic_name] = transform_type(topic_type);
 
         return output.dump();
     }
@@ -409,7 +432,17 @@ public:
             output[JsonIdKey] = id;
         }
 
-        types_by_topic_[service_name] = service_type;
+        auto it = types_by_service_.find(service_name);
+        if (it != types_by_service_.end())
+        {
+            types_by_service_[service_name] = std::pair<std::string, std::string>(
+                it->second.first, transform_type(service_type));
+        }
+        else
+        {
+            types_by_service_[service_name] = std::pair<std::string, std::string>(
+                "", transform_type(service_type));
+        }
 
         return output.dump();
     }
@@ -425,13 +458,13 @@ public:
         Json output;
         output[JsonOpKey] = JsonOpSubscribeKey;
         output[JsonTopicNameKey] = topic_name;
-        output[JsonTypeNameKey] = message_type;
+        output[JsonTypeNameKey] = transform_type(message_type);
         if (!id.empty())
         {
             output[JsonIdKey] = id;
         }
 
-        types_by_topic_[topic_name] = message_type;
+        types_by_topic_[topic_name] = transform_type(message_type);
 
         return output.dump();
     }
@@ -445,13 +478,13 @@ public:
         Json output;
         output[JsonOpKey] = JsonOpAdvertiseTopicKey;
         output[JsonTopicNameKey] = topic_name;
-        output[JsonTypeNameKey] = message_type;
+        output[JsonTypeNameKey] = transform_type(message_type);
         if (!id.empty())
         {
             output[JsonIdKey] = id;
         }
 
-        types_by_topic_[topic_name] = message_type;
+        types_by_topic_[topic_name] = transform_type(message_type);
 
         return output.dump();
     }
@@ -474,23 +507,36 @@ public:
             output[JsonIdKey] = id;
         }
 
-        types_by_topic_[service_name] = service_type;
+        auto it = types_by_service_.find(service_name);
+        if (it != types_by_service_.end())
+        {
+            types_by_service_[service_name] = std::pair<std::string, std::string>(
+                transform_type(service_type), it->second.second);
+        }
+        else
+        {
+            types_by_service_[service_name] = std::pair<std::string, std::string>(
+                transform_type(service_type), "");
+        }
 
         return output.dump();
     }
 
     std::string encode_advertise_service_msg(
             const std::string& service_name,
-            const std::string& service_type,
+            const std::string& request_type,
+            const std::string& reply_type,
             const std::string& /*id*/,
             const YAML::Node& /*configuration*/) const override
     {
         Json output;
         output[JsonOpKey] = JsonOpAdvertiseServiceKey;
-        output[JsonTypeNameKey] = service_type;
+        output[JsonRequestTypeNameKey] = transform_type(request_type);
+        output[JsonReplyTypeNameKey] = transform_type(reply_type);
         output[JsonServiceKey] = service_name;
 
-        types_by_topic_[service_name] = service_type;
+        types_by_service_[service_name] = std::pair<std::string, std::string>(transform_type(
+                            request_type), transform_type(reply_type));
 
         return output.dump();
     }
@@ -498,7 +544,7 @@ public:
     const xtypes::DynamicType& get_type(
             const std::string& type_name) const
     {
-        auto type_it = types_.find(type_name);
+        auto type_it = types_.find(transform_type(type_name));
         if (type_it != types_.end())
         {
             return *type_it->second;
@@ -514,7 +560,7 @@ public:
     const xtypes::DynamicType* get_type_ptr(
             const std::string& type_name) const
     {
-        auto type_it = types_.find(type_name);
+        auto type_it = types_.find(transform_type(type_name));
         if (type_it != types_.end())
         {
             return type_it->second.get();
@@ -531,7 +577,7 @@ public:
             const xtypes::DynamicType& type,
             const std::string& type_name) override
     {
-        std::string name = type_name.empty() ? type.name() : type_name;
+        std::string name = transform_type(type_name.empty() ? type.name() : type_name);
         auto result = types_.emplace(name, type);
         return result.second;
     }
@@ -542,10 +588,35 @@ public:
         return get_type(types_by_topic_[topic_name]);
     }
 
+    const xtypes::DynamicType& get_req_type_from_service(
+            const std::string& service_name) const
+    {
+        std::string req_type = types_by_service_[service_name].first;
+        if (req_type.empty())
+        {
+            throw std::runtime_error(
+                      "[soss::websocket::JsonEncoding] There isn't any request type for the service: " + service_name);
+        }
+        return get_type(req_type);
+    }
+
+    const xtypes::DynamicType& get_rep_type_from_service(
+            const std::string& service_name) const
+    {
+        std::string rep_type = types_by_service_[service_name].second;
+        if (rep_type.empty())
+        {
+            throw std::runtime_error(
+                      "[soss::websocket::JsonEncoding] There isn't any reply type for the service: " + service_name);
+        }
+        return get_type(rep_type);
+    }
+
 protected:
 
     std::map<std::string, xtypes::DynamicType::Ptr> types_;
     mutable std::map<std::string, std::string> types_by_topic_;
+    mutable std::map<std::string, std::pair<std::string, std::string> > types_by_service_;
 
 };
 

@@ -235,7 +235,8 @@ private:
 
     struct ServiceProviderInfo
     {
-        std::string type;
+        std::string req_type;
+        std::string reply_type;
         std::shared_ptr<void> connection_handle;
         YAML::Node configuration;
     };
