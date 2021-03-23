@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +19,10 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/executors/single_threaded_executor.hpp>
 
-#include <soss/mock/api.hpp>
-#include <soss/Instance.hpp>
-#include <soss/utilities.hpp>
+#include <is/sh/mock/api.hpp>
+
+#include <is/core/Instance.hpp>
+#include <is/utils/Convert.hpp>
 
 #include <nav_msgs/srv/get_plan.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -31,6 +33,7 @@
 #include <random>
 
 // TODO (@jamoralp): re-think or refactor these tests.
+// TODO(@jamoralp): use utils::Logger
 
 using Catch::Matchers::WithinAbs;
 
@@ -61,7 +64,7 @@ geometry_msgs::msg::PoseStamped generate_random_pose(
 
 void transform_pose_msg(
         const geometry_msgs::msg::PoseStamped& p,
-        xtypes::WritableDynamicDataRef to)
+        eprosima::xtypes::WritableDynamicDataRef to)
 {
     to["header"]["stamp"]["sec"] = p.header.stamp.sec;
     to["header"]["stamp"]["nanosec"] = p.header.stamp.nanosec;
@@ -75,13 +78,13 @@ void transform_pose_msg(
     to["pose"]["orientation"]["w"] = p.pose.orientation.w;
 }
 
-xtypes::DynamicData generate_plan_request_msg(
-        const xtypes::DynamicType& request_type,
+eprosima::xtypes::DynamicData generate_plan_request_msg(
+        const eprosima::xtypes::DynamicType& request_type,
         const geometry_msgs::msg::PoseStamped& start,
         const geometry_msgs::msg::PoseStamped& goal,
         const float tolerance = 1e-3f)
 {
-    xtypes::DynamicData message(request_type);
+    eprosima::xtypes::DynamicData message(request_type);
     transform_pose_msg(goal, message["goal"]);
     transform_pose_msg(start, message["start"]);
     message["tolerance"] = tolerance;
@@ -142,7 +145,7 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
 
     YAML::Node config_node = YAML::LoadFile(ROS2__GEOMETRY_MSGS__TEST_CONFIG);
 
-    soss::InstanceHandle handle = soss::run_instance(
+    eprosima::is::core::InstanceHandle handle = eprosima::is::run_instance(
         config_node, {ROS2__ROSIDL__BUILD_DIR});
 
     REQUIRE(handle);
@@ -163,11 +166,11 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
 #endif // RCLCPP__QOS_HPP_
     REQUIRE(publisher);
 
-    std::promise<xtypes::DynamicData> msg_promise;
-    std::future<xtypes::DynamicData> msg_future = msg_promise.get_future();
+    std::promise<eprosima::xtypes::DynamicData> msg_promise;
+    std::future<eprosima::xtypes::DynamicData> msg_future = msg_promise.get_future();
     std::mutex mock_sub_mutex;
     bool mock_sub_value_received = false;
-    auto mock_sub = [&](const xtypes::DynamicData& msg)
+    auto mock_sub = [&](const eprosima::xtypes::DynamicData& msg)
             {
                 std::unique_lock<std::mutex> lock(mock_sub_mutex);
                 if (mock_sub_value_received)
@@ -178,7 +181,7 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
                 mock_sub_value_received = true;
                 msg_promise.set_value(msg);
             };
-    REQUIRE(soss::mock::subscribe("transmit_pose", mock_sub));
+    REQUIRE(eprosima::is::sh::mock::subscribe("transmit_pose", mock_sub));
 
     geometry_msgs::msg::Pose ros2_pose = generate_random_pose().pose;
 
@@ -203,12 +206,12 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
     }
 
     REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
-    xtypes::DynamicData received_msg = msg_future.get();
+    eprosima::xtypes::DynamicData received_msg = msg_future.get();
 
     CHECK(received_msg.type().name() == "geometry_msgs/Pose");
 
-    xtypes::ReadableDynamicDataRef position = received_msg["position"];
-    xtypes::ReadableDynamicDataRef orientation = received_msg["orientation"];
+    eprosima::xtypes::ReadableDynamicDataRef position = received_msg["position"];
+    eprosima::xtypes::ReadableDynamicDataRef orientation = received_msg["orientation"];
 
     #define TEST_POSITION_OF( u ) \
     { \
@@ -251,14 +254,14 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
     // Keep spinning and publishing while we wait for the promise to be
     // delivered. Try to cycle this for no more than a few seconds. If it's not
     // finished by that time, then something is probably broken with the test or
-    // with soss, and we should quit instead of waiting for the future and
+    // with Integration Service, and we should quit instead of waiting for the future and
     // potentially hanging forever.
     start_time = std::chrono::steady_clock::now();
     while (std::chrono::steady_clock::now() - start_time < 30s)
     {
         executor.spin_some();
 
-        soss::mock::publish_message("echo_pose", received_msg);
+        eprosima::is::sh::mock::publish_message("echo_pose", received_msg);
 
         executor.spin_some();
         if (pose_future.wait_for(100ms) == std::future_status::ready)
@@ -294,7 +297,7 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
 
     YAML::Node config_node = YAML::LoadFile(ROS2__GEOMETRY_MSGS__TEST_CONFIG);
 
-    soss::InstanceHandle handle = soss::run_instance(
+    eprosima::is::core::InstanceHandle handle = eprosima::is::run_instance(
         config_node, {ROS2__ROSIDL__BUILD_DIR});
 
     REQUIRE(handle);
@@ -307,8 +310,8 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
     executor.add_node(ros2);
 
     // Get request type from ros2 middleware
-    const soss::TypeRegistry& ros2_types = *handle.type_registry("ros2");
-    const xtypes::DynamicType& request_type = *ros2_types.at("nav_msgs/GetPlan:request");
+    const eprosima::is::TypeRegistry& ros2_types = *handle.type_registry("ros2");
+    const eprosima::xtypes::DynamicType& request_type = *ros2_types.at("nav_msgs/GetPlan:request");
 
     // Create a plan
     nav_msgs::srv::GetPlan_Response plan_response;
@@ -353,12 +356,12 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
 
     executor.spin_some();
 
-    xtypes::DynamicData request_msg = generate_plan_request_msg(
+    eprosima::xtypes::DynamicData request_msg = generate_plan_request_msg(
         request_type,
         plan_response.plan.poses.front(),
         plan_response.plan.poses.back());
 
-    auto future_response_msg = soss::mock::request(
+    auto future_response_msg = eprosima::is::sh::mock::request(
         "get_plan", request_msg);
 
     // Make sure that we got the expected request message
@@ -392,13 +395,14 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
     }
     REQUIRE(future_response_msg.wait_for(0s) == std::future_status::ready);
 
-    const xtypes::DynamicData response_msg = future_response_msg.get();
+    const eprosima::xtypes::DynamicData response_msg = future_response_msg.get();
 
     // TODO(MXG): We could copy the request message that gets passed to here and
     // compare it against the original request message that was sent. This would
-    // require implementing comparison operators for the soss::Message class.
+    // require implementing comparison operators for the xtypes::DynamicData class.
+    // TODO (@jamoralp): this already exists
     std::mutex serve_mutex;
-    soss::mock::serve("echo_plan", [&](const xtypes::DynamicData&)
+    eprosima::is::sh::mock::serve("echo_plan", [&](const eprosima::xtypes::DynamicData&)
             {
                 std::unique_lock<std::mutex> lock(serve_mutex);
                 return response_msg;
@@ -414,7 +418,7 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
 
     // Keep spinning while we wait for the promise to be delivered. Try to cycle
     // this for no more than a few seconds. If it's not finished by that time,
-    // then something is probably broken with the test or with soss, and we
+    // then something is probably broken with the test or with Integration Service, and we
     // should quit instead of waiting for the future and potentially hanging
     // forever.
     start_time = std::chrono::steady_clock::now();

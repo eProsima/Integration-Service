@@ -17,7 +17,7 @@ include(CMakeParseArguments)
 include(GNUInstallDirs)
 
 #################################################
-# is_sh_ros2_rosidl_mix(
+# is_ros2_rosidl_mix(
 #   PACKAGES rosidl_packages...
 #   MIDDLEWARES [ros2|websocket|hl7]...
 #   [QUIET]
@@ -48,7 +48,7 @@ include(GNUInstallDirs)
 # mix libraries from being generated. If REQUIRED is not specified, then this
 # function will instead print warnings and proceed as much as possible whenever
 # an error is encountered.
-function(is_sh_ros2_rosidl_mix)
+function(is_ros2_rosidl_mix)
 
   set(possible_options QUIET REQUIRED)
 
@@ -71,8 +71,8 @@ function(is_sh_ros2_rosidl_mix)
     IDL_TYPE rosidl
     SCRIPT
       INTERPRETER ${PYTHON_EXECUTABLE}
-      FIND ${IS_SH_ROS2_ROSIDL_FIND_PACKAGE_INFO_SCRIPT}
-      GENERATE ${IS_SH_ROS2_ROSIDL_GENERATE_SCRIPT}
+      FIND ${IS_ROS2_ROSIDL_FIND_PACKAGE_INFO_SCRIPT}
+      GENERATE ${IS_ROS2_ROSIDL_GENERATE_SCRIPT}
     PACKAGES ${_ARG_PACKAGES}
     MIDDLEWARES ${_ARG_MIDDLEWARES}
     ${options}

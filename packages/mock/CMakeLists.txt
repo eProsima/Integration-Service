@@ -20,7 +20,7 @@
 ##################################################################################
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
-project(is-sh-mock VERSION "0.1.0" LANGUAGES CXX)
+project(is-mock VERSION "0.1.0" LANGUAGES CXX)
 
 ##################################################################################
 # Find required dependencies for the Integration Service Mock SystemHandle library
@@ -76,7 +76,7 @@ target_compile_options(${PROJECT_NAME}
 
 # Generate the export macro header
 include(GNUInstallDirs)
-is_generate_export_header(sh-mock)
+is_generate_export_header(mock)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
@@ -94,7 +94,7 @@ target_include_directories(${PROJECT_NAME}
 ##################################################################################
 is_install_middleware_plugin(
   MIDDLEWARE
-    mock
+    mock #TODO (@jamoralp) fix this
   TARGET
     ${PROJECT_NAME}
   )

@@ -1,8 +1,8 @@
-// generated from soss/packages/ros2/resource/soss__ros2__message.cpp.em
+// generated from is-ros2/resources/convert_msg.cpp.em
 // generated code does not contain a copyright notice
 
 @#######################################################################
-@# EmPy template for generating soss/rosidl/ros2/<package>/src/msg/convert__msg__<msg>.cpp files
+@# EmPy template for generating is/rosidl/ros2/<package>/src/msg/convert__msg__<msg>.cpp files
 @#
 @# Context:
 @#  - spec (rosidl_parser.MessageSpecification)
@@ -21,19 +21,21 @@ namespace_parts = [
     'convert', spec.base_type.pkg_name, 'msg', underscore_msg_type]
 namespace_variable = '__'.join(namespace_parts)
 
-conversion_dependency = 'soss/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
+conversion_dependency = 'is/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
     spec.base_type.pkg_name, camelcase_msg_type)
 }@
 
 // Include the API header for this message type
 #include <@(conversion_dependency)>
 // Include the Factory header so we can add this message type to the Factory
-#include <soss/ros2/Factory.hpp>
+#include <is/sh/ros2/Factory.hpp>
 
 // Include the Node API so we can subscribe and advertise
 #include <rclcpp/node.hpp>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace ros2 {
 namespace @(namespace_variable) {
 
@@ -49,7 +51,7 @@ public:
 
   Subscription(
       rclcpp::Node& node,
-      TopicSubscriberSystem::SubscriptionCallback callback,
+      TopicSubscriberSystem::SubscriptionCallback&& callback,
       const std::string& topic_name,
       const xtypes::DynamicType& message_type,
       const rmw_qos_profile_t& qos_profile)
@@ -79,7 +81,7 @@ private:
     _callback(data);
   }
 
-  // Save the SOSS callback that we were given by the soss-ros2 plugin
+  // Save the callback that we were given by the is-ros2 plugin
   TopicSubscriberSystem::SubscriptionCallback _callback;
 
   const xtypes::DynamicType& _message_type;
@@ -107,7 +109,7 @@ SubscriptionFactoryRegistrar register_subscriber(g_msg_name, &subscribe);
 } // anonymous namespace
 
 //==============================================================================
-class Publisher final : public virtual soss::TopicPublisher
+class Publisher final : public virtual is::TopicPublisher
 {
 public:
 
@@ -143,7 +145,7 @@ private:
 };
 
 //==============================================================================
-std::shared_ptr<soss::TopicPublisher> make_publisher(
+std::shared_ptr<is::TopicPublisher> make_publisher(
     rclcpp::Node& node,
     const std::string& topic_name,
     const rmw_qos_profile_t& qos_profile)
@@ -155,6 +157,8 @@ namespace {
 PublisherFactoryRegistrar register_publisher(g_msg_name, &make_publisher);
 }
 
-} // namespace @(namespace_variable)
-} // namespace ros2
-} // namespace soss
+} //  namespace @(namespace_variable)
+} //  namespace ros2
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima

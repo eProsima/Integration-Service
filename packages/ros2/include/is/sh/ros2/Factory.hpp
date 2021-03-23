@@ -21,7 +21,7 @@
 
 #include <is/systemhandle/SystemHandle.hpp>
 
-#include <is/sh-ros2/export.hpp> // TODO (@jamoralp): convert this to is/sh/ros2
+#include <is/ros2/export.hpp> // TODO (@jamoralp): convert this to is/sh/ros2
 
 #include <rclcpp/node.hpp>
 
@@ -35,7 +35,7 @@ namespace ros2 {
 
 // TODO(@jamoralp) Doxygen docs
 //==============================================================================
-class IS_SH_ROS2_API Factory
+class IS_ROS2_API Factory
 {
 public:
 
@@ -52,7 +52,7 @@ public:
     /// \brief Register a subscription factory
     void register_type_factory(
             const std::string& message_type,
-            TypeFactory&& type_factory);
+            TypeFactory type_factory);
 
     /// \brief Create a subscription using the factory for the relevant message
     /// type
@@ -66,13 +66,13 @@ public:
                         rclcpp::Node& node,
                         const std::string& topic_name,
                         const eprosima::xtypes::DynamicType& message_type,
-                        TopicSubscriberSystem::SubscriptionCallback && callback,
+                        TopicSubscriberSystem::SubscriptionCallback callback,
                         const rmw_qos_profile_t& qos_profile)>;
 
     /// \brief Register a subscription factory
     void register_subscription_factory(
             const std::string& message_type,
-            SubscriptionFactory&& subscriber_factory);
+            SubscriptionFactory subscriber_factory);
 
     /// \brief Create a subscription using the factory for the relevant message
     /// type
@@ -80,7 +80,7 @@ public:
             const eprosima::xtypes::DynamicType& message_type,
             rclcpp::Node& node,
             const std::string& topic_name,
-            TopicSubscriberSystem::SubscriptionCallback&& callback,
+            TopicSubscriberSystem::SubscriptionCallback callback,
             const rmw_qos_profile_t& qos_profile);
 
 
@@ -94,7 +94,7 @@ public:
     /// \brief Register a publisher factory
     void register_publisher_factory(
             const std::string& message_type,
-            PublisherFactory&& publisher_factory);
+            PublisherFactory publisher_factory);
 
     /// \brief Create a publisher using the factory for the relevant message type
     std::shared_ptr<TopicPublisher> create_publisher(
@@ -115,7 +115,7 @@ public:
     /// \brief Register a client proxy factory
     void register_client_proxy_factory(
             const std::string& service_type,
-            ServiceClientFactory&& client_proxy_factory);
+            ServiceClientFactory client_proxy_factory);
 
     /// \brief Create a client proxy using the factory for the relevant service
     /// type
@@ -137,7 +137,7 @@ public:
     /// \brief Register a server proxy factory
     void register_server_proxy_factory(
             const std::string& service_type,
-            ServiceProviderFactory&& server_proxy_factory);
+            ServiceProviderFactory server_proxy_factory);
 
     /// \brief Create a server proxy using the factory for the relevant service
     /// type
@@ -160,14 +160,14 @@ private:
 };
 
 //==============================================================================
-template<typename FactoryType, void(Factory::* register_func)(const std::string&, FactoryType &&)>
+template<typename FactoryType, void(Factory::* register_func)(const std::string&, FactoryType)>
 struct FactoryRegistrar
 {
     FactoryRegistrar(
             const std::string& type,
-            FactoryType&& factory)
+            FactoryType factory)
     {
-        (Factory::instance().*register_func)(type, std::move(factory));
+        (Factory::instance().*register_func)(type, factory);
     }
 
 };

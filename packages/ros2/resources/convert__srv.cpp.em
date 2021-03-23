@@ -1,8 +1,8 @@
-// generated from soss/packages/ros2/resources/convert__srv.cpp.em
+// generated from is-ros2/resources/convert_srv.cpp.em
 // generated code does not contain a copyright notice
 
 @#######################################################################
-@# EmPy template for generating soss/rosidl/ros2/<package>/src/srv/convert__srv__<srv>.cpp files
+@# EmPy template for generating is/rosidl/ros2/<package>/src/srv/convert__srv__<srv>.cpp files
 @#
 @# Context:
 @#  - spec (rosidl_parser.ServiceSpecification)
@@ -35,7 +35,7 @@ for type, msg in {"request": spec.request, "response": spec.response}.items():
         if field.type.is_primitive_type():
           continue
 
-        key = 'soss/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
+        key = 'is/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
             field.type.pkg_name, field.type.type)
         if key not in conversion_dependencies:
             conversion_dependencies[key] = set([])
@@ -48,28 +48,30 @@ alphabetical_response_fields = sorted(spec.response.fields, key=lambda x: x.name
 #include <stdexcept>
 
 // Include the header for the generic message type
-#include <soss/Message.hpp>
+// #include <is/core/Message.hpp>
 
 // Include the header for the conversions
-#include <soss/utilities.hpp>
+#include <is/utils/Convert.hpp>
 
 // Include the header for the concrete service type
 #include <@(ros2_srv_dependency)>
 
-// Include the headers for the soss message dependencies
+// Include the headers for the Integration Service message dependencies
 @[for key in sorted(conversion_dependencies.keys())]@
 #include <@(key)> // @(', '.join(conversion_dependencies[key]))
 @[end for]@
 
 // Include the Factory header so we can add this message type to the Factory
-#include <soss/ros2/Factory.hpp>
+#include <is/sh/ros2/Factory.hpp>
 
 // Include the Node API so we can provide and request services
 #include <rclcpp/node.hpp>
 
 #include <chrono>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace ros2 {
 namespace @(namespace_variable_srv) {
 
@@ -122,7 +124,7 @@ TypeFactoryRegistrar register_response_type(g_response_name, &response_type);
 void request_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Request& to)
 {
 @[for field in alphabetical_request_fields]@
-  soss::Convert<Ros2_Request::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
+  utils::Convert<Ros2_Request::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
 @[end for]@
 
   // Suppress possible unused variable warnings
@@ -134,7 +136,7 @@ void request_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Request& t
 void request_to_xtype(const Ros2_Request& from, xtypes::WritableDynamicDataRef to)
 {
 @[for field in alphabetical_request_fields]@
-  soss::Convert<Ros2_Request::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
+  utils::Convert<Ros2_Request::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
 @[end for]@
 
   // Suppress possible unused variable warnings
@@ -146,7 +148,7 @@ void request_to_xtype(const Ros2_Request& from, xtypes::WritableDynamicDataRef t
 void response_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Response& to)
 {
 @[for field in alphabetical_response_fields]@
-  soss::Convert<Ros2_Response::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
+  utils::Convert<Ros2_Response::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
 @[end for]@
 
   // Suppress possible unused variable warnings
@@ -158,7 +160,7 @@ void response_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Response&
 void response_to_xtype(const Ros2_Response& from, xtypes::WritableDynamicDataRef to)
 {
 @[for field in alphabetical_response_fields]@
-  soss::Convert<Ros2_Response::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
+  utils::Convert<Ros2_Response::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
 @[end for]@
 
   // Suppress possible unused variable warnings
@@ -167,7 +169,7 @@ void response_to_xtype(const Ros2_Response& from, xtypes::WritableDynamicDataRef
 }
 
 //==============================================================================
-class ClientProxy final : public virtual soss::ServiceClient
+class ClientProxy final : public virtual is::ServiceClient
 {
 public:
 
@@ -239,7 +241,7 @@ private:
 };
 
 //==============================================================================
-std::shared_ptr<soss::ServiceClient> make_client(
+std::shared_ptr<is::ServiceClient> make_client(
     rclcpp::Node& node,
     const std::string& service_name,
     const ServiceClientSystem::RequestCallback& callback,
@@ -256,7 +258,7 @@ ServiceClientFactoryRegistrar register_client(g_response_name, &make_client);
 xtypes::DynamicData initialize_response() {
   return xtypes::DynamicData(response_type());
 }
-class ServerProxy final : public virtual soss::ServiceProvider
+class ServerProxy final : public virtual is::ServiceProvider
 {
 public:
 
@@ -273,7 +275,7 @@ public:
 
   void call_service(
       const xtypes::DynamicData& request,
-      ServiceClient& soss_client,
+      ServiceClient& is_client,
       std::shared_ptr<void> call_handle) override
   {
     if (!_ros2_client->wait_for_service(std::chrono::milliseconds(10)))
@@ -281,27 +283,27 @@ public:
       return;
     }
 
-    // This helps the lambda to value-capture the address of the soss client.
+    // This helps the lambda to value-capture the address of the Integration Service client.
     // TODO(MXG): Would it be dangerous for the lambda to reference-capture the
-    // soss client? The lambda might be called after this reference has left
+    // Integration Service client? The lambda might be called after this reference has left
     // scope, so when a lambda does a reference-capture of a reference, does it
     // require the reference to stay alive or does it only require the
     // referred-to object to stay alive? For now we'll use this value-capture
     // technique since it's sure to be safe.
-    ServiceClient* const ptr_to_soss_client = &soss_client;
+    ServiceClient* const ptr_to_is_client = &is_client;
 
     Ros2_Request::SharedPtr ros2_request = _request_pool.pop();
     request_to_ros2(request, *ros2_request);
     _ros2_client->async_send_request(
           ros2_request,
           [=](const rclcpp::Client<Ros2_Srv>::SharedFuture future_response)
-          { this->_wait_for_response(*ptr_to_soss_client, std::move(call_handle), future_response, ros2_request); });
+          { this->_wait_for_response(*ptr_to_is_client, std::move(call_handle), future_response, ros2_request); });
   }
 
 private:
 
   void _wait_for_response(
-      ServiceClient& soss_client,
+      ServiceClient& is_client,
       std::shared_ptr<void> call_handle,
       const rclcpp::Client<Ros2_Srv>::SharedFuture& future_response,
       Ros2_Request::SharedPtr used_request)
@@ -309,24 +311,24 @@ private:
     future_response.wait();
 
     const Ros2_Response::SharedPtr& response = future_response.get();
-    xtypes::DynamicData soss_response = _response_pool.pop();
-    response_to_xtype(*response, soss_response);
+    xtypes::DynamicData is_response = _response_pool.pop();
+    response_to_xtype(*response, is_response);
 
-    soss_client.receive_response(std::move(call_handle), soss_response);
+    is_client.receive_response(std::move(call_handle), is_response);
 
-    _response_pool.recycle(std::move(soss_response));
+    _response_pool.recycle(std::move(is_response));
     _request_pool.recycle(std::move(used_request));
   }
 
   const std::string _service_name;
-  soss::SharedResourcePool<Ros2_Request> _request_pool;
-  soss::ResourcePool<xtypes::DynamicData, &initialize_response> _response_pool;
+  utils::SharedResourcePool<Ros2_Request> _request_pool;
+  utils::ResourcePool<xtypes::DynamicData, &initialize_response> _response_pool;
   rclcpp::Client<Ros2_Srv>::SharedPtr _ros2_client;
 
 };
 
 //==============================================================================
-std::shared_ptr<soss::ServiceProvider> make_server(
+std::shared_ptr<is::ServiceProvider> make_server(
     rclcpp::Node& node,
     const std::string& service_name,
     const rmw_qos_profile_t& qos_profile)
@@ -338,6 +340,8 @@ namespace {
 ServiceProviderFactoryRegistrar register_server(g_request_name, &make_server);
 }
 
-} // namespace @(namespace_variable_srv)
-} // namespace ros2
-} // namespace soss
+} //  namespace @(namespace_variable_srv)
+} //  namespace ros2
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima

@@ -92,7 +92,7 @@ inline void print_missing_mix_file(
                     << " -- Make sure that you have generated "
                     << "the 'is-sh-ros2' extension for "
                     << "that message type by calling "
-                    << "'is_sh_ros2_rosidl_mix(PACKAGES <package> MIDDLEWARES ros2)' "
+                    << "'is_ros2_rosidl_mix(PACKAGES <package> MIDDLEWARES ros2)' "
                     << "in your build system!" << std::endl;
 
     //  // TODO(MXG): Introduce a way for users to request a "debug", especially from

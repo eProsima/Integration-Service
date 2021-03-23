@@ -18,9 +18,9 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/executors/single_threaded_executor.hpp>
 
-#include <soss/mock/api.hpp>
-#include <soss/Instance.hpp>
-#include <soss/utilities.hpp>
+#include <is/sh/mock/api.hpp>
+#include <is/core/Instance.hpp>
+#include <is/utils/Convert.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -28,8 +28,8 @@
 
 #include <random>
 
-#include <soss_ros2_test_msg/msg/bounded_array_nested.hpp>
-#define ROS2_TYPE_NAME "soss_ros2_test_msg/BoundedArrayNested"
+#include <is_ros2_test_msg/msg/bounded_array_nested.hpp>
+#define ROS2_TYPE_NAME "is_ros2_test_msg/BoundedArrayNested"
 
 template<typename Ros2Primitives>
 Ros2Primitives generate_random_primitives(
@@ -63,30 +63,31 @@ Ros2Primitives generate_random_primitives(
 }
 
 template<typename Ros2Primitives>
-xtypes::DynamicData generate_random_primitives_msg(
+eprosima::xtypes::DynamicData generate_random_primitives_msg(
         const std::size_t seed,
-        const xtypes::DynamicType& type)
+        const eprosima::xtypes::DynamicType& type)
 {
     const Ros2Primitives ros2_primitives = generate_random_primitives<Ros2Primitives>(seed);
-    xtypes::DynamicData xtypes_primitives(type);
-#define SOSS_SET_FIELD(field_name) \
-    soss::Convert<typename Ros2Primitives::_ ## field_name ## _type>::to_xtype_field(ros2_primitives.field_name, \
-            xtypes_primitives[#field_name]); \
+    eprosima::xtypes::DynamicData xtypes_primitives(type);
+#define TO_XTYPES_SET_FIELD(field_name) \
+    eprosima::is::utils::Convert<typename Ros2Primitives::_ ## field_name ## _type>::to_xtype_field( \
+        ros2_primitives.field_name, \
+        xtypes_primitives[#field_name]); \
 
-    SOSS_SET_FIELD(bool_value);
-    SOSS_SET_FIELD(byte_value);
-    SOSS_SET_FIELD(char_value);
-    SOSS_SET_FIELD(int8_value);
-    SOSS_SET_FIELD(int16_value);
-    SOSS_SET_FIELD(int32_value);
-    SOSS_SET_FIELD(int64_value);
-    SOSS_SET_FIELD(uint8_value);
-    SOSS_SET_FIELD(uint16_value);
-    SOSS_SET_FIELD(uint32_value);
-    SOSS_SET_FIELD(uint64_value);
-    SOSS_SET_FIELD(float32_value);
-    SOSS_SET_FIELD(float64_value);
-    SOSS_SET_FIELD(string_value);
+    TO_XTYPES_SET_FIELD(bool_value);
+    TO_XTYPES_SET_FIELD(byte_value);
+    TO_XTYPES_SET_FIELD(char_value);
+    TO_XTYPES_SET_FIELD(int8_value);
+    TO_XTYPES_SET_FIELD(int16_value);
+    TO_XTYPES_SET_FIELD(int32_value);
+    TO_XTYPES_SET_FIELD(int64_value);
+    TO_XTYPES_SET_FIELD(uint8_value);
+    TO_XTYPES_SET_FIELD(uint16_value);
+    TO_XTYPES_SET_FIELD(uint32_value);
+    TO_XTYPES_SET_FIELD(uint64_value);
+    TO_XTYPES_SET_FIELD(float32_value);
+    TO_XTYPES_SET_FIELD(float64_value);
+    TO_XTYPES_SET_FIELD(string_value);
 
     return xtypes_primitives;
 }
@@ -120,11 +121,11 @@ void test(
 #endif // RCLCPP__QOS_HPP_
     REQUIRE(publisher);
 
-    std::promise<xtypes::DynamicData> msg_promise;
-    std::future<xtypes::DynamicData> msg_future = msg_promise.get_future();
+    std::promise<eprosima::xtypes::DynamicData> msg_promise;
+    std::future<eprosima::xtypes::DynamicData> msg_future = msg_promise.get_future();
     bool is_msg_received = false;
     std::mutex mock_sub_mutex;
-    auto mock_sub = [&](const xtypes::DynamicData& msg)
+    auto mock_sub = [&](const eprosima::xtypes::DynamicData& msg)
             {
                 std::unique_lock<std::mutex> lock(mock_sub_mutex);
                 if (is_msg_received)
@@ -135,7 +136,7 @@ void test(
                 is_msg_received = true;
                 msg_promise.set_value(msg);
             };
-    REQUIRE(soss::mock::subscribe("transmit", mock_sub));
+    REQUIRE(eprosima::is::sh::mock::subscribe("transmit", mock_sub));
 
     const std::size_t N = 3;
     Ros2Array ros2_msg = generate_random_array<Ros2Array, Ros2Primitives>(N);
@@ -146,7 +147,7 @@ void test(
 
     // Keep spinning while we wait for the promise to be delivered. Try cycle
     // this for no more than a few seconds. If it's not finished by that time,
-    // then something is probably broken with the test or with soss, and we
+    // then something is probably broken with the test or with Integration Service, and we
     // should quit instead of waiting for the future and potentially hanging
     // forever.
     auto start_time = std::chrono::steady_clock::now();
@@ -162,40 +163,40 @@ void test(
     }
 
     REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
-    xtypes::DynamicData received_msg = msg_future.get();
+    eprosima::xtypes::DynamicData received_msg = msg_future.get();
 
     CHECK(received_msg.type().name() == ROS2_TYPE_NAME);
 
 
-    xtypes::WritableDynamicDataRef seq = received_msg["primitive_values"];
+    eprosima::xtypes::WritableDynamicDataRef seq = received_msg["primitive_values"];
     REQUIRE(seq.size() == N);
 
     for (std::size_t i = 0; i < N; ++i)
     {
-        xtypes::ReadableDynamicDataRef xtypes_primitives = seq[i];
+        eprosima::xtypes::ReadableDynamicDataRef xtypes_primitives = seq[i];
         const Ros2Primitives& ros2_primitives = ros2_msg.primitive_values[i];
 
-    #define SOSS_REQUIRE_AND_COMPARE(field_name) { \
+    #define CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(field_name) { \
         typename Ros2Primitives::_ ## field_name ## _type ros2_field; \
-        soss::Convert<typename Ros2Primitives::_ ## field_name ## _type>::from_xtype_field( \
+        eprosima::is::utils::Convert<typename Ros2Primitives::_ ## field_name ## _type>::from_xtype_field( \
             xtypes_primitives[#field_name], ros2_field); \
         CHECK(ros2_field == ros2_primitives.field_name); \
 }
 
-        SOSS_REQUIRE_AND_COMPARE(bool_value);
-        SOSS_REQUIRE_AND_COMPARE(byte_value);
-        SOSS_REQUIRE_AND_COMPARE(char_value);
-        SOSS_REQUIRE_AND_COMPARE(int8_value);
-        SOSS_REQUIRE_AND_COMPARE(int16_value);
-        SOSS_REQUIRE_AND_COMPARE(int32_value);
-        SOSS_REQUIRE_AND_COMPARE(int64_value);
-        SOSS_REQUIRE_AND_COMPARE(uint8_value);
-        SOSS_REQUIRE_AND_COMPARE(uint16_value);
-        SOSS_REQUIRE_AND_COMPARE(uint32_value);
-        SOSS_REQUIRE_AND_COMPARE(uint64_value);
-        SOSS_REQUIRE_AND_COMPARE(string_value);
-        SOSS_REQUIRE_AND_COMPARE(float32_value);
-        SOSS_REQUIRE_AND_COMPARE(float64_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(bool_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(byte_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(char_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(int8_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(int16_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(int32_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(int64_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(uint8_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(uint16_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(uint32_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(uint64_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(string_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(float32_value);
+        CONVERT_FROM_XTYPES_REQUIRE_AND_COMPARE(float64_value);
     }
 
     const std::size_t M = ros2_msg.primitive_values.max_size();
@@ -235,14 +236,14 @@ void test(
     // Keep spinning and publishing while we wait for the promise to be
     // delivered. Try cycle this for no more than a few seconds. If it's not
     // finished by that time, then something is probably broken with the test or
-    // with soss, and we should quit instead of waiting for the future and
+    // with Integration Service, and we should quit instead of waiting for the future and
     // potentially hanging forever.
     start_time = std::chrono::steady_clock::now();
     while (std::chrono::steady_clock::now() - start_time < 30s)
     {
         executor.spin_node_some(ros2);
 
-        soss::mock::publish_message("echo", received_msg);
+        eprosima::is::sh::mock::publish_message("echo", received_msg);
 
         executor.spin_node_some(ros2);
         if (array_future.wait_for(100ms) == std::future_status::ready)
@@ -270,7 +271,7 @@ TEST_CASE("Transmit and receive all test messages", "[ros2]")
 
     YAML::Node config_node = YAML::LoadFile(ROS2__TEST_MSGS__TEST_CONFIG);
 
-    soss::InstanceHandle handle = soss::run_instance(
+    eprosima::is::core::InstanceHandle handle = eprosima::is::run_instance(
         config_node, {ROS2__ROSIDL__BUILD_DIR});
 
     REQUIRE(handle);
@@ -282,7 +283,7 @@ TEST_CASE("Transmit and receive all test messages", "[ros2]")
 
     SECTION("Send a bounded array of a message containing primitives and see that it arrives correctly ")
     {
-        test<soss_ros2_test_msg::msg::BoundedArrayNested, soss_ros2_test_msg::msg::Primitives>(ros2, executor);
+        test<is_ros2_test_msg::msg::BoundedArrayNested, is_ros2_test_msg::msg::Primitives>(ros2, executor);
     }
 
     // Quit and wait for no more than a minute. We don't want the test to get

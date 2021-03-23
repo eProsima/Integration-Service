@@ -1,8 +1,8 @@
-// generated from soss/packages/ros2/resource/soss__ros2__message.hpp.em
+// generated from is-ros2/resources/convert__msg.hpp.em
 // generated code does not contain a copyright notice
 
 @#######################################################################
-@# EmPy template for generating soss/rosidl/ros2/<package>/include/soss/rosidl/ros2/<package>/msg/convert__msg__<msg>.hpp files
+@# EmPy template for generating is/rosidl/ros2/<package>/include/is/rosidl/ros2/<package>/msg/convert__msg__<msg>.hpp files
 @#
 @# Context:
 @#  - spec (rosidl_parser.MessageSpecification)
@@ -24,8 +24,8 @@ msg_type_string = '{}/{}'.format(
       spec.base_type.pkg_name, camelcase_msg_type)
 
 header_guard_parts = [
-    'SOSS__ROSIDL__ROS2', spec.base_type.pkg_name, 'MSG__CONVERT__MSG',
-    underscore_msg_type + '_HPP']
+    '_IS_SH_ROS2_ROSIDL__ROS2', spec.base_type.pkg_name, 'MSG__CONVERT__MSG',
+    underscore_msg_type + '_HPP_']
 header_guard_variable = '__'.join([x.upper() for x in header_guard_parts])
 
 namespace_parts = [
@@ -40,7 +40,7 @@ for field in spec.fields:
     if field.type.is_primitive_type():
         continue
 
-    key = 'soss/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
+    key = 'is/rosidl/ros2/{}/msg/convert__msg__{}.hpp'.format(
         field.type.pkg_name, field.type.type)
     if key not in conversion_dependencies:
         conversion_dependencies[key] = set([])
@@ -55,7 +55,7 @@ alphabetical_fields = sorted(spec.fields, key=lambda x: x.name)
 #include <stdexcept>
 
 // Include the header for the generic message type
-#include <is/core/Message.hpp>
+// #include <is/core/Message.hpp>
 
 // Include the header for the conversions
 #include <is/utils/Convert.hpp>
@@ -72,7 +72,9 @@ alphabetical_fields = sorted(spec.fields, key=lambda x: x.name)
 // <none>
 @[end if]@
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace ros2 {
 namespace @(namespace_variable) {
 
@@ -83,26 +85,26 @@ const std::string g_idl = R"~~~(
 )~~~";
 
 //==============================================================================
-inline const xtypes::StructType& type()
+inline const eprosima::xtypes::StructType& type()
 {
-  xtypes::idl::Context context;
+  eprosima::xtypes::idl::Context context;
   context.allow_keyword_identifiers = true;
   context.ignore_redefinition = true;
-  xtypes::idl::parse(g_idl, context);
+  eprosima::xtypes::idl::parse(g_idl, context);
   if (!context.success)
   {
     throw std::runtime_error("Failed while parsing type @(cpp_msg_type)");
   }
-  static xtypes::StructType type(context.module().structure("@(cpp_msg_type)"));
+  static eprosima::xtypes::StructType type(context.module().structure("@(cpp_msg_type)"));
   type.name(g_msg_name);
   return type;
 }
 
 //==============================================================================
-inline void convert_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Msg& to)
+inline void convert_to_ros2(const eprosima::xtypes::ReadableDynamicDataRef& from, Ros2_Msg& to)
 {
 @[for field in alphabetical_fields]@
-  soss::Convert<Ros2_Msg::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
+  utils::Convert<Ros2_Msg::_@(field.name)_type>::from_xtype_field(from["@(field.name)"], to.@(field.name));
 @[end for]@
 
   // Suppress possible unused variable warnings
@@ -111,10 +113,10 @@ inline void convert_to_ros2(const xtypes::ReadableDynamicDataRef& from, Ros2_Msg
 }
 
 //==============================================================================
-inline void convert_to_xtype(const Ros2_Msg& from, xtypes::WritableDynamicDataRef to)
+inline void convert_to_xtype(const Ros2_Msg& from, eprosima::xtypes::WritableDynamicDataRef to)
 {
 @[for field in alphabetical_fields]@
-  soss::Convert<Ros2_Msg::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
+  utils::Convert<Ros2_Msg::_@(field.name)_type>::to_xtype_field(from.@(field.name), to["@(field.name)"]);
 @[end for]@
 
   // Suppress possible unused variable warnings
@@ -122,17 +124,21 @@ inline void convert_to_xtype(const Ros2_Msg& from, xtypes::WritableDynamicDataRe
   (void)to;
 }
 
-} // namespace @(namespace_variable)
-} // namespace ros2
+} //  namespace @(namespace_variable)
+} //  namespace ros2
+} //  namespace sh
 
+namespace utils {
 template<>
-struct Convert<ros2::@(namespace_variable)::Ros2_Msg>
+struct Convert<sh::ros2::@(namespace_variable)::Ros2_Msg>
     : MessageConvert<
-     ros2::@(namespace_variable)::Ros2_Msg,
-    &ros2::@(namespace_variable)::convert_to_ros2,
-    &ros2::@(namespace_variable)::convert_to_xtype
+     sh::ros2::@(namespace_variable)::Ros2_Msg,
+    &sh::ros2::@(namespace_variable)::convert_to_ros2,
+    &sh::ros2::@(namespace_variable)::convert_to_xtype
     > { };
 
-} // namespace soss
+} //  namespace utils
+} //  namespace is
+} //  namespace eprosima
 
 #endif // @(header_guard_variable)

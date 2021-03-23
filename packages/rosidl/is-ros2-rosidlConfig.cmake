@@ -16,22 +16,22 @@
 # is-core library and integration-service executable CMake project
 
 ##################################################################################
-# Config file for the is-sh-ros2-rosidl utility for generating translations
+# Config file for the is-ros2-rosidl utility for generating translations
 # from ROS2 message specification types to eProsima xtypes
 ##################################################################################
 
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
-if(is-sh-ros2-rosidl_CONFIG_INCLUDED)
+if(is-ros2-rosidl_CONFIG_INCLUDED)
   return()
 endif()
-set(is-sh-ros2-rosidl_CONFIG_INCLUDED TRUE)
+set(is-ros2-rosidl_CONFIG_INCLUDED TRUE)
 
 include(CMakeFindDependencyMacro)
 find_dependency(is-core REQUIRED)
 
-set(IS_SH_ROS2_ROSIDL_GENERATE_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/is_sh_ros2_rosidl_generate.py")
-set(IS_SH_ROS2_ROSIDL_FIND_PACKAGE_INFO_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/is_sh_ros2_rosidl_find_package_info.py")
+set(IS_ROS2_ROSIDL_GENERATE_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/is_ros2_rosidl_generate.py")
+set(IS_ROS2_ROSIDL_FIND_PACKAGE_INFO_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/scripts/is_ros2_rosidl_find_package_info.py")
 
-include("${CMAKE_CURRENT_LIST_DIR}/cmake/is_sh_ros2_rosidl_mix.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/cmake/is_sh_ros2_rosidl_install_extension.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/is_ros2_rosidl_mix.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/is_ros2_rosidl_install_extension.cmake")

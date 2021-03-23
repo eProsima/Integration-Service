@@ -17,7 +17,7 @@
 
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
-project(is-sh-ros2-rosidl)
+project(is-ros2-rosidl)
 
 find_package(is-core REQUIRED)
 find_package(rosidl_parser QUIET)

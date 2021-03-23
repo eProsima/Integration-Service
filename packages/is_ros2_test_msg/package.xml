@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>soss_ros2_test_msg</name>
+  <name>is_ros2_test_msg</name>
   <version>0.0.0</version>
-  <description>SOSS-ROS2 tests messages.</description>
+  <description>Integration Service ROS2 SystemHandle tests messages.</description>
   <maintainer email="ricardogonzalez@eprosima.com">Ricardo Gonzalez</maintainer>
   <license>Apache License 2.0</license>
 

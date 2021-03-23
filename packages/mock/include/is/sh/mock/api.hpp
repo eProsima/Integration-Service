@@ -20,7 +20,7 @@
 
 #include <is/core/Message.hpp>
 
-#include <is/sh-mock/export.hpp> // TODO (@jamoralp): convert this into is/sh/mock
+#include <is/mock/export.hpp> // TODO (@jamoralp): convert this into is/sh/mock
 
 #include <chrono>
 #include <functional>
@@ -33,14 +33,14 @@ namespace sh {
 namespace mock {
 
 // TODO(@jamoralp) Doxygen docs
-bool IS_SH_MOCK_API publish_message(
+bool IS_MOCK_API publish_message(
         const std::string& topic,
         const eprosima::xtypes::DynamicData& msg);
 
 using MockSubscriptionCallback =
         std::function<void (const eprosima::xtypes::DynamicData&)>;
 
-bool IS_SH_MOCK_API subscribe(
+bool IS_MOCK_API subscribe(
         const std::string& topic,
         MockSubscriptionCallback callback);
 
@@ -51,7 +51,7 @@ bool IS_SH_MOCK_API subscribe(
 ///     useful for cases of flaky middlewares or slow discovery. Even if the
 ///     server responds multiple times, only the first response will be
 ///     available to the std::shared_future.
-std::shared_future<eprosima::xtypes::DynamicData> IS_SH_MOCK_API request(
+std::shared_future<eprosima::xtypes::DynamicData> IS_MOCK_API request(
         const std::string& topic,
         const eprosima::xtypes::DynamicData& request_msg,
         std::chrono::nanoseconds retry = std::chrono::seconds(0));
@@ -60,7 +60,7 @@ std::shared_future<eprosima::xtypes::DynamicData> IS_SH_MOCK_API request(
 using MockServiceCallback =
         std::function<eprosima::xtypes::DynamicData(const eprosima::xtypes::DynamicData& request)>;
 
-void IS_SH_MOCK_API serve(
+void IS_MOCK_API serve(
         const std::string& topic,
         MockServiceCallback callback,
         const std::string& type = "");

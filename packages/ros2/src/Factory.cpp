@@ -32,7 +32,7 @@ public:
 
     void register_type_factory(
             const std::string& message_type,
-            TypeFactory&& type_factory)
+            TypeFactory type_factory)
     {
         _type_factories[message_type] = std::move(type_factory);
     }
@@ -51,7 +51,7 @@ public:
 
     void register_subscription_factory(
             const std::string& message_type,
-            SubscriptionFactory&& subscriber_factory)
+            SubscriptionFactory subscriber_factory)
     {
         _subscription_factories[message_type] = std::move(subscriber_factory);
     }
@@ -60,7 +60,7 @@ public:
             const xtypes::DynamicType& message_type,
             rclcpp::Node& node,
             const std::string& topic_name,
-            TopicSubscriberSystem::SubscriptionCallback&& callback,
+            TopicSubscriberSystem::SubscriptionCallback callback,
             const rmw_qos_profile_t& qos_profile)
     {
         auto it = _subscription_factories.find(message_type.name());
@@ -74,7 +74,7 @@ public:
 
     void register_publisher_factory(
             const std::string& message_type,
-            PublisherFactory&& publisher_factory)
+            PublisherFactory publisher_factory)
     {
         _publisher_factories[message_type] = std::move(publisher_factory);
     }
@@ -96,7 +96,7 @@ public:
 
     void register_client_proxy_factory(
             const std::string& service_type,
-            ServiceClientFactory&& client_proxy_factory)
+            ServiceClientFactory client_proxy_factory)
     {
         _client_proxy_factories[service_type] = std::move(client_proxy_factory);
     }
@@ -119,9 +119,9 @@ public:
 
     void register_server_proxy_factory(
             const std::string& service_type,
-            ServiceProviderFactory&& server_proxy_factory)
+            ServiceProviderFactory server_proxy_factory)
     {
-        _server_proxy_factories[service_type] = std::move(server_proxy_factory);
+        _server_proxy_factories[service_type] = server_proxy_factory;
     }
 
     //============================================================================
@@ -160,7 +160,7 @@ Factory& Factory::instance()
 //==============================================================================
 void Factory::register_type_factory(
         const std::string& message_type,
-        TypeFactory&& type_factory)
+        TypeFactory type_factory)
 {
     _pimpl->register_type_factory(
         message_type, std::move(type_factory));
@@ -176,7 +176,7 @@ xtypes::DynamicType::Ptr Factory::create_type(
 //==============================================================================
 void Factory::register_subscription_factory(
         const std::string& message_type,
-        SubscriptionFactory&& subscriber_factory)
+        SubscriptionFactory subscriber_factory)
 {
     _pimpl->register_subscription_factory(
         message_type, std::move(subscriber_factory));
@@ -187,7 +187,7 @@ std::shared_ptr<void> Factory::create_subscription(
         const xtypes::DynamicType& message_type,
         rclcpp::Node& node,
         const std::string& topic_name,
-        TopicSubscriberSystem::SubscriptionCallback&& callback,
+        TopicSubscriberSystem::SubscriptionCallback callback,
         const rmw_qos_profile_t& qos_profile)
 {
     return _pimpl->create_subscription(
@@ -197,7 +197,7 @@ std::shared_ptr<void> Factory::create_subscription(
 //==============================================================================
 void Factory::register_publisher_factory(
         const std::string& message_type,
-        PublisherFactory&& publisher_factory)
+        PublisherFactory publisher_factory)
 {
     _pimpl->register_publisher_factory(
         message_type, std::move(publisher_factory));
@@ -217,7 +217,7 @@ std::shared_ptr<TopicPublisher> Factory::create_publisher(
 //==============================================================================
 void Factory::register_client_proxy_factory(
         const std::string& service_type,
-        ServiceClientFactory&& client_proxy_factory)
+        ServiceClientFactory client_proxy_factory)
 {
     _pimpl->register_client_proxy_factory(
         service_type, std::move(client_proxy_factory));
@@ -238,7 +238,7 @@ std::shared_ptr<ServiceClient> Factory::create_client_proxy(
 //==============================================================================
 void Factory::register_server_proxy_factory(
         const std::string& service_type,
-        ServiceProviderFactory&& server_proxy_factory)
+        ServiceProviderFactory server_proxy_factory)
 {
     _pimpl->register_server_proxy_factory(
         service_type, std::move(server_proxy_factory));

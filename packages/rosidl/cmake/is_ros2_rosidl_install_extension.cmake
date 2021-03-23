@@ -17,7 +17,7 @@ include(CMakeParseArguments)
 include(GNUInstallDirs)
 
 #################################################
-# is_sh_ros2_rosidl_install_extension(
+# is_ros2_rosidl_install_extension(
 #   MIDDLEWARE <middleware>
 #   [MESSAGE
 #     [SOURCES <message-source-templates>]
@@ -27,7 +27,7 @@ include(GNUInstallDirs)
 #     [HEADERS <service-header-templates>] ]
 #   [DEPENDENCIES <middleware dependencies>]
 # )
-function(is_sh_ros2_rosidl_install_extension)
+function(is_ros2_rosidl_install_extension)
 
   is_mix_install_extension(
     IDL_TYPE rosidl

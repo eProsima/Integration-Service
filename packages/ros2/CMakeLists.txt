@@ -20,10 +20,10 @@
 ##################################################################################
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
-project(is-sh-ros2 VERSION "0.1.0" LANGUAGES CXX)
+project(is-ros2 VERSION "0.1.0" LANGUAGES CXX)
 
 find_package(is-core REQUIRED)
-find_package(is-sh-ros2-rosidl REQUIRED)
+find_package(is-ros2-rosidl REQUIRED)
 find_package(rclcpp REQUIRED)
 
 find_package(Sanitizers QUIET)
@@ -77,7 +77,7 @@ target_compile_options(${PROJECT_NAME}
 
 # Generate the export macro header
 include(GNUInstallDirs)
-is_generate_export_header(sh-ros2)
+is_generate_export_header(ros2)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
@@ -104,7 +104,7 @@ endif()
 ##################################################################################
 is_install_middleware_plugin(
   MIDDLEWARE
-    ros2
+    ros2 #TODO (@jamoralp) fix this
   TARGET
     ${PROJECT_NAME}
   DEPENDENCIES
@@ -122,9 +122,9 @@ install(
 
 
   ##################################################################################
-# Install the Integration Service is-sh-ros2-rosidl-mix plugin
+# Install the Integration Service is-ros2-rosidl-mix plugin
 ##################################################################################
-is_sh_ros2_rosidl_install_extension(
+is_ros2_rosidl_install_extension(
   MIDDLEWARE
     ros2
   MESSAGE

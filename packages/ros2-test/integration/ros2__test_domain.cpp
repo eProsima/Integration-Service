@@ -1,5 +1,6 @@
 ﻿/*
  * Copyright (C) 2018 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +23,8 @@
 
 #include <rcl/logging.h>
 
-#include <soss/Instance.hpp>
-#include <soss/utilities.hpp>
+#include <is/core/Instance.hpp>
+#include <is/utils/Convert.hpp>
 
 #include <std_msgs/msg/string.hpp>
 
@@ -33,6 +34,8 @@
 #include <catch2/catch.hpp>
 
 using Catch::Matchers::WithinAbs;
+
+// TODO(@jamoralp): use utils::Logger
 
 constexpr const char* DOMAIN_ID_1 = "5";
 constexpr const char* DOMAIN_ID_2 = "10";
@@ -50,7 +53,7 @@ constexpr const char* DOMAIN_ID_2 = "10";
 
 TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 {
-    char const* const argv[1] = {"soss"};
+    char const* const argv[1] = {"is-sh-ros2-test"};
     if (!rclcpp::ok())
     {
         rclcpp::init(1, argv);
@@ -68,7 +71,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
         init_options_1.auto_initialize_logging(false);
     }
 
-    const char* const argv_1[1] = {"soss_context_1"};
+    const char* const argv_1[1] = {"is_ros2_test_context_1"};
     auto context_1 = std::make_shared<rclcpp::Context>();
     context_1->init(1, argv_1, init_options_1);
 
@@ -90,7 +93,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
         init_options_2.auto_initialize_logging(false);
     }
 
-    const char* const argv_2[1] = {"soss_context_2"};
+    const char* const argv_2[1] = {"is_ros2_test_context_2"};
     auto context_2 = std::make_shared<rclcpp::Context>();
     context_2->init(1, argv_2);
 
@@ -104,9 +107,9 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
 
     UNSETENV("ROS_DOMAIN_ID");
 
-    std::cout << "[soss-ros2-test] Domain ID for 'node1': "
+    std::cout << "[is-sh-ros2-test] Domain ID for 'node1': "
               << rcl_node_ops_1->domain_id << std::endl;
-    std::cout << "[soss-ros2-test] Domain ID for 'node2': "
+    std::cout << "[is-sh-ros2-test] Domain ID for 'node2': "
               << rcl_node_ops_2->domain_id << std::endl;
 
     const std::string topic_name("string_topic");
@@ -151,15 +154,15 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
     // In different domains the message should not be received
     REQUIRE(msg_future.wait_for(0s) != std::future_status::ready);
 
-    // Run soss in order to make the communication possible.
+    // Run Integration Service in order to make the communication possible.
     YAML::Node config_node = YAML::LoadFile(ROS2__TEST_DOMAIN__TEST_CONFIG);
 
-    soss::InstanceHandle handle = soss::run_instance(
+    eprosima::is::core::InstanceHandle handle = eprosima::is::run_instance(
         config_node, { ROS2__ROSIDL__BUILD_DIR });
 
     REQUIRE(handle);
 
-    // Wait for soss to start properly before publishing.
+    // Wait for Integration Service to start properly before publishing.
     std::this_thread::sleep_for(1s);
     publisher->publish(pub_msg);
     executor.spin_node_some(node_1);
