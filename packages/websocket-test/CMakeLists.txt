@@ -9,41 +9,56 @@ find_package(xtypes REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(websocketpp REQUIRED)
 
-if(NOT CMAKE_CXX_STANDARD)
-  # TODO(MXG): Remove this block and use target_compile_features(~)
-  # instead when we no longer need to support Ubuntu 16.04.
-  set(CMAKE_CXX_STANDARD 14)
-endif()
+macro(compile_test)
+    # Parse arguments
+    if("${ARGV0}" STREQUAL "NAME")
+        set(uniValueArgs NAME)
+    else()
+        set(TEST_NAME "${ARGV0}")
+    endif()
+    set(multiValueArgs SOURCE)
+    cmake_parse_arguments(TEST "" "${uniValueArgs}" "${multiValueArgs}" ${ARGN})
 
-add_executable(soss-websocket-test
-  main.cpp
-  integration/websocket__roundtrip.cpp
-  integration/websocket__dispatch.cpp
-  integration/websocket__services.cpp
-)
+    add_executable(${TEST_NAME} ${TEST_SOURCE})
 
-set(thirdparty_dir "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty")
+    target_link_libraries(${TEST_NAME}
+        PUBLIC
+            soss::mock
+            soss::json
+            Threads::Threads
+            OpenSSL::SSL
+        PRIVATE
+            libgtest
+        )
 
-list(APPEND CMAKE_MODULE_PATH "${thirdparty_dir}/catch2/cmake")
+    target_include_directories(${TEST_NAME}
+      PRIVATE
+        ${WEBSOCKETPP_INCLUDE_DIR}
+    )
+
+    target_compile_options(${TEST_NAME}
+        INTERFACE
+            $<$<CXX_COMPILER_ID:GNU>:-Wall>
+            $<$<CXX_COMPILER_ID:GNU>:-Wextra>
+        )
+
+    set_target_properties(${TEST_NAME}
+        PROPERTIES
+            CXX_STANDARD 17
+        )
+
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+endmacro()
 
 include(CTest)
-include(Catch)
-catch_discover_tests(soss-websocket-test)
+include(${PROJECT_SOURCE_DIR}/../core/cmake/common/gtest.cmake)
+enable_testing()
 
-target_link_libraries(soss-websocket-test
-  PRIVATE
-    soss::mock
-    pthread
-    OpenSSL::SSL
-    soss::json
-)
+compile_test(${PROJECT_NAME}_rountrip_test SOURCE integration/websocket__roundtrip.cpp)
+compile_test(${PROJECT_NAME}_dispatch_test SOURCE integration/websocket__dispatch.cpp)
+compile_test(${PROJECT_NAME}_services_test SOURCE integration/websocket__services.cpp)
 
-target_include_directories(soss-websocket-test
-  PRIVATE
-    "${thirdparty_dir}/catch2/include"
-    ${WEBSOCKETPP_INCLUDE_DIR}
-)
-
+# Generate resources 
 foreach(resource
     websocket__roundtrip_server.yaml
     websocket__roundtrip_client.yaml
@@ -53,7 +68,17 @@ foreach(resource
   get_filename_component(resource_name ${resource} NAME_WE)
   string(TOUPPER ${resource_name} CAPS_RESOURCE_NAME)
 
-  target_compile_definitions(soss-websocket-test
+  target_compile_definitions(${PROJECT_NAME}_rountrip_test
+    PRIVATE
+      "${CAPS_RESOURCE_NAME}__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/${resource}\""
+  )
+
+  target_compile_definitions(${PROJECT_NAME}_dispatch_test
+    PRIVATE
+      "${CAPS_RESOURCE_NAME}__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/${resource}\""
+  )
+  
+  target_compile_definitions(${PROJECT_NAME}_services_test
     PRIVATE
       "${CAPS_RESOURCE_NAME}__TEST_CONFIG=\"${CMAKE_CURRENT_LIST_DIR}/resources/${resource}\""
   )
@@ -65,3 +90,5 @@ if(WIN32)
   find_file(JSONDLL NAMES "soss-json.dll" PATHS "${soss-json_DIR}" PATH_SUFFIXES "lib" )
   install (FILES ${JSONDLL} DESTINATION "${CMAKE_INSTALL_PREFIX}/../bin")
 endif()
+
+

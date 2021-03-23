@@ -29,7 +29,7 @@
 #include <soss/utilities.hpp>
 #include <soss/Search.hpp>
 
-#include <catch2/catch.hpp>
+#include <gtest/gtest.h>
 
 #include <iostream>
 #include <unordered_set>
@@ -61,7 +61,8 @@ public:
         YAML::Node configuration = YAML::LoadFile(WEBSOCKET__SERVICES__TEST_CONFIG);
         // Gets the port from the websocket client defined on the yaml
         port = configuration["systems"]["ws_client"]["port"].as<int>();
-        if (configuration["security"] && configuration["security"].as<std::string>() == "none")
+        if (configuration["systems"]["ws_client"]["security"] && 
+                configuration["systems"]["ws_client"]["security"].as<std::string>() == "none")
         {
             std::cout << "[soss-websocket-test] Security Disabled -> Using TCP" << std::endl;
             security = false;
@@ -317,11 +318,11 @@ private:
 
 };
 
-TEST_CASE("Testing Websocket Services", "[websocket]")
+TEST(WebSocket, Testing_websocket_services)
 {
     // Creates the Mock and Websocket SOSS internal entities needed for the test
     soss::InstanceHandle handle = soss::run_instance(WEBSOCKET__SERVICES__TEST_CONFIG);
-    REQUIRE(handle);
+    ASSERT_TRUE(handle);
 
     // The mock middleware will register both types (request and response) as
     // the same system is used for both routes, while the websocket one needs
@@ -363,18 +364,18 @@ TEST_CASE("Testing Websocket Services", "[websocket]")
     // First Route: Test Mock Request -> SOSS Mock Client -> SOSS Websocket Client (server) -> Test Websocket Server
     {
         // Asures that the request is correctly received on the websocket server
-        REQUIRE(std::future_status::ready == server_future.wait_for(2s));
+        ASSERT_EQ(std::future_status::ready, server_future.wait_for(2s));
         auto request = std::move(server_future.get());
         std::cout << "[soss-websocket-test] Service request: " << request << std::endl;
-        CHECK(request == request_msg);
+        EXPECT_EQ(request, request_msg);
     }
 
     // Second Route: Test Websocket Server -> SOSS Websocket Client (server) -> SOSS Mock Client
     {
-        REQUIRE(std::future_status::ready == response_future.wait_for(2s));
+        ASSERT_EQ(std::future_status::ready, response_future.wait_for(2s));
         xtypes::DynamicData response = std::move(response_future.get());
         std::cout << "[soss-websocket-test] Service response " << response << std::endl;
-        CHECK(response == response_msg);
+        EXPECT_EQ(response, response_msg);
     }
 
     {
@@ -394,8 +395,16 @@ TEST_CASE("Testing Websocket Services", "[websocket]")
 
     // Require that it's no longer running. If it is still running, then it is
     // probably stuck, and we should forcefully quit.
-    REQUIRE(!handle.running());
-    REQUIRE(handle.wait() == 0);
+    ASSERT_TRUE(!handle.running());
+    ASSERT_EQ(handle.wait(), 0);
 
     server_thread.join();
+}
+
+int main(
+        int argc,
+        char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
