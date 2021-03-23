@@ -366,7 +366,7 @@ TEST(WebSocket, Testing_websocket_services)
         // Asures that the request is correctly received on the websocket server
         ASSERT_EQ(std::future_status::ready, server_future.wait_for(2s));
         auto request = std::move(server_future.get());
-        std::cout << "[soss-websocket-test] Service request: " << request << std::endl;
+        std::cout << "[soss-websocket-test] Service request: " << request.to_string() << std::endl;
         EXPECT_EQ(request, request_msg);
     }
 
@@ -374,7 +374,7 @@ TEST(WebSocket, Testing_websocket_services)
     {
         ASSERT_EQ(std::future_status::ready, response_future.wait_for(2s));
         xtypes::DynamicData response = std::move(response_future.get());
-        std::cout << "[soss-websocket-test] Service response " << response << std::endl;
+        std::cout << "[soss-websocket-test] Service response " << response.to_string() << std::endl;
         EXPECT_EQ(response, response_msg);
     }
 
