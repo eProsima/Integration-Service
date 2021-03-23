@@ -151,7 +151,7 @@ private:
 
     /// \brief The private constructor ensures that this class can only be
     /// constructed using the instance() function.
-    Factory() = default;
+    Factory();
 
     class Implementation;
     /// \brief Pointer to the implementation of the Factory class.

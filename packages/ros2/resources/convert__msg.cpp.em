@@ -51,7 +51,7 @@ public:
 
   Subscription(
       rclcpp::Node& node,
-      TopicSubscriberSystem::SubscriptionCallback&& callback,
+      TopicSubscriberSystem::SubscriptionCallback callback,
       const std::string& topic_name,
       const xtypes::DynamicType& message_type,
       const rmw_qos_profile_t& qos_profile)
@@ -97,7 +97,7 @@ std::shared_ptr<void> subscribe(
     rclcpp::Node& node,
     const std::string& topic_name,
     const xtypes::DynamicType& message_type,
-    TopicSubscriberSystem::SubscriptionCallback&& callback,
+    TopicSubscriberSystem::SubscriptionCallback callback,
     const rmw_qos_profile_t& qos_profile)
 {
   return std::make_shared<Subscription>(

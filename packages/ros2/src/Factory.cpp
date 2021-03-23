@@ -255,6 +255,12 @@ std::shared_ptr<ServiceProvider> Factory::create_server_proxy(
         service_type, node, service_name, qos_profile);
 }
 
+//==============================================================================
+Factory::Factory()
+    : _pimpl(new Implementation)
+{
+}
+
 } //  namespace ros2
 } //  namespace sh
 } //  namespace is
