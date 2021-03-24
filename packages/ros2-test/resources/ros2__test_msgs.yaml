@@ -7,5 +7,5 @@ routes:
   ros2_to_mock: { from: ros2, to: mock }
 
 topics:
-  transmit: { type: "soss_ros2_test_msg/BoundedArrayNested", route: ros2_to_mock }
-  echo: { type: "soss_ros2_test_msg/BoundedArrayNested", route: mock_to_ros2 }
+  transmit: { type: "is_ros2_test_msg/BoundedArrayNested", route: ros2_to_mock }
+  echo: { type: "is_ros2_test_msg/BoundedArrayNested", route: mock_to_ros2 }
