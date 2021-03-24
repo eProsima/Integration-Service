@@ -19,7 +19,7 @@
 #ifndef _IS_UTILS_CONVERT_HPP_
 #define _IS_UTILS_CONVERT_HPP_
 
-#include <is/Message.hpp>
+#include <is/core/Message.hpp>
 
 #include <algorithm>
 #include <mutex>

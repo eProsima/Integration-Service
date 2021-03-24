@@ -1294,7 +1294,7 @@ bool Config::configure_topics(
             else
             {
                 logger << utils::Logger::Level::INFO
-                       << " [" << to << " SystemHandle] produced a publisher "
+                       << " [" << to << " SystemHandle] Produced a publisher "
                        << "for the topic '" << topic_name << "', with message type '"
                        << topic_config.message_type << "'." << std::endl;
 
@@ -1404,14 +1404,14 @@ bool Config::configure_topics(
             if (subscribed)
             {
                 logger << utils::Logger::Level::INFO
-                       << " [" << from << " SystemHandle] subscribed "
+                       << " [" << from << " SystemHandle] Subscribed "
                        << "to topic '" << topic_name << "', with message type '"
                        << topic_config.message_type << "'." << std::endl;
             }
             else
             {
                 logger << utils::Logger::Level::ERROR
-                       << "[" << from << " SystemHandle] failed to subscribe "
+                       << "[" << from << " SystemHandle] Failed to subscribe "
                        << "to topic '" << topic_name << "', with message type '"
                        << topic_config.message_type << "'." << std::endl;
             }
@@ -1518,7 +1518,7 @@ bool Config::configure_services(
         else
         {
             logger << utils::Logger::Level::INFO
-                   << " [" << server << " SystemHandle] produced a service provider "
+                   << " [" << server << " SystemHandle] Produced a service provider "
                    << "for the service '" << service_name << "', with request type '"
                    << service_config.request_type << "'";
 
@@ -1629,7 +1629,7 @@ bool Config::configure_services(
             if (created_client_proxy)
             {
                 logger << utils::Logger::Level::INFO
-                       << " [" << client << " SystemHandle] produced a service client "
+                       << " [" << client << " SystemHandle] Produced a service client "
                        << "for the service '" << service_name << "', with request type '"
                        << service_config.request_type << "'";
 
