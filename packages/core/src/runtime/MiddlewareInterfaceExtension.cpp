@@ -113,7 +113,7 @@ private:
             fpath = relative_to / fpath;
         }
 
-        if (std::experimental::filesystem::exists(path))
+        if (std::experimental::filesystem::exists(fpath))
         {
             void* handle = OPEN_DYNAMIC_LIB(fpath.c_str());
             auto loading_error = GET_LAST_ERROR();
@@ -121,8 +121,8 @@ private:
             if (loading_error)
             {
                 _logger << utils::Logger::Level::ERROR
-                        << "Error while loading the library '"
-                        << fpath << "': " << loading_error
+                        << "Error while loading the library "
+                        << fpath << ": " << loading_error
                         << std::endl;
                 return false;
             }
@@ -130,18 +130,18 @@ private:
             if (!handle)
             {
                 _logger << utils::Logger::Level::ERROR
-                        << "Unkown error while loading the library '"
-                        << fpath << "'" << std::endl;
+                        << "Unkown error while loading the library "
+                        << fpath << std::endl;
                 return false;
             }
 
             _logger << utils::Logger::Level::DEBUG
-                    << "Loaded shared library '" << fpath << "'" << std::endl;
+                    << "Loaded shared library " << fpath << std::endl;
             return true;
         }
 
-        _logger << utils::Logger::Level::ERROR << "Could not load shared library '"
-                << fpath << "' because it could not be found!" << std::endl;
+        _logger << utils::Logger::Level::ERROR << "Could not load shared library "
+                << fpath << " because it could not be found!" << std::endl;
         return false;
     }
 
