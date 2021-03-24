@@ -1,11 +1,14 @@
-#ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__PUBLISHER_HPP
-#define SOSS__XTYPES_EXAMPLE__INTERNAL__PUBLISHER_HPP
+#ifndef _ECHO_IS_SH__INTERNAL__PUBLISHER_HPP_
+#define _ECHO_IS_SH__INTERNAL__PUBLISHER_HPP_
 
 #include "MiddlewareConnection.hpp"
 
-#include <soss/SystemHandle.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
 
-class Publisher : public virtual soss::TopicPublisher
+namespace xtypes = eprosima::xtypes;
+namespace is = eprosima::is;
+
+class Publisher : public virtual is::TopicPublisher
 {
 public:
 
@@ -30,11 +33,11 @@ public:
             Publisher&& rhs) = delete;
 
     bool publish(
-            const xtypes::DynamicData& soss_message) override
+            const xtypes::DynamicData& is_message) override
     {
-        std::cout << "[soss-echo]: (conversion) soss -> middleware" << std::endl;
+        std::cout << "[is-echo]: (conversion) xtypes -> middleware" << std::endl;
 
-        Json middleware_message = soss::json::convert(soss_message);
+        Json middleware_message = is::json::convert(is_message);
 
         connection_.publish(topic_, middleware_message);
 
@@ -59,4 +62,4 @@ private:
 };
 
 
-#endif //SOSS__XTYPES_EXAMPLE__INTERNAL__PUBLISHER_HPP
+#endif //  _ECHO_IS_SH__INTERNAL__PUBLISHER_HPP_

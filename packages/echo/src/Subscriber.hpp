@@ -1,10 +1,12 @@
-#ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
-#define SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
+#ifndef _ECHO_IS_SH__INTERNAL__SUBSCRIBER_HPP_
+#define _ECHO_IS_SH__INTERNAL__SUBSCRIBER_HPP_
 
 #include "MiddlewareConnection.hpp"
 
-#include <soss/SystemHandle.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
 
+namespace xtypes = eprosima::xtypes;
+namespace is = eprosima::is;
 class Subscriber
 {
 public:
@@ -12,11 +14,11 @@ public:
     Subscriber(
             const std::string& topic,
             const xtypes::DynamicType& type,
-            soss::TopicSubscriberSystem::SubscriptionCallback soss_callback,
+            is::TopicSubscriberSystem::SubscriptionCallback is_callback,
             MiddlewareConnection& connection)
         : topic_(topic)
         , type_(type)
-        , soss_callback_(soss_callback)
+        , is_callback_(is_callback)
     {
         connection.subscribe(topic, std::bind(&Subscriber::receive, this, std::placeholders::_1));
     }
@@ -34,11 +36,11 @@ public:
     void receive(
             const Json& middleware_message)
     {
-        std::cout << "[soss-echo]: (conversion) middleware -> soss" << std::endl;
+        std::cout << "[is-echo]: (conversion) middleware -> xtypes" << std::endl;
 
-        xtypes::DynamicData soss_message = soss::json::convert(type_, middleware_message);
+        xtypes::DynamicData is_message = is::json::convert(type_, middleware_message);
 
-        soss_callback_(soss_message);
+        is_callback_(is_message);
     }
 
     const std::string& topic() const
@@ -55,8 +57,8 @@ private:
 
     const std::string topic_;
     const xtypes::DynamicType& type_;
-    soss::TopicSubscriberSystem::SubscriptionCallback soss_callback_;
+    is::TopicSubscriberSystem::SubscriptionCallback is_callback_;
 
 };
 
-#endif //SOSS__XTYPES_EXAMPLE__INTERNAL__SUBSCRIBER_HPP
+#endif //  _ECHO_IS_SH__INTERNAL__SUBSCRIBER_HPP_

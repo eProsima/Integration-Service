@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(soss-echo)
+project(is-echo)
 
 find_package(xtypes REQUIRED)
-find_package(soss-core REQUIRED)
-find_package(soss-json REQUIRED)
-find_package(soss-mock REQUIRED)
+find_package(is-core REQUIRED)
+find_package(is-json REQUIRED)
+find_package(is-mock REQUIRED)
 
 ########################################################################
 # Library
@@ -26,8 +26,8 @@ target_compile_options(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        soss::core
-        soss::json
+        is::core
+        is::json
 )
 
 ########################################################################
@@ -50,12 +50,12 @@ target_compile_options(${EXAMPLE_NAME}
 
 target_link_libraries(${EXAMPLE_NAME}
     PRIVATE
-        soss::mock
+        is::mock
 )
 
 ########################################################################
 # Installation
-soss_install_middleware_plugin(
+is_install_middleware_plugin(
     MIDDLEWARE echo
     TARGET ${PROJECT_NAME}
 )

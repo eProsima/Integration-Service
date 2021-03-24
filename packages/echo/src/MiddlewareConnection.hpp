@@ -1,7 +1,7 @@
-#ifndef SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP
-#define SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP
+#ifndef _ECHO_IS_SH__INTERNAL__MIDDLEWARE_CONNECTION_HPP_
+#define _ECHO_IS_SH__INTERNAL__MIDDLEWARE_CONNECTION_HPP_
 
-#include <soss/json/conversion.hpp>
+#include <is/json/conversion.hpp>
 
 #include <map>
 #include <queue>
@@ -12,9 +12,9 @@
 #include <mutex>
 #include <condition_variable>
 
-#define MIDDLEWARE_PREFIX "[soss-echo-middleware]: "
+#define MIDDLEWARE_PREFIX "[is-echo-middleware]: "
 
-using Json = soss::json::Json;
+using Json = eprosima::is::json::Json;
 
 // Class used to emulate the remote connection with the middleware.
 class MiddlewareConnection
@@ -133,4 +133,4 @@ private:
     bool roundtrip_;
 };
 
-#endif //SOSS__XTYPES_EXAMPLE__INTERNAL__MIDDLEWARE_CONNECTION_HPP
+#endif //  _ECHO_IS_SH__INTERNAL__MIDDLEWARE_CONNECTION_HPP_

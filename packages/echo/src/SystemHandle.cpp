@@ -19,14 +19,17 @@
 #include "Subscriber.hpp"
 #include "Publisher.hpp"
 
-#include <soss/SystemHandle.hpp>
+#include <is/systemhandle/SystemHandle.hpp>
 
 #include <chrono>
 #include <thread>
 #include <iostream>
 #include <algorithm>
 
-class SystemHandle : public virtual soss::TopicSystem
+namespace is = eprosima::is;
+namespace xtypes = eprosima::xtypes;
+
+class SystemHandle : public virtual is::TopicSystem
 {
 public:
 
@@ -36,9 +39,9 @@ public:
     }
 
     bool configure(
-            const soss::RequiredTypes& /*required_types*/,
+            const is::core::RequiredTypes& /*required_types*/,
             const YAML::Node& configuration,
-            soss::TypeRegistry& /*type_registry*/) override
+            is::TypeRegistry& /*type_registry*/) override
     {
         // This system handle fetches its types from the idls specified in the yaml.
         // The type_registry should already have the required types.
@@ -47,7 +50,7 @@ public:
         connection_.reset(new MiddlewareConnection(roundtrip));
         connection_->run();
 
-        std::cout << "[soss-echo]: Initializing... "
+        std::cout << "[is-echo]: Initializing... "
                   << (roundtrip ? " (roundtrip mode)" : "") << std::endl;
 
         return true;
@@ -76,14 +79,14 @@ public:
         auto subscriber = std::make_shared<Subscriber>(topic_name, message_type, callback, *connection_);
         subscribers_.emplace_back(std::move(subscriber));
 
-        std::cout << "[soss-echo]: subscriber created. "
+        std::cout << "[is-echo]: subscriber created. "
             "topic: " << topic_name << ", "
             "type: " << message_type.name() << std::endl;
 
         return true;
     }
 
-    std::shared_ptr<soss::TopicPublisher> advertise(
+    std::shared_ptr<is::TopicPublisher> advertise(
             const std::string& topic_name,
             const xtypes::DynamicType& message_type,
             const YAML::Node& /*configuration*/) override
@@ -91,7 +94,7 @@ public:
         auto publisher = std::make_shared<Publisher>(topic_name, message_type, *connection_);
         publishers_.emplace_back(std::move(publisher));
 
-        std::cout << "[soss-echo]: publisher created. "
+        std::cout << "[is-echo]: publisher created. "
             "topic: " << topic_name << ", "
             "type: " << message_type.name() << std::endl;
 
@@ -105,4 +108,4 @@ private:
     std::vector<std::shared_ptr<Subscriber> > subscribers_;
 };
 
-SOSS_REGISTER_SYSTEM("echo", SystemHandle)
+IS_REGISTER_SYSTEM("echo", SystemHandle)
