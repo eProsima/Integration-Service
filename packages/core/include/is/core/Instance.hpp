@@ -198,6 +198,22 @@ class IS_CORE_API InstanceHandle
 public:
 
     /**
+     * @brief Copy constructor.
+     *
+     * @param[in] other The InstanceHandle object we want to copy.
+     */
+    InstanceHandle(
+            const InstanceHandle& other);
+
+    /**
+     * @brief Move constructor.
+     *
+     * @param[in] other Movable reference to another InstanceHandle object.
+     */
+    InstanceHandle(
+            InstanceHandle&&);
+
+    /**
      * @brief Destructor.
      *
      * @details The destructor will call `quit()` and then `wait()`, because
@@ -292,22 +308,6 @@ private:
      */
     InstanceHandle(
             std::shared_ptr<Implementation> impl);
-
-    /**
-     * @brief Copy constructor.
-     *
-     * @param[in] other The InstanceHandle object we want to copy.
-     */
-    InstanceHandle(
-            const InstanceHandle& other);
-
-    /**
-     * @brief Move constructor.
-     *
-     * @param[in] other Movable reference to another InstanceHandle object.
-     */
-    InstanceHandle(
-            InstanceHandle&&);
 
     /**
      * Class members.
