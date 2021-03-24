@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +16,16 @@
  *
  */
 
-#ifndef SOSS__WEBOSCKET__SRC__WEBSOCKET_TYPES_HPP
-#define SOSS__WEBOSCKET__SRC__WEBSOCKET_TYPES_HPP
+#ifndef _WEBSOCKET_IS_SH__SRC__WEBSOCKET_TYPES_HPP_
+#define _WEBSOCKET_IS_SH__SRC__WEBSOCKET_TYPES_HPP_
 
 #include <websocketpp/config/asio.hpp>
 #include <websocketpp/server.hpp>
 #include <websocketpp/client.hpp>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 using TlsConfig = websocketpp::config::asio_tls;
@@ -42,7 +45,9 @@ using WsCppConnectionPtr = WsCppEndpoint::connection_ptr;
 using WsCppSslContext = boost::asio::ssl::context;
 using WsCppSslContextPtr = std::shared_ptr<WsCppSslContext>;
 
-} // namespace websocket
-} // namespace soss
+} //  namespace websocket
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima
 
-#endif // SOSS__WEBOSCKET__SRC__WEBSOCKET_TYPES_HPP
+#endif //  _WEBSOCKET_IS_SH__SRC__WEBSOCKET_TYPES_HPP_

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +16,18 @@
  *
  */
 
-#ifndef SOSS__WEBSOCKET__SRC__ENCODING_HPP
-#define SOSS__WEBSOCKET__SRC__ENCODING_HPP
+#ifndef _WEBSOCKET_IS_SH__SRC__ENCODING_HPP_
+#define _WEBSOCKET_IS_SH__SRC__ENCODING_HPP_
 
-#include <soss/Message.hpp>
+#include <is/core/Message.hpp>
 
 #include <yaml-cpp/yaml.h>
 
 #include <memory>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 class Endpoint;
@@ -43,13 +46,13 @@ public:
             const std::string& topic_name,
             const std::string& topic_type,
             const std::string& id,
-            const xtypes::DynamicData& msg) const = 0;
+            const eprosima::xtypes::DynamicData& msg) const = 0;
 
     virtual std::string encode_service_response_msg(
             const std::string& service_name,
             const std::string& service_type,
             const std::string& id,
-            const xtypes::DynamicData& response,
+            const eprosima::xtypes::DynamicData& response,
             bool result) const = 0;
 
     virtual std::string encode_subscribe_msg(
@@ -67,7 +70,7 @@ public:
     virtual std::string encode_call_service_msg(
             const std::string& service_name,
             const std::string& service_type,
-            const xtypes::DynamicData& service_request,
+            const eprosima::xtypes::DynamicData& service_request,
             const std::string& id,
             const YAML::Node& configuration) const = 0;
 
@@ -79,7 +82,7 @@ public:
             const YAML::Node& configuration) const = 0;
 
     virtual bool add_type(
-            const xtypes::DynamicType& type,
+            const eprosima::xtypes::DynamicType& type,
             const std::string& type_name = "")
     {
         (void)type;
@@ -94,7 +97,9 @@ using EncodingPtr = std::shared_ptr<Encoding>;
 //==============================================================================
 EncodingPtr make_json_encoding();
 
-} // namespace websocket
-} // namespace soss
+} //  namespace websocket
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima
 
-#endif // SOSS__WEBSOCKET__SRC__ENCODING_HPP
+#endif //  _WEBSOCKET_IS_SH__SRC__ENCODING_HPP_

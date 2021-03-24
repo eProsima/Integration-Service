@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(soss-websocket)
+project(is-websocket)
 
 if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
-find_package(soss-core REQUIRED)
+find_package(is-core REQUIRED)
 find_package(xtypes REQUIRED)
-find_package(soss-json REQUIRED)
+find_package(is-json REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(websocketpp REQUIRED)
 
@@ -23,9 +23,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 include(GNUInstallDirs)
-message(STATUS "Configuring [soss-websocket]")
+message(STATUS "Configuring [${PROJECT_NAME}]")
 
-add_library(soss-websocket SHARED
+add_library(${PROJECT_NAME} SHARED
   src/Client.cpp
   src/Endpoint.cpp
   src/JwtValidator.cpp
@@ -36,15 +36,15 @@ add_library(soss-websocket SHARED
   src/TopicPublisher.cpp
 )
 
-target_link_libraries(soss-websocket
+target_link_libraries(${PROJECT_NAME}
   PUBLIC
-    soss::core
+    is::core
   PRIVATE
-    soss::json
+    is::json
     OpenSSL::SSL
 )
 
-target_include_directories(soss-websocket
+target_include_directories(${PROJECT_NAME}
   PRIVATE
     OpenSSL::SSL
   PUBLIC
@@ -56,10 +56,10 @@ target_include_directories(soss-websocket
 
 
 ###############################
-# Install soss-websocket
-soss_install_middleware_plugin(
+# Install ${PROJECT_NAME}
+is_install_middleware_plugin(
   MIDDLEWARE websocket
-  TARGET soss-websocket
+  TARGET ${PROJECT_NAME}
   TYPES websocket_client websocket_server
 )
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +21,14 @@
 #include "websocket_types.hpp"
 #include "JwtValidator.hpp"
 
-#include <soss/Search.hpp>
+#include <is/core/runtime/Search.hpp>
+
 #include <websocketpp/endpoint.hpp>
 #include <websocketpp/http/constants.hpp>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 const std::string WebsocketMiddlewareName = "websocket";
@@ -44,14 +48,14 @@ static std::string find_websocket_config_file(
         const std::string& config_key,
         const std::string& explanation)
 {
-    const soss::Search search = soss::Search(WebsocketMiddlewareName)
+    const eprosima::is::core::Search search = eprosima::is::core::Search(WebsocketMiddlewareName)
             .relative_to_config()
             .relative_to_home();
 
     const YAML::Node node = configuration[config_key];
     if (!node)
     {
-        std::cerr << "[soss::websocket::Server] websocket_server is missing a "
+        std::cerr << "[is::sh::websocket::Server] websocket_server is missing a "
                   << "value for the required parameter [" << config_key
                   << "] " << explanation << std::endl;
         return {};
@@ -64,7 +68,7 @@ static std::string find_websocket_config_file(
     if (result.empty())
     {
         std::string err = std::string()
-                + "[soss::websocket::Server] websocket_server failed to find the "
+                + "[is::sh::websocket::Server] websocket_server failed to find the "
                 + "specified file for the [" + config_key + "] parameter: [" + parameter
                 + "]. Checked the following paths:\n";
         for (const std::string& checked_path : checked_paths)
@@ -75,7 +79,7 @@ static std::string find_websocket_config_file(
     }
     else
     {
-        std::cout << "[soss::websocket::Server] For [" << config_key << "] using ["
+        std::cout << "[is::sh::websocket::Server] For [" << config_key << "] using ["
                   << result << "]" << std::endl;
     }
 
@@ -122,7 +126,7 @@ static boost::asio::ssl::context::file_format parse_format(
     }
 
     throw std::runtime_error(
-              "[soss::websocket::Server] Unrecognized file format type: " + value
+              "[is::sh::websocket::Server] Unrecognized file format type: " + value
               + ". Only [" + YamlFormatPemValue + "] and [" + YamlFormatAsn1Value
               + "] formats are supported.");
 }
@@ -153,7 +157,7 @@ public:
     }
 
     WsCppEndpoint* configure_endpoint(
-            const RequiredTypes& /*types*/,
+            const core::RequiredTypes& /*types*/,
             const YAML::Node& configuration) override
     {
         const int32_t port = parse_port(configuration);
@@ -216,7 +220,7 @@ public:
         _context->use_certificate_file(cert_file, format, ec);
         if (ec)
         {
-            std::cerr << "[soss::websocket::Server] Failed to load certificate file ["
+            std::cerr << "[is::sh::websocket::Server] Failed to load certificate file ["
                       << cert_file << "]: " << ec.message() << std::endl;
             return false;
         }
@@ -226,16 +230,16 @@ public:
         // which I guess is supposed to be used for keys that do not label
         // themselves as rsa private keys? We're currently using rsa private
         // keys, but this is probably something we should allow users to
-        // configure from the soss config file.
+        // configure from the Integration Service config file.
         _context->use_rsa_private_key_file(key_file, format, ec);
         if (ec)
         {
-            std::cerr << "[soss::websocket::Server] Failed to load private key file ["
+            std::cerr << "[is::sh::websocket::Server] Failed to load private key file ["
                       << key_file << "]: " << ec.message() << std::endl;
             return false;
         }
 
-        // TODO(MXG): This helps to rerun soss more quickly if the server fell down
+        // TODO(MXG): This helps to rerun IS more quickly if the server fell down
         // gracelessly. Is this something we really want? Are there any dangers to
         // using this?
         _server.set_reuse_addr(true);
@@ -314,7 +318,7 @@ public:
                 }
                 catch (websocketpp::exception& e)
                 {
-                    std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" << std::endl;
+                    std::cerr <<  "[is::sh::websocket::Server] Exception ocurred while closing connection" << std::endl;
                 }
             }
         }
@@ -330,7 +334,7 @@ public:
 
             if (std::chrono::steady_clock::now() - start_time > 10s)
             {
-                std::cerr << "[soss::websocket::Server] Timed out while waiting for "
+                std::cerr << "[is::sh::websocket::Server] Timed out while waiting for "
                           << "the remote clients to acknowledge the connection "
                           << "shutdown request" << std::endl;
                 break;
@@ -368,7 +372,7 @@ public:
 
     void runtime_advertisement(
             const std::string& topic,
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             const std::string& id,
             const YAML::Node& configuration) override
     {
@@ -400,7 +404,7 @@ private:
             const WsCppWeakConnectPtr& handle)
     {
         const auto connection = _server.get_con_from_hdl(handle);
-        std::cout << "[soss::websocket::Server] closed client connection ["
+        std::cout << "[is::sh::websocket::Server] closed client connection ["
                   << connection << "]" << std::endl;
         notify_connection_closed(connection);
 
@@ -420,7 +424,7 @@ private:
             return;
         }
 
-        std::cout << "[soss::weboscket::Server] opened connection [" << connection
+        std::cout << "[is::sh::websocket::Server] opened connection [" << connection
                   << "]" << std::endl;
         notify_connection_opened(connection);
 
@@ -432,7 +436,7 @@ private:
     void _handle_failed_connection(
             const WsCppWeakConnectPtr& /*handle*/)
     {
-        std::cout << "[soss::websocket::Server] An incoming client failed to "
+        std::cout << "[is::sh::websocket::Server] An incoming client failed to "
                   << "connect." << std::endl;
     }
 
@@ -449,7 +453,7 @@ private:
         if (requested_sub_protos.size() != 1)
         {
             connection_ptr->set_status(websocketpp::http::status_code::unauthorized);
-            return false; // a valid soss client should always send exactly 1 subprotocols.
+            return false; // a valid IS client should always send exactly 1 subprotocols.
         }
 
         std::string token = requested_sub_protos[0]; // the subprotocol is the jwt token
@@ -474,7 +478,9 @@ private:
 
 };
 
-SOSS_REGISTER_SYSTEM("websocket_server", soss::websocket::Server)
+IS_REGISTER_SYSTEM("websocket_server", eprosima::is::sh::websocket::Server)
 
 } // namespace websocket
-} // namespace soss
+} // namespace sh
+} // namespace is
+} // namespace eprosima

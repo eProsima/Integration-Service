@@ -23,7 +23,7 @@
 #include <JwtValidator.hpp>
 #include <ServerConfig.hpp>
 
-using namespace soss::websocket;
+using namespace eprosima::is::sh::websocket;
 
 // { "iss": "test" } signed with secret "test" and algo "HS256"
 const std::string test_token =
@@ -51,11 +51,13 @@ TEST_CASE("simple verification strategy", "[Verification]")
     JwtValidator jwt_validator;
 
     jwt_validator.add_verification_policy(VerificationPolicies::match_all(
-                {{ "iss", "test" }, { "sub", "test" }}, "test", "HS256"));
+                {{ "iss", "test" }, { "sub", "test" }
+                }, "test", "HS256"));
     CHECK_FALSE(jwt_validator.verify(test_token));
 
     jwt_validator.add_verification_policy(VerificationPolicies::match_all(
-                {{ "iss", "test" }}, "test", "HS256"));
+                {{ "iss", "test" }
+                }, "test", "HS256"));
     CHECK(jwt_validator.verify(test_token));
 }
 

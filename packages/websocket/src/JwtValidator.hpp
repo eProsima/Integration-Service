@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +16,15 @@
  *
  */
 
-#ifndef SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
-#define SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
+#ifndef _WEBSOCKET_IS_SH__SRC__JWTVALIDATOR_HPP_
+#define _WEBSOCKET_IS_SH__SRC__JWTVALIDATOR_HPP_
 
 #include <functional>
 #include <jwt/jwt.hpp>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 struct VerificationStrategy
@@ -76,6 +79,8 @@ public:
 };
 
 } // namespace websocket
-} // namespace soss
+} // namespace sh
+} // namespace is
+} // namespace eprosima
 
-#endif // SOSS__WEBSOCKET__SRC__JWTVALIDATOR_HPP
+#endif //  _WEBSOCKET_IS_SH__SRC__JWTVALIDATOR_HPP_

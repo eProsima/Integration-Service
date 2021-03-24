@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +19,14 @@
 #include "Encoding.hpp"
 #include "Endpoint.hpp"
 
-#include <soss/json/conversion.hpp>
-#include <soss/json/json.hpp>
+#include <is/json/conversion.hpp>
+#include <is/json/json.hpp>
 
 #include <unordered_set>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 using json::Json;
@@ -191,7 +194,7 @@ static void throw_missing_key(
 {
     const std::string op_code = object.at("op").get<std::string>();
     throw std::runtime_error(
-              "[soss::websocket::JsonEncoding] Incoming websocket message with op "
+              "[is::sh::websocket::JsonEncoding] Incoming websocket message with op "
               "code [" + op_code + "] is missing the required field [" + key
               + "]:\n" + object.dump());
 }
@@ -238,9 +241,9 @@ static std::string get_required_string(
 }
 
 //==============================================================================
-static xtypes::DynamicData get_required_msg(
+static eprosima::xtypes::DynamicData get_required_msg(
         const Json& object,
-        const xtypes::DynamicType& type,
+        const eprosima::xtypes::DynamicType& type,
         const std::string& key)
 {
     const auto it = object.find(key);
@@ -259,7 +262,7 @@ public:
 
     JsonEncoding()
     {
-        types_ = xtypes::idl::parse(idl_messages).get_all_types();
+        types_ = eprosima::xtypes::idl::parse(idl_messages).get_all_types();
     }
 
     void interpret_websocket_msg(
@@ -273,13 +276,13 @@ public:
         if (op_it == msg.end())
         {
             throw std::runtime_error(
-                      "[soss::websocket::JsonEncoding] Incoming message was missing "
+                      "[is::sh::websocket::JsonEncoding] Incoming message was missing "
                       "the required op code: " + msg_str);
         }
 
         const std::string& op_str = op_it.value().get<std::string>();
 
-        xtypes::DynamicType::Ptr type_ptr;
+        eprosima::xtypes::DynamicType::Ptr type_ptr;
 
         auto type_it = types_.find(op_str);
         if (type_it != types_.end())
@@ -292,7 +295,7 @@ public:
         if (op_str == JsonOpPublishKey)
         {
             std::string topic_name = get_required_string(msg, JsonTopicNameKey);
-            const xtypes::DynamicType& dest_type = get_type_by_topic(topic_name);
+            const eprosima::xtypes::DynamicType& dest_type = get_type_by_topic(topic_name);
             endpoint.receive_publication_ws(
                 topic_name,
                 get_required_msg(msg, dest_type, JsonMsgKey),
@@ -305,7 +308,7 @@ public:
         if (op_str == JsonOpServiceRequestKey)
         {
             std::string service_name = get_required_string(msg, JsonServiceKey);
-            const xtypes::DynamicType& dest_type = get_req_type_from_service(service_name);
+            const eprosima::xtypes::DynamicType& dest_type = get_req_type_from_service(service_name);
             endpoint.receive_service_request_ws(
                 service_name,
                 get_required_msg(msg, dest_type, JsonArgsKey),
@@ -319,7 +322,7 @@ public:
         if (op_str == JsonOpServiceResponseKey)
         {
             std::string service_name = get_required_string(msg, JsonServiceKey);
-            const xtypes::DynamicType& dest_type = get_rep_type_from_service(service_name);
+            const eprosima::xtypes::DynamicType& dest_type = get_rep_type_from_service(service_name);
             endpoint.receive_service_response_ws(
                 get_required_string(msg, JsonServiceKey),
                 get_required_msg(msg, dest_type, JsonValuesKey),
@@ -330,7 +333,7 @@ public:
 
         if (op_str == JsonOpAdvertiseTopicKey)
         {
-            const xtypes::DynamicType& topic_type = get_type(get_required_string(msg, JsonTypeNameKey));
+            const eprosima::xtypes::DynamicType& topic_type = get_type(get_required_string(msg, JsonTypeNameKey));
             endpoint.receive_topic_advertisement_ws(
                 get_required_string(msg, JsonTopicNameKey),
                 topic_type,
@@ -350,7 +353,7 @@ public:
 
         if (op_str == JsonOpSubscribeKey)
         {
-            const xtypes::DynamicType* topic_type = get_type_ptr(get_optional_string(msg, JsonTypeNameKey));
+            const eprosima::xtypes::DynamicType* topic_type = get_type_ptr(get_optional_string(msg, JsonTypeNameKey));
             endpoint.receive_subscribe_request_ws(
                 get_required_string(msg, JsonTopicNameKey),
                 topic_type,
@@ -370,8 +373,8 @@ public:
 
         if (op_str == JsonOpAdvertiseServiceKey)
         {
-            const xtypes::DynamicType& req_type = get_type(get_required_string(msg, JsonRequestTypeNameKey));
-            const xtypes::DynamicType& reply_type = get_type(get_required_string(msg, JsonReplyTypeNameKey));
+            const eprosima::xtypes::DynamicType& req_type = get_type(get_required_string(msg, JsonRequestTypeNameKey));
+            const eprosima::xtypes::DynamicType& reply_type = get_type(get_required_string(msg, JsonReplyTypeNameKey));
             endpoint.receive_service_advertisement_ws(
                 get_required_string(msg, JsonServiceKey),
                 req_type,
@@ -387,7 +390,7 @@ public:
 
         if (op_str == JsonOpUnadvertiseServiceKey)
         {
-            const xtypes::DynamicType* topic_type = get_type_ptr(get_optional_string(msg, JsonTypeNameKey));
+            const eprosima::xtypes::DynamicType* topic_type = get_type_ptr(get_optional_string(msg, JsonTypeNameKey));
             endpoint.receive_service_unadvertisement_ws(
                 get_required_string(msg, JsonServiceKey),
                 topic_type,
@@ -399,7 +402,7 @@ public:
             const std::string& topic_name,
             const std::string& topic_type,
             const std::string& id,
-            const xtypes::DynamicData& msg) const override
+            const eprosima::xtypes::DynamicData& msg) const override
     {
         Json output;
         output[JsonOpKey] = JsonOpPublishKey;
@@ -419,7 +422,7 @@ public:
             const std::string& service_name,
             const std::string& service_type,
             const std::string& id,
-            const xtypes::DynamicData& response,
+            const eprosima::xtypes::DynamicData& response,
             const bool result) const override
     {
         Json output;
@@ -492,7 +495,7 @@ public:
     std::string encode_call_service_msg(
             const std::string& service_name,
             const std::string& service_type,
-            const xtypes::DynamicData& service_request,
+            const eprosima::xtypes::DynamicData& service_request,
             const std::string& id,
             const YAML::Node& /*configuration*/) const override
     {
@@ -541,7 +544,7 @@ public:
         return output.dump();
     }
 
-    const xtypes::DynamicType& get_type(
+    const eprosima::xtypes::DynamicType& get_type(
             const std::string& type_name) const
     {
         auto type_it = types_.find(transform_type(type_name));
@@ -552,12 +555,12 @@ public:
         else
         {
             throw std::runtime_error(
-                      "[soss::websocket::JsonEncoding] Incoming message refers an unregistered "
+                      "[is::sh::websocket::JsonEncoding] Incoming message refers an unregistered "
                       "type: " + type_name);
         }
     }
 
-    const xtypes::DynamicType* get_type_ptr(
+    const eprosima::xtypes::DynamicType* get_type_ptr(
             const std::string& type_name) const
     {
         auto type_it = types_.find(transform_type(type_name));
@@ -568,13 +571,13 @@ public:
         else
         {
             throw std::runtime_error(
-                      "[soss::websocket::JsonEncoding] Incoming message refers an unregistered "
+                      "[is::sh::websocket::JsonEncoding] Incoming message refers an unregistered "
                       "type: " + type_name);
         }
     }
 
     bool add_type(
-            const xtypes::DynamicType& type,
+            const eprosima::xtypes::DynamicType& type,
             const std::string& type_name) override
     {
         std::string name = transform_type(type_name.empty() ? type.name() : type_name);
@@ -582,39 +585,40 @@ public:
         return result.second;
     }
 
-    const xtypes::DynamicType& get_type_by_topic(
+    const eprosima::xtypes::DynamicType& get_type_by_topic(
             const std::string& topic_name) const
     {
         return get_type(types_by_topic_[topic_name]);
     }
 
-    const xtypes::DynamicType& get_req_type_from_service(
+    const eprosima::xtypes::DynamicType& get_req_type_from_service(
             const std::string& service_name) const
     {
         std::string req_type = types_by_service_[service_name].first;
         if (req_type.empty())
         {
             throw std::runtime_error(
-                      "[soss::websocket::JsonEncoding] There isn't any request type for the service: " + service_name);
+                      "[is::sh::websocket::JsonEncoding] There isn't any request type for the service: " +
+                      service_name);
         }
         return get_type(req_type);
     }
 
-    const xtypes::DynamicType& get_rep_type_from_service(
+    const eprosima::xtypes::DynamicType& get_rep_type_from_service(
             const std::string& service_name) const
     {
         std::string rep_type = types_by_service_[service_name].second;
         if (rep_type.empty())
         {
             throw std::runtime_error(
-                      "[soss::websocket::JsonEncoding] There isn't any reply type for the service: " + service_name);
+                      "[is::sh::websocket::JsonEncoding] There isn't any reply type for the service: " + service_name);
         }
         return get_type(rep_type);
     }
 
 protected:
 
-    std::map<std::string, xtypes::DynamicType::Ptr> types_;
+    std::map<std::string, eprosima::xtypes::DynamicType::Ptr> types_;
     mutable std::map<std::string, std::string> types_by_topic_;
     mutable std::map<std::string, std::pair<std::string, std::string> > types_by_service_;
 
@@ -626,5 +630,7 @@ EncodingPtr make_json_encoding()
     return std::make_shared<JsonEncoding>();
 }
 
-} // namespace websocket
-} // namespace soss
+} //  namespace websocket
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima

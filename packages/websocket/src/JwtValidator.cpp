@@ -3,7 +3,9 @@
 #include <unordered_map>
 #include <regex>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 bool JwtValidator::verify(
@@ -87,4 +89,6 @@ VerificationPolicy VerificationPolicies::match_all(
 }
 
 } // namespace websocket
-} // namespace soss
+} // namespace sh
+} // namespace is
+} // namespace eprosima

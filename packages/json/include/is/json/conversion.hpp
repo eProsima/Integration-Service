@@ -15,30 +15,32 @@
  *
  */
 
-#ifndef SOSS__JSON__CONVERSION_HPP
-#define SOSS__JSON__CONVERSION_HPP
+#ifndef _IS__JSON__CONVERSION_HPP_
+#define _IS__JSON__CONVERSION_HPP_
 
-#include <soss/json/export.hpp>
-#include <soss/json/json.hpp>
-#include <soss/Message.hpp>
+#include <is/json/export.hpp>
+#include <is/json/json.hpp>
+#include <is/core/Message.hpp>
 
-namespace soss {
+namespace eprosima {
+namespace is {
 namespace json {
 
 using Json = nlohmann::json;
 
 //==============================================================================
-/// Converts from a soss message to a JSON message
-Json SOSS_JSON_API convert(
-        const xtypes::DynamicData& input);
+/// Convert from a soss message to a JSON message
+Json IS_JSON_API convert(
+        const eprosima::xtypes::DynamicData& input);
 
-/// Converts from a JSON message to a soss message
-xtypes::DynamicData SOSS_JSON_API convert(
-        const xtypes::DynamicType& type,
+/// Convert from a JSON message to a soss message
+eprosima::xtypes::DynamicData IS_JSON_API convert(
+        const eprosima::xtypes::DynamicType& type,
         const Json& input);
 
-} // namespace json
-} // namespace soss
+} //  namespace json
+} //  namespace is
+} //  namespace eprosima
 
 
-#endif // SOSS__JSON__CONVERSION_HPP
+#endif // _IS__JSON__CONVERSION_HPP_

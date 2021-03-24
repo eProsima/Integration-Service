@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +18,21 @@
 
 #include "Endpoint.hpp"
 
-#include <soss/StringTemplate.hpp>
+#include <is/core/runtime/StringTemplate.hpp>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 //==============================================================================
-class TopicPublisher : public soss::TopicPublisher
+class TopicPublisher : public is::TopicPublisher
 {
 public:
 
     TopicPublisher(
             const std::string& topic,
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             const std::string& id,
             const YAML::Node& configuration,
             Endpoint& endpoint)
@@ -40,7 +43,7 @@ public:
     }
 
     bool publish(
-            const xtypes::DynamicData& message)
+            const eprosima::xtypes::DynamicData& message)
     {
         return _endpoint.publish(_topic, message);
     }
@@ -56,7 +59,7 @@ namespace {
 //==============================================================================
 std::string make_detail_string(
         const std::string& topic_name,
-        const xtypes::DynamicType& message_type)
+        const eprosima::xtypes::DynamicType& message_type)
 {
     return
         "[Middleware: Websocket, topic template: "
@@ -66,13 +69,13 @@ std::string make_detail_string(
 } // anonymous namespace
 
 //==============================================================================
-class MetaTopicPublisher : public soss::TopicPublisher
+class MetaTopicPublisher : public is::TopicPublisher
 {
 public:
 
     MetaTopicPublisher(
-            soss::StringTemplate&& string_template,
-            const xtypes::DynamicType& message_type,
+            is::core::StringTemplate&& string_template,
+            const eprosima::xtypes::DynamicType& message_type,
             const std::string& id,
             const YAML::Node& configuration,
             Endpoint& endpoint)
@@ -86,7 +89,7 @@ public:
     }
 
     bool publish(
-            const xtypes::DynamicData& message)
+            const eprosima::xtypes::DynamicData& message)
     {
         const std::string topic = _string_template.compute_string(message);
         const bool inserted = _advertised_topics.insert(topic).second;
@@ -102,8 +105,8 @@ public:
 
 private:
 
-    const soss::StringTemplate _string_template;
-    const xtypes::DynamicType::Ptr _message_type;
+    const is::core::StringTemplate _string_template;
+    const eprosima::xtypes::DynamicType::Ptr _message_type;
     const std::string _id;
     const YAML::Node _config;
     std::unordered_set<std::string> _advertised_topics;
@@ -112,9 +115,9 @@ private:
 };
 
 //==============================================================================
-std::shared_ptr<soss::TopicPublisher> make_topic_publisher(
+std::shared_ptr<is::TopicPublisher> make_topic_publisher(
         const std::string& topic,
-        const xtypes::DynamicType& message_type,
+        const eprosima::xtypes::DynamicType& message_type,
         const std::string& id,
         const YAML::Node& configuration,
         Endpoint& endpoint)
@@ -122,7 +125,7 @@ std::shared_ptr<soss::TopicPublisher> make_topic_publisher(
     if (topic.find('{') != std::string::npos)
     {
         return std::make_shared<websocket::MetaTopicPublisher>(
-            soss::StringTemplate(topic, make_detail_string(topic, message_type)),
+            is::core::StringTemplate(topic, make_detail_string(topic, message_type)),
             message_type, id, configuration, endpoint);
     }
 
@@ -131,4 +134,6 @@ std::shared_ptr<soss::TopicPublisher> make_topic_publisher(
 }
 
 } // namespace websocket
-} // namespace soss
+} // namespace sh
+} // namespace is
+} // namespace eprosima

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +20,9 @@
 
 #include <cstdlib>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 //==============================================================================
@@ -54,7 +57,7 @@ Endpoint::Endpoint()
 
 //==============================================================================
 bool Endpoint::configure(
-        const RequiredTypes& types,
+        const core::RequiredTypes& types,
         const YAML::Node& configuration,
         TypeRegistry& /*type_registry*/)
 {
@@ -75,7 +78,7 @@ bool Endpoint::configure(
         }
         else
         {
-            std::cerr << "[soss::websocket::SystemHnadle::configure] Unknown "
+            std::cerr << "[is::sh::websocket::SystemHnadle::configure] Unknown "
                       << "encoding type was requested: [" << _encoding
                       << "]" << std::endl;
             return false;
@@ -88,7 +91,7 @@ bool Endpoint::configure(
 
     if (!_encoding)
     {
-        std::cerr << "[soss::websocket::SystemHandle::configure] Reached a line ["
+        std::cerr << "[is::sh::websocket::SystemHandle::configure] Reached a line ["
                   << __LINE__ << "] that should be impossible. Please report this "
                   << "bug!" << std::endl;
         return false;
@@ -102,7 +105,7 @@ bool Endpoint::configure(
 //==============================================================================
 bool Endpoint::subscribe(
         const std::string& topic_name,
-        const xtypes::DynamicType& message_type,
+        const eprosima::xtypes::DynamicType& message_type,
         SubscriptionCallback callback,
         const YAML::Node& configuration)
 {
@@ -122,7 +125,7 @@ bool Endpoint::subscribe(
 //==============================================================================
 std::shared_ptr<TopicPublisher> Endpoint::advertise(
         const std::string& topic_name,
-        const xtypes::DynamicType& message_type,
+        const eprosima::xtypes::DynamicType& message_type,
         const YAML::Node& configuration)
 {
     _encoding->add_type(message_type, message_type.name());
@@ -134,7 +137,7 @@ std::shared_ptr<TopicPublisher> Endpoint::advertise(
 //==============================================================================
 bool Endpoint::create_client_proxy(
         const std::string& service_name,
-        const xtypes::DynamicType& service_type,
+        const eprosima::xtypes::DynamicType& service_type,
         RequestCallback callback,
         const YAML::Node& /*configuration*/)
 {
@@ -150,7 +153,7 @@ bool Endpoint::create_client_proxy(
 //==============================================================================
 std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
         const std::string& service_name,
-        const xtypes::DynamicType& service_type,
+        const eprosima::xtypes::DynamicType& service_type,
         const YAML::Node& configuration)
 {
     ServiceProviderInfo& info = _service_provider_info[service_name];
@@ -163,8 +166,8 @@ std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
 //==============================================================================
 std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
         const std::string& service_name,
-        const xtypes::DynamicType& request_type,
-        const xtypes::DynamicType& reply_type,
+        const eprosima::xtypes::DynamicType& request_type,
+        const eprosima::xtypes::DynamicType& reply_type,
         const YAML::Node& configuration)
 {
     ServiceProviderInfo& info = _service_provider_info[service_name];
@@ -181,7 +184,7 @@ std::shared_ptr<ServiceProvider> Endpoint::create_service_proxy(
 //==============================================================================
 void Endpoint::startup_advertisement(
         const std::string& topic,
-        const xtypes::DynamicType& message_type,
+        const eprosima::xtypes::DynamicType& message_type,
         const std::string& id,
         const YAML::Node& configuration)
 {
@@ -196,7 +199,7 @@ void Endpoint::startup_advertisement(
 //==============================================================================
 bool Endpoint::publish(
         const std::string& topic,
-        const xtypes::DynamicData& message)
+        const eprosima::xtypes::DynamicData& message)
 {
     const TopicPublishInfo& info = _topic_publish_info.at(topic);
 
@@ -215,7 +218,7 @@ bool Endpoint::publish(
 
         if (ec)
         {
-            std::cerr << "[soss::websocket::Endpoint] Failed to send publication on "
+            std::cerr << "[is::sh::websocket::Endpoint] Failed to send publication on "
                       << "topic [" << topic << "]: " << ec.message() << std::endl;
         }
     }
@@ -226,7 +229,7 @@ bool Endpoint::publish(
 //==============================================================================
 void Endpoint::call_service(
         const std::string& service,
-        const xtypes::DynamicData& request,
+        const eprosima::xtypes::DynamicData& request,
         ServiceClient& client,
         std::shared_ptr<void> call_handle)
 {
@@ -246,7 +249,7 @@ void Endpoint::call_service(
 //==============================================================================
 void Endpoint::receive_response(
         std::shared_ptr<void> v_call_handle,
-        const xtypes::DynamicData& response)
+        const eprosima::xtypes::DynamicData& response)
 {
     const auto& call_handle =
             *static_cast<const CallHandle*>(v_call_handle.get());
@@ -265,7 +268,7 @@ void Endpoint::receive_response(
 //==============================================================================
 void Endpoint::receive_topic_advertisement_ws(
         const std::string& topic_name,
-        const xtypes::DynamicType& message_type,
+        const eprosima::xtypes::DynamicType& message_type,
         const std::string& /*id*/,
         std::shared_ptr<void> connection_handle)
 {
@@ -276,7 +279,7 @@ void Endpoint::receive_topic_advertisement_ws(
         if (message_type.name() != info.type)
         {
             info.blacklist.insert(connection_handle);
-            std::cerr << "[soss::websocket] A remote connection advertised a topic "
+            std::cerr << "[is::sh::websocket] A remote connection advertised a topic "
                       << "we want to subscribe to [" << topic_name << "] but with "
                       << "the wrong message type [" << message_type.name() << "]. The "
                       << "expected type is [" << info.type << "]. Messages from "
@@ -301,7 +304,7 @@ void Endpoint::receive_topic_unadvertisement_ws(
 //==============================================================================
 void Endpoint::receive_publication_ws(
         const std::string& topic_name,
-        const xtypes::DynamicData& message,
+        const eprosima::xtypes::DynamicData& message,
         std::shared_ptr<void> connection_handle)
 {
     auto it = _topic_subscribe_info.find(topic_name);
@@ -322,7 +325,7 @@ void Endpoint::receive_publication_ws(
 //==============================================================================
 void Endpoint::receive_subscribe_request_ws(
         const std::string& topic_name,
-        const xtypes::DynamicType* message_type,
+        const eprosima::xtypes::DynamicType* message_type,
         const std::string& id,
         std::shared_ptr<void> connection_handle)
 {
@@ -333,7 +336,7 @@ void Endpoint::receive_subscribe_request_ws(
 
     if (inserted)
     {
-        std::cerr << "[soss::websocket] Received subscription request for a "
+        std::cerr << "[is::sh::websocket] Received subscription request for a "
                   << "topic that we are not currently advertising ["
                   << topic_name << "]" << std::endl;
     }
@@ -341,7 +344,7 @@ void Endpoint::receive_subscribe_request_ws(
     {
         if (message_type != nullptr && message_type->name() != info.type)
         {
-            std::cerr << "[soss::websocket] Received subscription request for topic ["
+            std::cerr << "[is::sh::websocket] Received subscription request for topic ["
                       << topic_name << "], but the requested message type ["
                       << message_type->name() << "] does not match the one we are publishing "
                       << "[" << info.type << "]" << std::endl;
@@ -361,7 +364,7 @@ void Endpoint::receive_unsubscribe_request_ws(
     auto it = _topic_publish_info.find(topic_name);
     if (it == _topic_publish_info.end())
     {
-        std::cerr << "[soss::websocket] Received an unsubscription request for a "
+        std::cerr << "[is::sh::websocket] Received an unsubscription request for a "
                   << "topic that we are not advertising [" << topic_name << "]"
                   << std::endl;
         return;
@@ -397,7 +400,7 @@ void Endpoint::receive_unsubscribe_request_ws(
 //==============================================================================
 void Endpoint::receive_service_request_ws(
         const std::string& service_name,
-        const xtypes::DynamicData& request,
+        const eprosima::xtypes::DynamicData& request,
         const std::string& id,
         std::shared_ptr<void> connection_handle)
 {
@@ -405,7 +408,7 @@ void Endpoint::receive_service_request_ws(
     auto it = _client_proxy_info.find(service_name);
     if (it == _client_proxy_info.end())
     {
-        std::cerr << "[soss::websocket] Received a service request for a service "
+        std::cerr << "[is::sh::websocket] Received a service request for a service "
                   << "[" << service_name << "] that we are not providing!"
                   << std::endl;
         return;
@@ -420,8 +423,8 @@ void Endpoint::receive_service_request_ws(
 //==============================================================================
 void Endpoint::receive_service_advertisement_ws(
         const std::string& service_name,
-        const xtypes::DynamicType& req_type,
-        const xtypes::DynamicType& reply_type,
+        const eprosima::xtypes::DynamicType& req_type,
+        const eprosima::xtypes::DynamicType& reply_type,
         std::shared_ptr<void> connection_handle)
 {
     _service_provider_info[service_name] =
@@ -432,7 +435,7 @@ void Endpoint::receive_service_advertisement_ws(
 //==============================================================================
 void Endpoint::receive_service_unadvertisement_ws(
         const std::string& service_name,
-        const xtypes::DynamicType* /*service_type*/,
+        const eprosima::xtypes::DynamicType* /*service_type*/,
         std::shared_ptr<void> connection_handle)
 {
     auto it = _service_provider_info.find(service_name);
@@ -450,14 +453,14 @@ void Endpoint::receive_service_unadvertisement_ws(
 //==============================================================================
 void Endpoint::receive_service_response_ws(
         const std::string& /*service_name*/,
-        const xtypes::DynamicData& response,
+        const eprosima::xtypes::DynamicData& response,
         const std::string& id,
         std::shared_ptr<void> /*connection_handle*/)
 {
     auto it = _service_request_info.find(id);
     if (it == _service_request_info.end())
     {
-        std::cerr << "[soss::websocket] A remote connection provided a service "
+        std::cerr << "[is::sh::websocket] A remote connection provided a service "
                   << "response with an unrecognized id [" << id << "]"
                   << std::endl;
         return;
@@ -534,7 +537,7 @@ int32_t parse_port(
         }
         catch (const YAML::InvalidNode& v)
         {
-            std::cerr << "[soss::websocket::SystemHandle::configure] Could not "
+            std::cerr << "[is::sh::websocket::SystemHandle::configure] Could not "
                       << "parse an integer value for the port setting ["
                       << port_node.as<std::string>("") << "]: "
                       << v.what() << std::endl;
@@ -542,13 +545,15 @@ int32_t parse_port(
     }
     else
     {
-        std::cerr << "[soss::websocket::SystemHandle::configure] You must specify "
-                  << "a port setting in your soss-websocket configuration!"
+        std::cerr << "[is::sh::websocket::SystemHandle::configure] You must specify "
+                  << "a port setting in your websocket-is-sh configuration!"
                   << std::endl;
     }
 
     return -1;
 }
 
-} // namespace websocket
-} // namespace soss
+} //  namespace websocket
+} //  namespace sh
+} //  namespace is
+} //  namespace eprosima

@@ -5,7 +5,9 @@
 
 #include "JwtValidator.hpp"
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 class ServerConfig
@@ -23,6 +25,8 @@ private:
 };
 
 } // namespace websocket
-} // namespace soss
+} // namespace sh
+} // namespace is
+} // namespace eprosima
 
 #endif // SERVERCONFIG_HPP

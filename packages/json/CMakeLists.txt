@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(soss-json)
+project(is-json)
 
 find_package(xtypes REQUIRED)
-find_package(soss-core REQUIRED)
+find_package(is-core REQUIRED)
 
 if(NOT CMAKE_CXX_STANDARD)
   # TODO(MXG): Remove this block and use target_compile_features(~)
@@ -17,85 +17,85 @@ endif()
 
 include(GNUInstallDirs)
 
-message(STATUS "Configuring [soss-json]")
+message(STATUS "Configuring [${PROJECT_NAME}]")
 
-add_library(soss-json SHARED
+add_library(${PROJECT_NAME} SHARED
   src/conversion.cpp
 )
 
-soss_generate_export_header(json)
+is_generate_export_header(json)
 
-target_link_libraries(soss-json
+target_link_libraries(${PROJECT_NAME}
   PUBLIC
-    soss::core
+    is::core
 )
 
-target_include_directories(soss-json
+target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 ########################################################################
-# Example
-set(EXAMPLE_NAME ${PROJECT_NAME}-example)
-add_executable(${EXAMPLE_NAME}
-    example/main.cpp
-)
-
-set_target_properties(${EXAMPLE_NAME}
-    PROPERTIES
-        CXX_STANDARD 14
-        POSITION_INDEPENDENT_CODE ON
-)
-
-target_compile_options(${EXAMPLE_NAME}
-    PRIVATE
-        -Werror -Wall -Wextra -Wpedantic
-)
-
-target_link_libraries(${EXAMPLE_NAME}
-    PRIVATE
-        soss::core
-        soss-json
-)
-
+## Example
+#set(EXAMPLE_NAME ${PROJECT_NAME}-example)
+#add_executable(${EXAMPLE_NAME}
+#    example/main.cpp
+#)
+#
+#set_target_properties(${EXAMPLE_NAME}
+#    PROPERTIES
+#        CXX_STANDARD 14
+#        POSITION_INDEPENDENT_CODE ON
+#)
+#
+#target_compile_options(${EXAMPLE_NAME}
+#    PRIVATE
+#        -Werror -Wall -Wextra -Wpedantic
+#)
+#
+#target_link_libraries(${EXAMPLE_NAME}
+#    PRIVATE
+#        is::core
+#        ${PROJECT_NAME}
+#)
+#
 ###############################
-# Install soss-json
-set(soss_json_config_dir "${CMAKE_INSTALL_LIBDIR}/cmake/soss-json")
+# Install ${PROJECT_NAME}
+set(is_json_config_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
 install(
-  TARGETS soss-json
-  EXPORT  soss-json
+  TARGETS ${PROJECT_NAME}
+  EXPORT  ${PROJECT_NAME}
   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  COMPONENT soss-json
+  COMPONENT ${PROJECT_NAME}
 )
 
 install(
-  EXPORT soss-json
-  DESTINATION ${soss_json_config_dir}
-  FILE soss-json-target.cmake
-  NAMESPACE soss::
-  COMPONENT soss-json
+  EXPORT ${PROJECT_NAME}
+  DESTINATION ${is_json_config_dir}
+  FILE ${PROJECT_NAME}-target.cmake
+  NAMESPACE is::
+  COMPONENT ${PROJECT_NAME}
 )
 
 install(
   DIRECTORY   "${CMAKE_CURRENT_LIST_DIR}/include/"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-  COMPONENT soss-json
+  COMPONENT ${PROJECT_NAME}
 )
 
 install(
-  FILES "${CMAKE_CURRENT_LIST_DIR}/soss-jsonConfig.cmake"
-  DESTINATION "${soss_json_config_dir}"
-  COMPONENT soss-json
+  FILES "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Config.cmake"
+  DESTINATION "${is_json_config_dir}"
+  COMPONENT ${PROJECT_NAME}
 )
 
 
 # Install example
-install(
-    TARGETS ${EXAMPLE_NAME}
-    DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    COMPONENT ${PROJECT_NAME}
-)
+#install(
+#    TARGETS ${EXAMPLE_NAME}
+#    DESTINATION "${CMAKE_INSTALL_BINDIR}"
+#    COMPONENT ${PROJECT_NAME}
+#)
 

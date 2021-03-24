@@ -1,9 +1,10 @@
-#include <soss/json/conversion.hpp>
+#include <is/json/conversion.hpp>
 
 #include <iostream>
 #include <stack>
 
-using namespace soss::json;
+using namespace eprosima::is::json;
+using xtypes = eprosima::xtypes;
 
 int main()
 {
@@ -41,15 +42,16 @@ int main()
 
     Json json_message = {
         {"int", 42},
-        {"array", {10, 11, 12, 13, 14} },
+        {"array", {10, 11, 12, 13, 14}
+        },
         {"string", "Hello json :D" },
-        {"sequence", { 50.3, 100.8 } },
+        {"sequence", { 50.3, 100.8 }
+        },
         {"inner",
          {
              {"int", 1042},
              {"double", 10.42}
-         },
-        },
+         }, },
         {"inners",
          {
              {
@@ -60,8 +62,7 @@ int main()
                  {"int", 7},
                  {"double", 5.9}
              },
-         },
-        },
+         }, },
     };
 
     std::cout << "ORIGINALS" << std::endl;

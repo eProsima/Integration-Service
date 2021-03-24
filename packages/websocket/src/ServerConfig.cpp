@@ -20,7 +20,9 @@
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 const std::string YamlPoliciesKey = "policies";
@@ -41,8 +43,8 @@ bool ServerConfig::load_auth_policy(
         {
             std::string regex_pattern = glob_to_regex(r.second.as<std::string>());
             rules.emplace_back(VerificationPolicies::Rule{
-                        r.first.as<std::string>(), regex_pattern
-                    });
+                                r.first.as<std::string>(), regex_pattern
+                            });
         }
 
         std::string secret_or_pub;
@@ -114,4 +116,6 @@ std::string ServerConfig::glob_to_regex(
 }
 
 } // namespace websocket
-} // namespace soss
+} // namespace sh
+} // namespace is
+} // namespace eprosima

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +18,7 @@
 
 #include "Endpoint.hpp"
 
-#include <soss/Search.hpp>
+#include <is/core/runtime/Search.hpp>
 
 #include <chrono>
 #include <thread>
@@ -25,7 +26,9 @@
 #include <unordered_set>
 #include <websocketpp/config/asio_client.hpp>
 
-namespace soss {
+namespace eprosima {
+namespace is {
+namespace sh {
 namespace websocket {
 
 const std::string WebsocketMiddlewareName = "websocket";
@@ -66,7 +69,7 @@ public:
     }
 
     WsCppEndpoint* configure_endpoint(
-            const RequiredTypes& /*types*/,
+            const core::RequiredTypes& /*types*/,
             const YAML::Node& configuration) override
     {
         const int32_t port = parse_port(configuration);
@@ -118,14 +121,14 @@ public:
         _context->set_default_verify_paths(ec);
         if (ec)
         {
-            std::cerr << "[soss::websocket::Client] Failed to load the default "
+            std::cerr << "[is::sh::websocket::Client] Failed to load the default "
                       << "certificate authorities: " << ec.message() << std::endl;
             return false;
         }
 
         if (!extra_certificate_authorities.empty())
         {
-            soss::Search ca_search = soss::Search(WebsocketMiddlewareName)
+            eprosima::is::core::Search ca_search = eprosima::is::core::Search(WebsocketMiddlewareName)
                     .relative_to_config()
                     .relative_to_home();
             std::vector<std::string> checked_paths;
@@ -140,7 +143,7 @@ public:
                 if (ca_file_path.empty())
                 {
                     std::string err = std::string()
-                            + "[soss::websocket::Client] Could not find the specified "
+                            + "[is::sh::websocket::Client] Could not find the specified "
                             + "certificate authority [" + ca_file_name + "]. The following "
                             + "paths were checked:\n";
 
@@ -156,12 +159,12 @@ public:
                 _context->load_verify_file(ca_file_path, ec);
                 if (ec)
                 {
-                    std::cerr << "[soss::websocket::Client] Failed to load the specified "
+                    std::cerr << "[is::sh::websocket::Client] Failed to load the specified "
                               << "certificate authority: " << ca_file_path << std::endl;
                     return false;
                 }
 
-                std::cout << "[soss::websocket::Client] Using an extra certificate "
+                std::cout << "[is::sh::websocket::Client] Using an extra certificate "
                           << "authority [" << ca_file_path << "]" << std::endl;
             }
         }
@@ -169,7 +172,7 @@ public:
         _context->set_verify_mode(boost::asio::ssl::context::verify_peer, ec);
         if (ec)
         {
-            std::cerr << "[soss::websocket::Client] Failed to set the verify mode: "
+            std::cerr << "[is::sh::websocket::Client] Failed to set the verify mode: "
                       << ec.message() << std::endl;
             return false;
         }
@@ -178,7 +181,7 @@ public:
             boost::asio::ssl::rfc2818_verification(hostname), ec);
         if (ec)
         {
-            std::cerr << "[soss::websocket::Client] Failed to set the verify "
+            std::cerr << "[is::sh::websocket::Client] Failed to set the verify "
                       << "callback: " << ec.message() << std::endl;
             return false;
         }
@@ -246,7 +249,7 @@ public:
             }
             catch (websocketpp::exception& e)
             {
-                std::cerr <<  "[soss::websocket::Client] Exception ocurred while closing connection" << std::endl;
+                std::cerr <<  "[is::sh::websocket::Client] Exception ocurred while closing connection" << std::endl;
             }
 
             // TODO(MXG) Make these timeout parameters something that can be
@@ -261,7 +264,7 @@ public:
                 // Wait no more than 10 seconds total.
                 if (std::chrono::steady_clock::now() - start_time > 10s)
                 {
-                    std::cerr << "[soss::websocket::Client] Timed out while waiting for "
+                    std::cerr << "[is::sh::websocket::Client] Timed out while waiting for "
                               << "the remote server to acknowledge the connection "
                               << "shutdown request" << std::endl;
                     break;
@@ -295,7 +298,7 @@ public:
             _connection = _client.get_connection(_host_uri, ec);
             if (ec)
             {
-                std::cerr << "[soss::websocket::Client] Error creating connection "
+                std::cerr << "[is::sh::websocket::Client] Error creating connection "
                           << "handle: " << ec.message() << std::endl;
             }
             else
@@ -313,7 +316,7 @@ public:
 
     void runtime_advertisement(
             const std::string& topic,
-            const xtypes::DynamicType& message_type,
+            const eprosima::xtypes::DynamicType& message_type,
             const std::string& id,
             const YAML::Node& configuration) override
     {
@@ -334,7 +337,7 @@ private:
         auto incoming_handle = _client.get_con_from_hdl(handle);
         if (incoming_handle != _connection)
         {
-            std::cerr << "[soss::websocket::Client::_handle_message] Unexpected "
+            std::cerr << "[is::sh::websocket::Client::_handle_message] Unexpected "
                       << "connection is sending messages: [" << incoming_handle.get()
                       << "] vs [" << _connection.get() << "]" << std::endl;
             return;
@@ -351,12 +354,12 @@ private:
 
         if (_closing_down)
         {
-            std::cout << "[soss::websocket::Client] closing connection to server."
+            std::cout << "[is::sh::websocket::Client] closing connection to server."
                       << std::endl;
         }
         else
         {
-            std::cout << "[soss::websocket::Client::_handle_close] The connection to "
+            std::cout << "[is::sh::websocket::Client::_handle_close] The connection to "
                       << "the server is closing early. [code "
                       << closing_connection->get_remote_close_code() << "] reason: "
                       << closing_connection->get_remote_close_reason() << std::endl;
@@ -371,14 +374,14 @@ private:
         auto opened_connection = _client.get_con_from_hdl(handle);
         if (opened_connection != _connection)
         {
-            std::cerr << "[soss::websocket::Client::_handle_opening] Unexpected "
+            std::cerr << "[is::sh::websocket::Client::_handle_opening] Unexpected "
                       << "connection opened: [" << opened_connection.get()
                       << "] vs [" << _connection.get() << "]" << std::endl;
             return;
         }
 
         _connection_failed = false;
-        std::cout << "[soss::websocket::Client] Established connection to host ["
+        std::cout << "[is::sh::websocket::Client] Established connection to host ["
                   << _host_uri << "]." << std::endl;
 
         notify_connection_opened(opened_connection);
@@ -389,7 +392,7 @@ private:
             opened_connection->add_subprotocol(*_jwt_token, ec);
             if (ec)
             {
-                std::cerr << "[soss::websocket::Client::_handle_opening]: " << ec.message();
+                std::cerr << "[is::sh::websocket::Client::_handle_opening]: " << ec.message();
             }
         }
     }
@@ -401,7 +404,7 @@ private:
         {
             // Print this only once for each time a connection fails
             _connection_failed = true;
-            std::cout << "[soss::websocket::Client] Failed to establish a connection "
+            std::cout << "[is::sh::websocket::Client] Failed to establish a connection "
                       << "to the host [" << _host_uri << "]. We will periodically "
                       << "attempt to reconnect." << std::endl;
         }
@@ -440,7 +443,9 @@ private:
 
 };
 
-SOSS_REGISTER_SYSTEM("websocket_client", soss::websocket::Client)
+IS_REGISTER_SYSTEM("websocket_client", is::sh::websocket::Client)
 
 } // namespace websocket
-} // namespace soss
+} // namespace sh
+} // namespace is
+} // namespace eprosima

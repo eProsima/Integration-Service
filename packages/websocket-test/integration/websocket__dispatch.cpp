@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 - present Proyectos y Sistemas de Mantenimiento SL (eProsima).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +16,9 @@
  *
  */
 
-#include <soss/mock/api.hpp>
-#include <soss/Instance.hpp>
-#include <soss/utilities.hpp>
+#include <is/sh/mock/api.hpp>
+#include <is/core/Instance.hpp>
+#include <is/utils/Convert.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -25,7 +26,7 @@
 
 namespace {
 void run_test_case(
-        soss::InstanceHandle& handle,
+        eprosima::is::core::InstanceHandle& handle,
         const std::string& initial_topic,
         const std::string& name,
         const uint32_t number,
@@ -36,25 +37,25 @@ void run_test_case(
 
     std::cout << "Testing topic [" << topic << "]" << std::endl;
 
-    std::promise<xtypes::DynamicData> message_promise;
+    std::promise<eprosima::xtypes::DynamicData> message_promise;
     auto message_future = message_promise.get_future();
-    REQUIRE(soss::mock::subscribe(
-                topic, [&](const xtypes::DynamicData& incoming_message)
+    REQUIRE(eprosima::is::sh::mock::subscribe(
+                topic, [&](const eprosima::xtypes::DynamicData& incoming_message)
                 {
                     message_promise.set_value(incoming_message);
                 }));
 
-    const soss::TypeRegistry& mock_types = *handle.type_registry("mock");
-    xtypes::DynamicData message(*mock_types.at("Dispatch"));
+    const eprosima::is::TypeRegistry& mock_types = *handle.type_registry("mock");
+    eprosima::xtypes::DynamicData message(*mock_types.at("Dispatch"));
 
     message["name"] = name;
     message["number"] = number;
 
-    soss::mock::publish_message(initial_topic, message);
+    eprosima::is::sh::mock::publish_message(initial_topic, message);
 
     using namespace std::chrono_literals;
     REQUIRE(message_future.wait_for(5s) == std::future_status::ready);
-    const xtypes::DynamicData result = message_future.get();
+    const eprosima::xtypes::DynamicData result = message_future.get();
     REQUIRE(result.size() > 0);
 
     std::string result_name;
@@ -72,8 +73,8 @@ TEST_CASE("Transmit and dispatch messages", "[websocket]")
 {
     using namespace std::chrono_literals;
 
-    soss::InstanceHandle handle =
-            soss::run_instance(WEBSOCKET__DISPATCH__TEST_CONFIG);
+    eprosima::is::core::InstanceHandle handle =
+            eprosima::is::run_instance(WEBSOCKET__DISPATCH__TEST_CONFIG);
     REQUIRE(handle);
 
     std::cout << " -- Waiting to make sure the client has time to connect"
