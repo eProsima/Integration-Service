@@ -24,6 +24,7 @@
 #include <mutex>
 #include <type_traits>
 #include <vector>
+#include <array>
 
 namespace soss {
 
@@ -141,8 +142,8 @@ struct Convert<char> : CharConvert { };
 /// namespace.
 template<
     typename Type,
-    void (*_from_xtype)(const xtypes::ReadableDynamicDataRef& from, Type& to),
-    void (*_to_xtype)(const Type& from, xtypes::WritableDynamicDataRef to)>
+    void (* _from_xtype)(const xtypes::ReadableDynamicDataRef& from, Type& to),
+    void (* _to_xtype)(const Type& from, xtypes::WritableDynamicDataRef to)>
 struct MessageConvert
 {
     using native_type = Type;
@@ -175,11 +176,14 @@ struct MessageConvert
 /// std::numeric_limits<VectorType::size_type>::max()
 template<
     typename ElementType,
-    typename NativeType,
-    std::size_t UpperBound>
-struct ContainerConvert
+    template <typename, typename> class NativeType,
+    typename Allocator,
+    std::size_t UpperBound,
+    std::enable_if_t<std::is_base_of<std::vector<ElementType, Allocator>, NativeType<ElementType, Allocator> >::value,
+    bool> = true>
+struct ResizableUnboundedContainerConvert
 {
-    using native_type = NativeType;
+    using native_type = NativeType<ElementType, Allocator>;
 
     static constexpr bool type_is_primitive =
             Convert<ElementType>::type_is_primitive;
@@ -203,20 +207,51 @@ struct ContainerConvert
         to = temp;
     }
 
-    template<typename Container>
-    static void container_resize(
-            Container& vector,
-            std::size_t size)
+    // Documentation inherited from Convert
+    static void from_xtype_field(
+            const xtypes::ReadableDynamicDataRef& from,
+            native_type& to)
     {
-        vector.resize(size);
+        std::size_t N = std::min(from.size(), UpperBound);
+        to.resize(N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            from_xtype(from[i], to[i]);
+        }
     }
 
-    template<template <typename, std::size_t> class Array, typename T, std::size_t N>
-    static void container_resize(
-            Array<T, N>& /*array*/,
-            std::size_t /*size*/)
+    // Documentation inherited from Convert
+    static void to_xtype_field(
+            const native_type& from,
+            xtypes::WritableDynamicDataRef to)
     {
-        // Do nothing. Arrays don't need to be resized.
+        const std::size_t N = std::min(from.size(), UpperBound);
+        to.resize(N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            Convert<ElementType>::to_xtype_field(from[i], to[i]);
+        }
+    }
+
+};
+
+template<
+    typename ElementType,
+    template <typename, std::size_t, typename> class NativeType,
+    typename Allocator,
+    std::size_t UpperBound>
+struct ResizableBoundedContainerConvert
+{
+    using native_type = NativeType<ElementType, UpperBound, Allocator>;
+
+    static constexpr bool type_is_primitive =
+            Convert<ElementType>::type_is_primitive;
+
+    static void from_xtype(
+            const xtypes::ReadableDynamicDataRef& from,
+            ElementType& to)
+    {
+        Convert<ElementType>::from_xtype_field(from, to);
     }
 
     // Documentation inherited from Convert
@@ -224,8 +259,55 @@ struct ContainerConvert
             const xtypes::ReadableDynamicDataRef& from,
             native_type& to)
     {
+        std::size_t N = std::min(from.size(), UpperBound);
+        to.resize(N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            from_xtype(from[i], to[i]);
+        }
+    }
+
+    // Documentation inherited from Convert
+    static void to_xtype_field(
+            const native_type& from,
+            xtypes::WritableDynamicDataRef to)
+    {
         const std::size_t N = std::min(from.size(), UpperBound);
-        container_resize(to, N);
+        to.resize(N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            Convert<ElementType>::to_xtype_field(from[i], to[i]);
+        }
+    }
+
+};
+
+template<
+    typename ElementType,
+    template <typename, std::size_t> class NativeType,
+    std::size_t UpperBound,
+    std::enable_if_t<std::is_base_of<std::array<ElementType, UpperBound>, NativeType<ElementType, UpperBound> >::value,
+    bool> = true>
+struct NonResizableContainerConvert
+{
+    using native_type = NativeType<ElementType, UpperBound>;
+
+    static constexpr bool type_is_primitive =
+            Convert<ElementType>::type_is_primitive;
+
+    static void from_xtype(
+            const xtypes::ReadableDynamicDataRef& from,
+            ElementType& to)
+    {
+        Convert<ElementType>::from_xtype_field(from, to);
+    }
+
+    // Documentation inherited from Convert
+    static void from_xtype_field(
+            const xtypes::ReadableDynamicDataRef& from,
+            native_type& to)
+    {
+        std::size_t N = std::min(from.size(), UpperBound);
         for (std::size_t i = 0; i < N; ++i)
         {
             from_xtype(from[i], to[i]);
@@ -250,32 +332,40 @@ struct ContainerConvert
 //==============================================================================
 template<typename ElementType, typename Allocator>
 struct Convert<std::vector<ElementType, Allocator> >
-    : ContainerConvert<
+    : ResizableUnboundedContainerConvert<
         ElementType,
-        std::vector<typename Convert<ElementType>::native_type, Allocator>,
-        std::numeric_limits<typename std::vector<ElementType, Allocator>::size_type>::max()> { };
+        std::vector,
+        Allocator,
+        std::numeric_limits<typename std::vector<ElementType, Allocator>::size_type>::max()>
+{
+};
 
 //==============================================================================
 template<template <typename, std::size_t> class Array, typename ElementType, std::size_t N>
 struct Convert<Array<ElementType, N> >
-    : ContainerConvert<
+    : NonResizableContainerConvert<
         ElementType,
-        Array<typename Convert<ElementType>::native_type, N>,
-        N> { };
+        Array,
+        N>
+{
+};
 
 //==============================================================================
 template<typename ElementType, std::size_t N, typename Allocator,
         template<typename, std::size_t, typename> class VectorImpl>
 struct Convert<VectorImpl<ElementType, N, Allocator> >
-    : ContainerConvert<
+    : ResizableBoundedContainerConvert<
         ElementType,
-        VectorImpl<typename Convert<ElementType>::native_type, N, Allocator>,
-        N> { };
+        VectorImpl,
+        Allocator,
+        N>
+{
+};
 
 //==============================================================================
 /// \brief A thread-safe repository for resources to avoid unnecessary
 /// allocations
-template<typename Resource, Resource(*initializerT)()>
+template<typename Resource, Resource(* initializerT)()>
 class ResourcePool
 {
 public:
