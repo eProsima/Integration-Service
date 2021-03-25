@@ -55,12 +55,12 @@ public:
         _global_paths = static_default_global_paths;
 
         /**
-         *  Environment variables could change between different instantiations of the
-         * Search object, so we re-check these each time a Search instance is created.
+         * Environment variables can change between different instantiations of the
+         * Search object, so we re-check them each time a Search instance is created.
          */
 
         /**
-         * Add external libraries values first because they are the lowest priority.
+         * Adds external libraries values first, because they are the lowest priority.
          */
         const std::vector<std::string> ld_library_paths =
                 get_environment_variable_path_list(ENV_LIB_PATH);
@@ -72,7 +72,7 @@ public:
 
         /**
          * The explicitly set IS_PREFIX_PATH has a higher priority
-         * than LD_LIBRARY_PATH so we add that next.
+         * than LD_LIBRARY_PATH so we add it next.
          */
         const std::vector<std::string> is_prefix_path =
                 get_environment_variable_path_list("IS_PREFIX_PATH");
@@ -84,7 +84,7 @@ public:
 
         /**
          * Now we get the paths specific to this middleware,
-         * and add it to the environment middleware paths.
+         * and add them to the environment middleware paths.
          */
         const std::vector<std::string> mw_prefix_paths =
                 get_environment_variable_path_list(
@@ -96,8 +96,8 @@ public:
         }
 
         /**
-         * Add the home path based on the $HOME environment variable,
-         * but set it to inactive by default.
+         * Adds the home path based on the $HOME environment variable,
+         * and sets it to inactive by default.
          */
         _home_prefix.activate(false);
         const char* home_path = getenv(HomeEnvVar);
@@ -403,7 +403,7 @@ private:
         ~PathSet() = default;
 
         /**
-         * @brief Add a path to this set.
+         * @brief Adds a path to this set.
          *        The most recently added paths will come first
          *        when iterating from begin() to end().
          *
@@ -429,13 +429,13 @@ private:
             }
 
             /**
-             * See if this path has already been added to the list.
+             * Checks whether this path has already been added to the list.
              */
             auto insertion = _added_paths.insert({path, {}
                             });
 
             /**
-             * If it has been added, remove the previous entry.
+             * If it has been added, it removes the previous entry.
              */
             if (!insertion.second)
             {
@@ -443,24 +443,25 @@ private:
             }
 
             /**
-             * Add the path to the front of the list.
+             * Adds the path to the front of the list.
              */
             _path_list.push_front(path);
 
             /**
-             * Save its iterator in the map of added paths
+             * Saves its iterator in the map of added paths
              */
             insertion.first->second = _path_list.begin();
 
             /**
-             * The above procedure makes it so that if a path gets added
-             * multiple times, it will be given the priority of the most
-             * recent addition, and it will not get iterated over multiple times.
+             * The above procedure is needed if a path gets added
+             * multiple times. In this case, only one occurrence is left,
+             * so that it doesn't get iterated over multiple times, and it is
+             * given the priority of its most recent addition.
              */
         }
 
         /**
-         * @brief Get an iterator to the beginning of the set.
+         * @brief Gets an iterator to the beginning of the set.
          *
          * @returns a const_iterator pointing to the first element.
          */
@@ -470,9 +471,9 @@ private:
         }
 
         /**
-         * @brief Get an iterator to the end of the set.
+         * @brief Gets an iterator to the end of the set.
          *
-         * @returns a const_iterator pointing to the end.
+         * @returns a const_iterator pointing to the last element.
          */
         std::list<std::string>::const_iterator end() const
         {
@@ -492,9 +493,9 @@ private:
         }
 
         /**
-         * @brief Get the _active attribute.
+         * @brief Gets the `_active` attribute.
          *
-         * @returns the _active attribute.
+         * @returns the `_active` attribute.
          */
         bool active() const
         {
@@ -550,8 +551,8 @@ private:
 
     /**
      * @class GlobalPaths
-     *        Holds global information regarding to every *Integration Service*
-     *        System Handle, as well as the core.
+     *        Holds global information regarding every *Integration Service*
+     *        SystemHandle, as well as the core.
      */
     class GlobalPaths
     {
@@ -569,7 +570,7 @@ private:
 
         /**
          * @brief If prefixes for this middleware were given from the command line,
-         *        this will return them. Otherwise, it will return an empty PathSet.
+         *        this will return a reference to them. Otherwise, it will return an empty PathSet.
          *
          * @param[in] middleware The middleware whose prefixes will be retrieved.
          *
@@ -590,7 +591,7 @@ private:
 
         /**
          * @brief If prefixes for this middleware were given from the command line,
-         *        this will return them. Otherwise, it will return an empty PathSet.
+         *        this will return a reference to them. Otherwise, it will return an empty PathSet.
          *
          * @param[in] middleware The middleware whose prefixes will be retrieved.
          *
@@ -629,7 +630,7 @@ private:
         PathSet system_is_prefixes;
 
         /**
-         * Path set that contains only the prefix of the config file
+         * PathSet that contains only the prefix of the config file
          * which was passed to the is::core::Instance.
          */
         PathSet config_file_prefix;
@@ -638,7 +639,7 @@ private:
     /**
      * @brief Get a list of paths which are present in a certain environment variable.
      *
-     * @param[in] env_var The environment variable to retrieve its paths from.
+     * @param[in] env_var The environment variable to retrieve the paths from.
      *
      * @returns A const list of the requested paths.
      */

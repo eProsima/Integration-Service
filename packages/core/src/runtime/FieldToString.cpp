@@ -30,7 +30,7 @@ class FieldToString::Implementation
 public:
 
     /**
-     * @brief Get a reference to this Factory class instance.
+     * @brief Gets a reference to this Factory class instance.
      */
     static Implementation& instance()
     {
@@ -103,7 +103,7 @@ private:
     ~Implementation() = default;
 
     /**
-     * @brief Add conversion function for primitive type.
+     * @brief Adds conversion functions for primitive types.
      */
     template<typename T>
     void add_primitive_conversion()

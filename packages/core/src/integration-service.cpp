@@ -19,7 +19,7 @@
 #include <is/core/Instance.hpp>
 
 /**
- * This very simple translation unit lets us spawn an Integration Service instance
+ * This very simple translation unit lets us spawn an *Integration Service* instance
  * and return its exit code once it's finished. This provides the main function
  * for the canonical `integration-service` command line program.
  */

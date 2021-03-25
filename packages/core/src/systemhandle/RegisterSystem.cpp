@@ -54,7 +54,7 @@ SystemHandleInfo::operator bool () const
 }
 
 /**
- * Initialize Register static members.
+ * Initializes Register of static members.
  */
 Register::FactoryMap Register::_info_map;
 std::mutex Register::_mutex;
