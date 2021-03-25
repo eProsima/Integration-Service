@@ -1,30 +1,29 @@
 
-include(CTest)
 if(NOT BUILD_TESTING)
   return()
 endif()
 
+include(CTest)
+include(${PROJECT_SOURCE_DIR}/../core/cmake/common/gtest.cmake)
+enable_testing()
+
 add_executable(soss-core-test
-  main.cpp
   unit/search_test.cpp
 )
-
-set(thirdparty_dir "${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty")
-
-list(APPEND CMAKE_MODULE_PATH "${thirdparty_dir}/catch2/cmake")
-include(Catch)
-catch_discover_tests(soss-core-test)
 
 target_link_libraries(soss-core-test
   PRIVATE
     soss-core
+  PUBLIC
+    libgtest
 )
 
 target_include_directories(soss-core-test
   PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../src"
-    "${thirdparty_dir}/catch2/include"
 )
+
+add_gtest(soss-core-test SOURCES unit/search_test.cpp)
 
 set(mock_config_directory "${PROJECT_BINARY_DIR}/mock/config")
 set(mock_file_name "path/to/some_file.txt")

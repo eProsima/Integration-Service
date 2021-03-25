@@ -19,7 +19,7 @@
 #include <soss/Instance.hpp>
 #include <soss/utilities.hpp>
 
-#include <catch2/catch.hpp>
+#include <gtest/gtest.h>
 
 #include <iostream>
 
@@ -38,7 +38,7 @@ void run_test_case(
 
     std::promise<xtypes::DynamicData> message_promise;
     auto message_future = message_promise.get_future();
-    REQUIRE(soss::mock::subscribe(
+    ASSERT_TRUE(soss::mock::subscribe(
                 topic, [&](const xtypes::DynamicData& incoming_message)
                 {
                     message_promise.set_value(incoming_message);
@@ -53,28 +53,28 @@ void run_test_case(
     soss::mock::publish_message(initial_topic, message);
 
     using namespace std::chrono_literals;
-    REQUIRE(message_future.wait_for(5s) == std::future_status::ready);
+    ASSERT_EQ(message_future.wait_for(5s), std::future_status::ready);
     const xtypes::DynamicData result = message_future.get();
-    REQUIRE(result.size() > 0);
+    ASSERT_GT(result.size(), 0);
 
     std::string result_name;
     result_name = result["name"].value<std::string>();
-    CHECK(result_name == name);
+    EXPECT_EQ(result_name, name);
 
     uint32_t result_number;
     result_number = result["number"].value<uint32_t>();
-    CHECK(result_number == number);
+    EXPECT_EQ(result_number, number);
 }
 
 } // anonymous namespace
 
-TEST_CASE("Transmit and dispatch messages", "[websocket]")
+TEST(WebSocket, Transmit_and_dispatch_messages)
 {
     using namespace std::chrono_literals;
 
     soss::InstanceHandle handle =
             soss::run_instance(WEBSOCKET__DISPATCH__TEST_CONFIG);
-    REQUIRE(handle);
+    ASSERT_TRUE(handle);
 
     std::cout << " -- Waiting to make sure the client has time to connect"
               << std::endl;
@@ -89,9 +89,17 @@ TEST_CASE("Transmit and dispatch messages", "[websocket]")
     run_test_case(handle, "dispatch_into_server", "blueberry", 20, "");
     run_test_case(handle, "dispatch_into_server", "citrus", 30, "");
 
-    CHECK(handle.quit().wait() == 0);
+    EXPECT_EQ(handle.quit().wait(), 0);
 
     // NOTE(MXG) It seems the error
     // `[info] asio async_shutdown error: asio.misc:2 (End of file)`
     // is normal and to be expected as far as I can tell.
+}
+
+int main(
+        int argc,
+        char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

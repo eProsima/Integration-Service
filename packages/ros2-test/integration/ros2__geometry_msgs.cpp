@@ -26,13 +26,11 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include <catch2/catch.hpp>
+#include <gtest/gtest.h>
 
 #include <random>
 
 // TODO (@jamoralp): re-think or refactor these tests.
-
-using Catch::Matchers::WithinAbs;
 
 geometry_msgs::msg::PoseStamped generate_random_pose(
         const int sec = 0)
@@ -102,7 +100,7 @@ void compare_plans(
         const nav_msgs::srv::GetPlan_Response::_plan_type& plan_b)
 {
     const bool header_matches = (plan_a.header == plan_b.header);
-    CHECK(header_matches);
+    EXPECT_TRUE(header_matches);
     if (!header_matches)
     {
         std::cout << "Header A: " << print_header(plan_a.header)
@@ -110,11 +108,11 @@ void compare_plans(
                   << std::endl;
     }
 
-    REQUIRE(plan_a.poses.size() == plan_b.poses.size());
+    ASSERT_EQ(plan_a.poses.size(), plan_b.poses.size());
     for (std::size_t i = 0; i < plan_a.poses.size(); ++i)
     {
         const bool pose_matches = (plan_a.poses[i] == plan_b.poses[i]);
-        CHECK(pose_matches);
+        EXPECT_TRUE(pose_matches);
         if (!pose_matches)
         {
             std::cout << "Poses at index [" << i << "] did not match: ";
@@ -134,7 +132,7 @@ void compare_plans(
     }
 }
 
-TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
+TEST(ROS2, Publish_subscribe_between_ros2_and_mock)
 {
     using namespace std::chrono_literals;
 
@@ -145,12 +143,12 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
     soss::InstanceHandle handle = soss::run_instance(
         config_node, {ROS2__ROSIDL__BUILD_DIR});
 
-    REQUIRE(handle);
+    ASSERT_TRUE(handle);
 
     rclcpp::Node::SharedPtr ros2 = std::make_shared<rclcpp::Node>("ros2_test");
     rclcpp::executors::SingleThreadedExecutor executor;
 
-    REQUIRE( rclcpp::ok() );
+    ASSERT_TRUE( rclcpp::ok() );
 
     executor.add_node(ros2);
 
@@ -161,7 +159,7 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
             ros2->create_publisher<geometry_msgs::msg::Pose>(
         "transmit_pose", rclcpp::SystemDefaultsQoS());
 #endif // RCLCPP__QOS_HPP_
-    REQUIRE(publisher);
+    ASSERT_TRUE(publisher);
 
     std::promise<xtypes::DynamicData> msg_promise;
     std::future<xtypes::DynamicData> msg_future = msg_promise.get_future();
@@ -178,7 +176,7 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
                 mock_sub_value_received = true;
                 msg_promise.set_value(msg);
             };
-    REQUIRE(soss::mock::subscribe("transmit_pose", mock_sub));
+    ASSERT_TRUE(soss::mock::subscribe("transmit_pose", mock_sub));
 
     geometry_msgs::msg::Pose ros2_pose = generate_random_pose().pose;
 
@@ -202,10 +200,10 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
         publisher->publish(ros2_pose);
     }
 
-    REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
+    ASSERT_EQ(msg_future.wait_for(0s), std::future_status::ready);
     xtypes::DynamicData received_msg = msg_future.get();
 
-    CHECK(received_msg.type().name() == "geometry_msgs/Pose");
+    EXPECT_EQ(received_msg.type().name(), "geometry_msgs/Pose");
 
     xtypes::ReadableDynamicDataRef position = received_msg["position"];
     xtypes::ReadableDynamicDataRef orientation = received_msg["orientation"];
@@ -213,7 +211,7 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
     #define TEST_POSITION_OF( u ) \
     { \
         const double u = position[#u]; \
-        CHECK_THAT(u, WithinAbs(ros2_pose.position.u, tolerance)); \
+        ASSERT_NEAR(u, ros2_pose.position.u, tolerance); \
     }
 
     TEST_POSITION_OF(x);
@@ -246,7 +244,7 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
     const auto subscriber = ros2->create_subscription<geometry_msgs::msg::Pose>(
         "echo_pose", rclcpp::SystemDefaultsQoS(), echo_sub);
 #endif // RCLCPP__QOS_HPP_
-    REQUIRE(subscriber);
+    ASSERT_TRUE(subscriber);
 
     // Keep spinning and publishing while we wait for the promise to be
     // delivered. Try to cycle this for no more than a few seconds. If it's not
@@ -267,10 +265,10 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
         }
     }
 
-    REQUIRE(pose_future.wait_for(0s) == std::future_status::ready);
+    ASSERT_EQ(pose_future.wait_for(0s), std::future_status::ready);
     geometry_msgs::msg::Pose received_pose = pose_future.get();
 
-    CHECK(ros2_pose == received_pose);
+    EXPECT_EQ(ros2_pose, received_pose);
 
     // Destroy ros2 instance node
     executor.remove_node(ros2);
@@ -282,11 +280,11 @@ TEST_CASE("Publish-subscribe between ros2 and the mock middleware", "[ros2]")
 
     // Require that it's no longer running. If it is still running, then it is
     // probably stuck, and we should forcefully quit.
-    REQUIRE(!handle.running());
-    REQUIRE(handle.wait() == 0);
+    ASSERT_TRUE(!handle.running());
+    ASSERT_TRUE(handle.wait() == 0);
 }
 
-TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
+TEST(ROS2, Request_reply_between_ros2_and_mock)
 {
     using namespace std::chrono_literals;
 
@@ -297,12 +295,12 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
     soss::InstanceHandle handle = soss::run_instance(
         config_node, {ROS2__ROSIDL__BUILD_DIR});
 
-    REQUIRE(handle);
+    ASSERT_TRUE(handle);
 
     rclcpp::Node::SharedPtr ros2 = std::make_shared<rclcpp::Node>("ros2_test");
     rclcpp::executors::SingleThreadedExecutor executor;
 
-    REQUIRE( rclcpp::ok() );
+    ASSERT_TRUE( rclcpp::ok() );
 
     executor.add_node(ros2);
 
@@ -374,12 +372,12 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
         }
     }
 
-    REQUIRE(future_start.wait_for(0s) == std::future_status::ready);
-    REQUIRE(future_goal.wait_for(0s) == std::future_status::ready);
+    ASSERT_EQ(future_start.wait_for(0s), std::future_status::ready);
+    ASSERT_EQ(future_goal.wait_for(0s), std::future_status::ready);
     auto requested_start = future_start.get();
-    CHECK(requested_start == plan_response.plan.poses.front());
+    EXPECT_EQ(requested_start, plan_response.plan.poses.front());
     auto requested_goal = future_goal.get();
-    CHECK(requested_goal == plan_response.plan.poses.back());
+    EXPECT_EQ(requested_goal, plan_response.plan.poses.back());
 
     start_time = std::chrono::steady_clock::now();
     while (std::chrono::steady_clock::now() - start_time < 30s)
@@ -390,7 +388,7 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
             break;
         }
     }
-    REQUIRE(future_response_msg.wait_for(0s) == std::future_status::ready);
+    ASSERT_EQ(future_response_msg.wait_for(0s), std::future_status::ready);
 
     const xtypes::DynamicData response_msg = future_response_msg.get();
 
@@ -406,7 +404,7 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
 
     const auto client =
             ros2->create_client<nav_msgs::srv::GetPlan>("echo_plan");
-    REQUIRE(client->wait_for_service(10s));
+    ASSERT_TRUE(client->wait_for_service(10s));
 
     auto request = std::make_shared<nav_msgs::srv::GetPlan::Request>();
     *request = plan_request;
@@ -427,9 +425,9 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
         }
     }
 
-    REQUIRE(future_response.wait_for(0s) == std::future_status::ready);
+    ASSERT_EQ(future_response.wait_for(0s), std::future_status::ready);
     const auto response = future_response.get();
-    CHECK(*response == plan_response);
+    EXPECT_EQ(*response, plan_response);
     compare_plans(response->plan, plan_response.plan);
 
     // Destroy ros2 instance node
@@ -442,6 +440,14 @@ TEST_CASE("Request-reply between ros2 and the mock middleware", "[ros2]")
 
     // Require that it's no longer running. If it is still running, then it is
     // probably stuck, and we should forcefully quit.
-    REQUIRE(!handle.running());
-    REQUIRE(handle.wait() == 0);
+    ASSERT_TRUE(!handle.running());
+    ASSERT_TRUE(handle.wait() == 0);
+}
+
+int main(
+        int argc,
+        char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

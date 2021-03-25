@@ -24,7 +24,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <catch2/catch.hpp>
+#include <gtest/gtest.h>
 
 #include <random>
 
@@ -118,7 +118,7 @@ void test(
 #else
             ros2->create_publisher<Ros2Array>("transmit", rclcpp::SystemDefaultsQoS());
 #endif // RCLCPP__QOS_HPP_
-    REQUIRE(publisher);
+    ASSERT_TRUE(publisher);
 
     std::promise<xtypes::DynamicData> msg_promise;
     std::future<xtypes::DynamicData> msg_future = msg_promise.get_future();
@@ -135,7 +135,7 @@ void test(
                 is_msg_received = true;
                 msg_promise.set_value(msg);
             };
-    REQUIRE(soss::mock::subscribe("transmit", mock_sub));
+    ASSERT_TRUE(soss::mock::subscribe("transmit", mock_sub));
 
     const std::size_t N = 3;
     Ros2Array ros2_msg = generate_random_array<Ros2Array, Ros2Primitives>(N);
@@ -161,14 +161,14 @@ void test(
         publisher->publish(ros2_msg);
     }
 
-    REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
+    ASSERT_EQ(msg_future.wait_for(0s), std::future_status::ready);
     xtypes::DynamicData received_msg = msg_future.get();
 
-    CHECK(received_msg.type().name() == ROS2_TYPE_NAME);
+    EXPECT_EQ(received_msg.type().name(), ROS2_TYPE_NAME);
 
 
     xtypes::WritableDynamicDataRef seq = received_msg["primitive_values"];
-    REQUIRE(seq.size() == N);
+    ASSERT_EQ(seq.size(), N);
 
     for (std::size_t i = 0; i < N; ++i)
     {
@@ -179,8 +179,8 @@ void test(
         typename Ros2Primitives::_ ## field_name ## _type ros2_field; \
         soss::Convert<typename Ros2Primitives::_ ## field_name ## _type>::from_xtype_field( \
             xtypes_primitives[#field_name], ros2_field); \
-        CHECK(ros2_field == ros2_primitives.field_name); \
-}
+        EXPECT_EQ(ros2_field, ros2_primitives.field_name); \
+    }
 
         SOSS_REQUIRE_AND_COMPARE(bool_value);
         SOSS_REQUIRE_AND_COMPARE(byte_value);
@@ -230,7 +230,7 @@ void test(
 #else
             ros2->create_subscription<Ros2Array>("echo", rclcpp::SystemDefaultsQoS(), echo_sub);
 #endif // RCLCPP__QOS_HPP_
-    REQUIRE(subscriber);
+    ASSERT_TRUE(subscriber);
 
     // Keep spinning and publishing while we wait for the promise to be
     // delivered. Try cycle this for no more than a few seconds. If it's not
@@ -251,20 +251,19 @@ void test(
         }
     }
 
-    REQUIRE(array_future.wait_for(0s) == std::future_status::ready);
+    ASSERT_EQ(array_future.wait_for(0s), std::future_status::ready);
     Ros2Array received_array = array_future.get();
 
     // Check that the arrays match for the first N entries
     for (std::size_t i = 0; i < N; ++i)
     {
-        CHECK(received_array.primitive_values[i] == ros2_msg.primitive_values[i]);
+        EXPECT_EQ(received_array.primitive_values[i], ros2_msg.primitive_values[i]);
     }
 
-    CHECK(received_array.primitive_values.size()
-            == ros2_msg.primitive_values.max_size());
+    EXPECT_EQ(received_array.primitive_values.size(), ros2_msg.primitive_values.max_size());
 }
 
-TEST_CASE("Transmit and receive all test messages", "[ros2]")
+TEST(ROS2, Transmit_and_receive_all_test_messages)
 {
     using namespace std::chrono_literals;
 
@@ -273,17 +272,14 @@ TEST_CASE("Transmit and receive all test messages", "[ros2]")
     soss::InstanceHandle handle = soss::run_instance(
         config_node, {ROS2__ROSIDL__BUILD_DIR});
 
-    REQUIRE(handle);
+    ASSERT_TRUE(handle);
 
     rclcpp::Node::SharedPtr ros2 = std::make_shared<rclcpp::Node>("ros2_test");
     rclcpp::executors::SingleThreadedExecutor executor;
 
-    REQUIRE( rclcpp::ok() );
+    ASSERT_TRUE( rclcpp::ok() );
 
-    SECTION("Send a bounded array of a message containing primitives and see that it arrives correctly ")
-    {
-        test<soss_ros2_test_msg::msg::BoundedArrayNested, soss_ros2_test_msg::msg::Primitives>(ros2, executor);
-    }
+    test<soss_ros2_test_msg::msg::BoundedArrayNested, soss_ros2_test_msg::msg::Primitives>(ros2, executor);
 
     // Quit and wait for no more than a minute. We don't want the test to get
     // hung here indefinitely in the case of an error.
@@ -291,6 +287,14 @@ TEST_CASE("Transmit and receive all test messages", "[ros2]")
 
     // Require that it's no longer running. If it is still running, then it is
     // probably stuck, and we should forcefully quit.
-    REQUIRE(!handle.running());
-    REQUIRE(handle.wait() == 0);
+    ASSERT_TRUE(!handle.running());
+    ASSERT_EQ(handle.wait(), 0);
+}
+
+int main(
+        int argc,
+        char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
