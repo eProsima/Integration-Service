@@ -30,7 +30,7 @@ namespace utils {
  * @class Logger
  *        Allows to easily log information into the standard output.
  *        It should be used as the preferred method for printing information
- *        within the whole Integration Service suite (core and System Handles).
+ *        within the whole Integration Service suite (core and SystemHandle).
  */
 class IS_CORE_API Logger
 {

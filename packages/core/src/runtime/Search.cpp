@@ -552,7 +552,7 @@ private:
     /**
      * @class GlobalPaths
      *        Holds global information regarding every *Integration Service*
-     *        System Handle, as well as the core.
+     *        SystemHandle, as well as the core.
      */
     class GlobalPaths
     {

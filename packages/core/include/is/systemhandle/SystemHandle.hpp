@@ -488,7 +488,7 @@ public:
     virtual ~ServiceProvider() = default;
 
     // TODO (@jamoralp): can we come up with a way to avoid calling receive_response
-    // from the call_service method? This would make the system handle implementation more intuitive and easier.
+    // from the call_service method? This would make the systemhandle implementation more intuitive and easier.
 
     /**
      * @brief Call a service.

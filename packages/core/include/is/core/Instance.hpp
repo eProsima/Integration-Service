@@ -71,7 +71,7 @@ public:
      *
      * @param[in] argc Number of arguments given.
      *
-     * @param[in] argv String representation list of arguments rovided,
+     * @param[in] argv String representation list of arguments provided,
      *            to be parsed before launching the instance.
      */
     Instance(

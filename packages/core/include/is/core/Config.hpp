@@ -207,7 +207,7 @@ public:
      *                  system to another. In this way, users do not have to redefine
      *                  types for each system.
      *             2.3. Custom configuration parameters, such as `domain_id` (for ROS 2).
-     *                  Each System Handle may define its own configuration fields,
+     *                  Each SystemHandle may define its own configuration fields,
      *                  please refer to their documentation for more details.
      *
      *          3. `routes`: Lists the communication bridges that *Integration Service*
@@ -233,7 +233,7 @@ public:
      *             4.3. `remap`: allows to establish equivalences between `topic` names and
      *                           `types` for each system involved in the communication.
      *             4.4. Custom configuration parameters, which are specific for each middleware.
-     *                  Please refer to the specific System Handle documentation.
+     *                  Please refer to the specific SystemHandle documentation.
      *
      * @param[in] node The parsed YAML representation of the configuration file provided.
      *
@@ -261,24 +261,24 @@ public:
 
     /**
      * @brief Performs a search and loads the dynamic libraries required
-     *        for each middleware, that is, the System Handle entities.
+     *        for each middleware, that is, the SystemHandle entities.
      *
-     * @details After the System Handle shared library is loaded successfully,
-     *          the required types to be found during the System Handle configuration
+     * @details After the SystemHandle shared library is loaded successfully,
+     *          the required types to be found during the SystemHandle configuration
      *          phase are registered, according to what was specified in the `YAML` configuration.
      *
      *          Next, the `types-from` parameter is checked, which specifies the middleware
-     *          from which each System Handle wants to inherit types from, as declared
+     *          from which each SystemHandle wants to inherit types from, as declared
      *          in the configuration.
      *
-     *          Finally, for each System Handle, the `configure` method is called.
+     *          Finally, for each SystemHandle, the `configure` method is called.
      *          If one of the middlewares listed is not properly configured,
      *          the whole process fails.
      *
-     * @param[out] info_map Map between the middlewares and their System Handle
+     * @param[out] info_map Map between the middlewares and their SystemHandle
      *             instances information (handle pointer, topic publisher and subscriber
      *             and service client and provider systems, as well as its type registry).
-     *             This map should be filled with the information for all the System Handles
+     *             This map should be filled with the information for all the SystemHandle
      *             defined in the configuration, once this method succeeds.
      *
      * @return Boolean value indicating whether the load process was successful or not.
@@ -299,7 +299,7 @@ public:
      *
      *          If the types are compatible, the next step is to check the publishing capabilities
      *          of the destination endpoint, and if everything is correct, that is, if
-     *          the system has an associated TopicPublisherSystem, the System Handle advertises
+     *          the system has an associated TopicPublisherSystem, the SystemHandle advertises
      *          the topic. This publication will transmit the data to the user application,
      *          which must define a subscriber capable of receiving and processing the data.
      *
