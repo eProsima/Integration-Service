@@ -51,7 +51,8 @@ macro(compile_test)
     foreach(resource
         websocket__roundtrip_server.yaml
         websocket__roundtrip_client.yaml
-        websocket__dispatch.yaml
+        websocket__dispatch__security.yaml
+        websocket__dispatch__nosecurity.yaml
         websocket__services__security.yaml
         websocket__services__nosecurity.yaml)
 

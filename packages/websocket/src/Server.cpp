@@ -254,11 +254,6 @@ public:
             return nullptr;
         }
 
-        if (!configure_server(uport, "", "", format))
-        {
-            return nullptr;
-        }
-
         return _tcp_server.get();
     }
 

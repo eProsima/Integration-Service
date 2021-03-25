@@ -121,6 +121,12 @@ public:
 
         const std::string hostname = parse_hostname(configuration);
 
+        const YAML::Node auth_node = configuration[YamlAuthKey];
+        if (auth_node)
+        {
+            _load_auth_config(auth_node);
+        }
+
         if (!configure_client(hostname, static_cast<uint16_t>(port), std::vector<std::string>()))
         {
             return nullptr;

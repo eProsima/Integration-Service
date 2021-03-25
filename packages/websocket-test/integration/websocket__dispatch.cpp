@@ -68,12 +68,40 @@ void run_test_case(
 
 } // anonymous namespace
 
-TEST(WebSocket, Transmit_and_dispatch_messages)
+TEST(WebSocket, Transmit_and_dispatch_messages_with_security)
 {
     using namespace std::chrono_literals;
 
     soss::InstanceHandle handle =
-            soss::run_instance(WEBSOCKET__DISPATCH__TEST_CONFIG);
+            soss::run_instance(WEBSOCKET__DISPATCH__SECURITY__TEST_CONFIG);
+    ASSERT_TRUE(handle);
+
+    std::cout << " -- Waiting to make sure the client has time to connect"
+              << std::endl;
+    std::this_thread::sleep_for(5s);
+    std::cout << " -- Done waiting!" << std::endl;
+
+    run_test_case(handle, "dispatch_into_client", "apple", 1, "/topic");
+    run_test_case(handle, "dispatch_into_client", "banana", 2, "/topic");
+    run_test_case(handle, "dispatch_into_client", "cherry", 3, "/topic");
+
+    run_test_case(handle, "dispatch_into_server", "avocado", 10, "");
+    run_test_case(handle, "dispatch_into_server", "blueberry", 20, "");
+    run_test_case(handle, "dispatch_into_server", "citrus", 30, "");
+
+    EXPECT_EQ(handle.quit().wait(), 0);
+
+    // NOTE(MXG) It seems the error
+    // `[info] asio async_shutdown error: asio.misc:2 (End of file)`
+    // is normal and to be expected as far as I can tell.
+}
+
+TEST(WebSocket, Transmit_and_dispatch_messages_without_security)
+{
+    using namespace std::chrono_literals;
+
+    soss::InstanceHandle handle =
+            soss::run_instance(WEBSOCKET__DISPATCH__NOSECURITY__TEST_CONFIG);
     ASSERT_TRUE(handle);
 
     std::cout << " -- Waiting to make sure the client has time to connect"
