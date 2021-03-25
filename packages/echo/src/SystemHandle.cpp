@@ -40,7 +40,7 @@ public:
             const YAML::Node& configuration,
             soss::TypeRegistry& /*type_registry*/) override
     {
-        // This system handle load its types by the idls specified in the yaml.
+        // This system handle fetches its types from the idls specified in the yaml.
         // The type_registry should already have the required types.
         bool roundtrip = configuration["roundtrip"] ? configuration["roundtrip"].as<bool>() : false;
 

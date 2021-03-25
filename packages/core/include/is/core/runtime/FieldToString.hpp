@@ -84,14 +84,14 @@ public:
             const std::string& field_name) const;
 
     /**
-     * @brief Get a const reference to the details attribute.
+     * @brief Gets a const reference to the details attribute.
      *
      * @returns A const string reference to "details".
      */
     const std::string& details() const;
 
     /**
-     * @brief Get a mutable reference to the details attribute.
+     * @brief Gets a mutable reference to the details attribute.
      *
      * @returns A non-const string reference to "details".
      */
@@ -107,7 +107,7 @@ private:
      *        from the interface of FieldToString.
      *
      *        Methods named equal to some FieldToString method will not be
-     *        documented again. Usually, the interface class will call to
+     *        documented again. Usually, the interface class will call
      *        `_pimpl->method()`, but the functionality and parameters
      *        are exactly the same.
      */
@@ -125,7 +125,7 @@ private:
      *
      * Ideally this string should contain information like:
      * 1. What *middleware* is using the conversion?
-     * 2. What *message + topic* pair is using the conversion?
+     * 2. Which *message + topic* pair is using the conversion?
      */
     std::string _details;
 };

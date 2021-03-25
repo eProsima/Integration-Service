@@ -34,7 +34,7 @@ namespace internal {
  *        SystemHandle instance.
  *
  *        This class will retrieve the corresponding TopicPublisherSystem,
- *        TopicSubscriberSystem, ServiceClientSystme and ServiceProviderSystem
+ *        TopicSubscriberSystem, ServiceClientSystem and ServiceProviderSystem
  *        instances associated to the SystemHandle instance, if applicable.
  *
  *        If not applicable, these instances will just be casted to `nullptr`.
@@ -64,7 +64,7 @@ public:
 
     /**
      * @brief Move constructor.
-     * @param[in] other A movable reference to other SystemHandleInfo instance.
+     * @param[in] other A movable reference to other SystemHandleInfo instances.
      */
     SystemHandleInfo(
             SystemHandleInfo&& other);
@@ -74,7 +74,7 @@ public:
     /**
      * @brief bool operator overload.
      *
-     * @brief Returns `true` if the pointer to the handle is not `nullptr`, false otherwise.
+     * @brief Returns `true` if the pointer to the handle is not `nullptr`, `false` otherwise.
      */
     operator bool() const;
 
@@ -103,10 +103,10 @@ using SystemHandleInfoMap = std::map<std::string, SystemHandleInfo>;
  * @class Register
  *        Static class that contains a static map of SystemHandleFactoryBuilder instances.
  *
- *        SystemHandleFactoryBuilder is nothing but a function signatures that helps
- *        in the creation of an `std::unique_ptr<SystemHandle>` object.
+ *        SystemHandleFactoryBuilder is nothing but a function signature that helps
+ *        in the creation of a `std::unique_ptr<SystemHandle>` object.
  *
- *        This way, each time a certain SystemHandle instance is required,
+ *        In this way, each time a given SystemHandle instance is required,
  *        it will be created from the factory map.
  */
 class Register
@@ -114,11 +114,11 @@ class Register
 public:
 
     /**
-     * @brief Insert a new SystemHandleFactoryBuilder element in the factory map.
+     * @brief Inserts a new SystemHandleFactoryBuilder element in the factory map.
      *
      * @param[in] middleware The middleware's name.
      *
-     * @param[in] handle The handle function responsible of creating the
+     * @param[in] handle The handle function responsible for creating the
      *            SystemHandle instance.
      */
     static void insert(
@@ -126,12 +126,12 @@ public:
             detail::SystemHandleFactoryBuilder&& handle);
 
     /**
-     * @brief Get the SystemHandleInfo object associated to a certain middleware.
+     * @brief Gets the SystemHandleInfo object associated to a given middleware.
      *
      * @param[in] middleware The middleware from which we want
      *            to obtain a SystemHandleInfo instance.
      *
-     * @returns A properly initialized SystemHandleInfo object if the middleware
+     * @returns A SystemHandleInfo object which is properly initialized if the middleware
      *          exists and it is registered within the Register, or pointing
      *          to `nullptr` otherwise.
      */

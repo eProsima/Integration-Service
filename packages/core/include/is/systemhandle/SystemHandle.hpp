@@ -35,9 +35,9 @@ namespace is {
 namespace core {
 
 /**
- * @brief Contains a set of which topics and services types are required in order
+ * @brief Contains the set of topics and services types required in order
  *        to successfully create an *Integration Service* instance, based on the
- *        provided configuration.
+ *        configuration provided.
  */
 struct RequiredTypes
 {
@@ -55,13 +55,13 @@ using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
 /**
  * @brief Call this macro in a .cpp file of your middleware's plugin library,
  *        so that the *Integration Service* can find your SystemHandle implementation
- *         when your plugin library gets dynamically loaded. For example:
+ *        when your plugin library gets dynamically loaded. For example:
  *
  *        `IS_REGISTER_SYSTEM("my_middleware", my::middleware::SystemHandle)`
  *
  *        The first argument should be a string representing the name of the
  *        middleware. This should match the name in the `system:` dictionary of your
- *        Integration Service configuration file. Each middleware should have a unique name.
+ *        *Integration Service* configuration file. Each middleware should have a unique name.
  *
  *        The second argument should be the literal type (not a string) of the class
  *        that implements SystemHandle in your plugin library.
@@ -73,14 +73,14 @@ using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
  * @class SystemHandle
  *        It is the base interface class for all middleware systems.
  *
- *        All middleware systems that want to interact with the *Integration Service*
+ *        All middleware systems that want to interact with *Integration Service*
  *        must implement, at least, this interface.
  *
  *        Depending on the type of middleware, it should also implement
  *        the derived classes, using multiple virtual inheritance:
  *
- *        - TopicSubscriberSystem: provides with subscribing capabilities.
- *        - TopicPublisherSystem: provides with publishing capabilities.
+ *        - TopicSubscriberSystem: provides subscribing capabilities.
+ *        - TopicPublisherSystem: provides publishing capabilities.
  *        - ServiceClientSystem: allows to manage middleware service clients.
  *        - ServiceProviderSystem: allows to manage middleware service servers.
  *
@@ -127,15 +127,15 @@ public:
     virtual ~SystemHandle() = default;
 
     /**
-     * @brief Configure the *Integration Service* handle for this middleware's system.
+     * @brief Configures the *Integration Service* handle for this middleware's system.
      *
      * @param[in] types The set of types (messages and services)
      *            that this middleware needs to support.
      *
-     *            The SystemHandle must register this types into the TypeRegistry,
+     *            The SystemHandle must register this type into the TypeRegistry,
      *            using for that the storage class SystemHandleInfo.
      *
-     * @param[in] configuration The configuration specific to this SystemHandle,
+     * @param[in] configuration The configuration specific for this SystemHandle,
      *            as described in the user-provided `YAML` input file.
      *
      *            See the specific SystemHandle implementation documentation for
@@ -144,7 +144,7 @@ public:
      * @param[in] type_registry The set of type definitions that this middleware
      *            is able to support.
      *
-     * @returns `true` if the configuration process was successful, or `false` otherwise.
+     * @returns `true` if the configuration process was successful, `false` otherwise.
      */
     virtual bool configure(
             const core::RequiredTypes& types,
@@ -154,14 +154,14 @@ public:
     /**
      * @brief Method that allows to check if a SystemHandle is correctly working.
      *
-     * @returns `true` if the SystemHandle is under normal behaviour, or `false` otherwise.
+     * @returns `true` if the SystemHandle is under normal behaviour, `false` otherwise.
      */
     virtual bool okay() const = 0;
 
     /**
      * @brief Boolean operator overload. Implicit conversion, same as `okay()`.
      *
-     * @returns `true` if the SystemHandle is under normal behaviour, or `false` otherwise.
+     * @returns `true` if the SystemHandle is under normal behaviour, `false` otherwise.
      */
     operator bool() const
     {
@@ -196,18 +196,18 @@ public:
     virtual ~TopicSubscriberSystem() = default;
 
     /**
-     * @brief Have this SystemHandle instance subscribed to a topic.
+     * @brief Has this SystemHandle instance subscribed to a topic.
      *
      * @param[in] topic_name Name of the topic to get subscribed to.
      *
      * @param[in] message_type Message type that this topic should expect to receive.
      *
-     * @param[in] callback The callback that should be triggered when a message comes in.
+     * @param[in] callback The callback which should be triggered when a message comes in.
      *
      * @param[in] configuration A `YAML` node containing any middleware-specific
      *            configuration information for this subscription. This may be an empty node.
      *
-     * @returns `true` if subscription was successfully established, or `false` otherwise.
+     * @returns `true` if subscription was successfully established, `false` otherwise.
      */
     virtual bool subscribe(
             const std::string& topic_name,
@@ -221,9 +221,9 @@ public:
  *        This is the abstract interface for objects that can act as
  *        publisher proxies.
  *
- *        These objects will be created by the *Integration Service* as a
- *        bridge between the common data representation (`eprosima::xtypes`) and the
- *        *user subscription application*, when we want to publish data from one
+ *        These objects will be created by *Integration Service* as
+ *        bridges between the common data representation (`eprosima::xtypes`) and the
+ *        *user subscription applications*, when data are to be published from one
  *        middleware to another.
  *
  *        These objects should be generated by the TopicPublisherSystem
@@ -244,13 +244,13 @@ public:
     virtual ~TopicPublisher() = default;
 
     /**
-     * @brief Publish to a topic.
+     * @brief Publishes to a topic.
      *
-     * @param[in] topic_name Name of the topic to publish to.
+     * @param[in] topic_name Name of the topic into which to publish.
      *
      * @param[in] message DynamicData that is being published.
      *
-     * @returns `true` if the data was correctly published, or `false` otherwise.
+     * @returns `true` if the data was correctly published, `false` otherwise.
      */
     virtual bool publish(
             const xtypes::DynamicData& message) = 0;
@@ -259,7 +259,7 @@ public:
 
 /**
  * @class TopicPublisherSystem
- *        This class extends the SystemHandle class with publishing capabilities.
+ *        This class extends the SystemHandle class by providing it with publishing capabilities.
  */
 class TopicPublisherSystem : public virtual SystemHandle
 {
@@ -276,7 +276,7 @@ public:
     virtual ~TopicPublisherSystem() = default;
 
     /**
-     * @brief Advertise the ability to publish to a topic.
+     * @brief Advertises the ability to publish to a topic.
      *
      * @param[in] topic_name Name of the topic to advertise.
      *
@@ -286,7 +286,7 @@ public:
      *            middleware-specific configuration information
      *            for this publisher. This may be an empty node.
      *
-     * @returns `true` if the advertisement was successful, or `false` otherwise.
+     * @returns `true` if the advertisement was successful, `false` otherwise.
      */
     virtual std::shared_ptr<TopicPublisher> advertise(
             const std::string& topic_name,
@@ -297,7 +297,7 @@ public:
 /**
  * @class TopicSystem.
  *        It is the conjunction of TopicPublisherSystem and TopicSubscriberSystem.
- *        Allows to create a middleware library for *Integration Service*
+ *        It allows to create a middleware library for *Integration Service*
  *        fully compatible with the publish/subscribe paradigm.
  */
 class TopicSystem
@@ -326,10 +326,10 @@ public:
  *        client proxies, whereas ServiceClient is the interface for the
  *        client proxy objects themselves.
  *
- *        This class, when overriden by the specific middleware implementation, will
+ *        This class, when overridden by the specific middleware implementation, will
  *        tipically contain a `middleware::server` object, so that `receive_response`
  *        can fetch the response sent by the *user server application* (usually, implemented
- *        using a different middleware) and serve this response to the *target user client
+ *        using a different middleware) and pass this response to the *target user client
  *        application*, which will receive the final response by means of the internal server
  *        created by this ServiceClient.
  */
@@ -348,7 +348,7 @@ public:
     virtual ~ServiceClient() = default;
 
     /**
-     * @brief Receive the response of a service request.
+     * @brief Receives the response of a service request.
      *
      * @attention Services are assumed to all be asynchronous (non-blocking), so
      *            this function may be called by multiple threads at once.
@@ -401,7 +401,7 @@ public:
     /**
      * @brief Create a proxy for a client application.
      *
-     * @param[in] service_name Name of the service for this client proxy to listen to.
+     * @param[in] service_name Name of the service this client proxy shall listen to.
      *
      * @param[in] service_type Service request and reply type to expect.
      *
@@ -412,7 +412,7 @@ public:
      *            configuration information for this service client.
      *            This may be an empty node.
      *
-     * @returns `true` if a client proxy could be created, or `false` otherwise.
+     * @returns `true` if a client proxy could be created, `false` otherwise.
      */
     virtual bool create_client_proxy(
             const std::string& service_name,
@@ -440,7 +440,7 @@ public:
      *            configuration information for this service client.
      *            This may be an empty node.
      *
-     * @returns `true` if a client proxy could be created, or `false` otherwise.
+     * @returns `true` if a client proxy could be created, `false` otherwise.
      */
     virtual bool create_client_proxy(
             const std::string& service_name,
@@ -464,12 +464,12 @@ public:
  *        service server proxies, whereas ServiceProvider is the interface for the
  *        service server proxy objects themselves.
  *
- *        This class, when overriden by the specific middleware implementation, will
+ *        This class, when overridden by the specific middleware implementation, will
  *        tipically contain a `middleware::client` object that will actually send the
  *        request to the *user server application*.
  *        After processing the request by means of the `call_service` method,
- *        thans to the associated ServiceClient entity, `receive_response`
- *        will be called, to serve the response to the *user client application* (tipically,
+ *        thanks to the associated ServiceClient entity, `receive_response`
+ *        will be called, to pass the response to the *user client application* (tipically,
  *        implemented using a different middleware, which justifies the use of the
  *        *Integration Service* to interconnect them).
  */
@@ -488,7 +488,7 @@ public:
     virtual ~ServiceProvider() = default;
 
     // TODO (@jamoralp): can we come up with a way to avoid calling receive_response
-    // from the call_service method? This would make the system handle implementation more intuitive and easier.
+    // from the call_service method? This would make the systemhandle implementation more intuitive and easier.
 
     /**
      * @brief Call a service.
@@ -546,7 +546,7 @@ public:
      *            This may be an empty node.
      *
      * @returns `true` if the middleware's SystemHandle can offer this service,
-     *          or `false` otherwise.
+     *          `false` otherwise.
      */
     virtual std::shared_ptr<ServiceProvider> create_service_proxy(
             const std::string& service_name,
@@ -558,7 +558,7 @@ public:
     }
 
     /**
-     * @brief Create a proxy for a service server.
+     * @brief Creates a proxy for a service server.
      *
      * @param[in] service_name Name of the service to offer.
      *
@@ -571,7 +571,7 @@ public:
      *            This may be an empty node.
      *
      * @returns `true` if the middleware's SystemHandle can offer this service,
-     *          or `false` otherwise.
+     *          `false` otherwise.
      */
     virtual std::shared_ptr<ServiceProvider> create_service_proxy(
             const std::string& service_name,
@@ -614,7 +614,7 @@ public:
  *        It allows to define a whole middleware, in terms of both publish/subscribe
  *        and request/reply paradigms.
  *
- *        Usually, most middleware plugins for the *Integration Service* will inherit
+ *        Usually, most middleware plugins for *Integration Service* will inherit
  *        from this class.
  */
 class FullSystem

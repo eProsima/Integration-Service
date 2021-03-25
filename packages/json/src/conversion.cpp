@@ -85,7 +85,7 @@ bool json_to_soss(
                    {
                        if (!soss_node.has_parent())
                        {
-                           return;      // avoid the first level already pushed into stack.
+                           return;      // avoids the first level already pushed into stack.
 
                        }
                        while (json_stack.size() > soss_node.deep())
@@ -198,7 +198,7 @@ bool soss_to_json(
                    {
                        if (!soss_node.has_parent())
                        {
-                           return;      // avoid the first struct level already pushed into stack.
+                           return;      // avoids the first struct level already pushed into stack.
 
                        }
                        while (json_stack.size() > soss_node.deep())

@@ -50,7 +50,7 @@ public:
      *            Varying components of the string must be wrapped in curly braces `{}`.
      *
      *            Currently only `{message.<field>}` variables are supported.
-     *            Those components of the string will be replace by the value of the
+     *            The varying components of the string will be replaced by the value of the
      *            requested field when `compute_string()` is called.
      *
      * @param[in] usage_details A string that describes how this StringTemplate is being used.
@@ -85,7 +85,7 @@ public:
     ~StringTemplate();
 
     /**
-     * @brief Compute the desired output string, given the input message.
+     * @brief Computes the desired output string, given the input message.
      *
      * @param[in] message The message used to compute the string template parameters.
      *
@@ -95,14 +95,14 @@ public:
             const eprosima::xtypes::DynamicData& message) const;
 
     /**
-     * @brief Gets a mutable reference to the usage details for this StringTemplate.
+     * @brief Gets a mutable reference to the usage_details for this StringTemplate.
      *
      * @returns The mutable reference to the usage_details string.
      */
     std::string& usage_details();
 
     /**
-     * @brief Gets a const reference to the usage details for this StringTemplate.
+     * @brief Gets a const reference to the usage_details for this StringTemplate.
      *
      * @returns A const reference to the usage_details string.
      */
@@ -118,7 +118,7 @@ private:
      *        from the interface of StringTemplate.
      *
      *        Methods named equal to some StringTemplate method will not be
-     *        documented again. Usually, the interface class will call to
+     *        documented again. Usually, the interface class will call
      *        `_pimpl->method()`, but the functionality and parameters
      *        are exactly the same.
      */
@@ -157,7 +157,7 @@ public:
     ~InvalidTemplateFormat() = default;
 
     /**
-     * @brief Get a const reference to the malformed string template.
+     * @brief Gets a const reference to the malformed string template.
      *
      * @returns A const reference to the template.
      */
@@ -189,7 +189,7 @@ public:
             const std::string& details);
 
     /**
-     * @brief Get a const reference to the field's name.
+     * @brief Gets a const reference to the field's name.
      *
      * @returns A const reference to the string representing the field's name.
      */

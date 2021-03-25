@@ -28,11 +28,11 @@ namespace json {
 using Json = nlohmann::json;
 
 //==============================================================================
-/// Convert from a soss message to a JSON message
+/// Converts from a soss message to a JSON message
 Json SOSS_JSON_API convert(
         const xtypes::DynamicData& input);
 
-/// Convert from a JSON message to a soss message
+/// Converts from a JSON message to a soss message
 xtypes::DynamicData SOSS_JSON_API convert(
         const xtypes::DynamicType& type,
         const Json& input);

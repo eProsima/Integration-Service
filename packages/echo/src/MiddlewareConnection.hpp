@@ -16,7 +16,7 @@
 
 using Json = soss::json::Json;
 
-// Class used for emulate the remote connection with the middleware.
+// Class used to emulate the remote connection with the middleware.
 class MiddlewareConnection
 {
     using Callback = std::function<void (const Json& message)>;

@@ -46,9 +46,10 @@ namespace core {
 class InstanceHandle;
 
 /**
- * @brief MiddlewarePrefixPathMap contains a map of prefixes that are available
- *        for each middleware to search its dynamic libraries when loading the SystemHandle
- *        plugin or the MiddlewareInterfaceExtension files.
+ * @brief MiddlewarePrefixPathMap contains a map of the prefixes that are available
+ *        for each middleware. These prefixes are used to look for the dynamic libraries
+ *        of either the SystemHandle plugin or the MiddlewareInterfaceExtension files
+ *        and, once they are located, to load them.
  *
  * @see Search
  */
@@ -65,12 +66,12 @@ class IS_CORE_API Instance
 public:
 
     /**
-     * @brief Create an *Integration Service* instance, receiving arguments
+     * @brief Creates an *Integration Service* instance which receives the arguments
      *        fed by the user from the command line.
      *
-     * @param[in] argc Number of given arguments.
+     * @param[in] argc Number of arguments given.
      *
-     * @param[in] argv String representation list of provided arguments,
+     * @param[in] argv String representation list of arguments provided,
      *            to be parsed before launching the instance.
      */
     Instance(
@@ -78,16 +79,16 @@ public:
             char* argv[]);
 
     /**
-     * @brief Create an *Integration Service* instance, explicitly indicating
-     *        the configuration and setting the relevant properties for the
-     *        *Integration Service* core and the dedicated middleware SystemHandle plugins.
+     * @brief Creates an *Integration Service* instance explicitly indicating
+     *        the configuration of the *Integration Service* core and of the dedicated
+     *        middleware SystemHandle plugins, and setting their relevant properties.
      *
-     * @param[in] config_node The `YAML` configuration, structured as defined in Config `parse()`
-     *            method documentation, that should be provided to the *Integration Service*
-     *            to successfully start a bridging communicationi between two or more
+     * @param[in] config_node The `YAML` configuration file, structured as defined in the Config
+     *            `parse()` method documentation, that should be provided to *Integration Service*
+     *            to successfully start a communication between two or more
      *            applications using different communication protocols.
      *
-     * @param[in] is_prefixes Global prefix paths for the *Integration Service* to search
+     * @param[in] is_prefixes Global prefix paths for *Integration Service* to search
      *            for configuration files or `mix` files.
      *
      *            These act as a complement to the already existing environment variables
@@ -102,16 +103,16 @@ public:
             const MiddlewarePrefixPathMap& middleware_prefixes);
 
     /**
-     * @brief Create an *Integration Service* instance, explicitly indicating
-     *        the configuration and setting the relevant properties for the
-     *        *Integration Service* core and the dedicated middleware SystemHandle plugins.
+     * @brief Creates an *Integration Service* instance explicitly indicating
+     *        the configuration of the *Integration Service* core and of the dedicated
+     *        middleware SystemHandle plugins, and setting their relevant properties.
      *
-     * @param[in] config_file_path The `YAML` configuration file, structured as defined in Config `parse()`
-     *            method documentation, that should be provided to the *Integration Service*
-     *            to successfully start a bridging communicationi between two or more
+     * @param[in] config_file_path The `YAML` configuration file, structured as defined in the Config
+     *            `parse()` method documentation, that should be provided to *Integration Service*
+     *            to successfully start a communication between two or more
      *            applications using different communication protocols.
      *
-     * @param[in] is_prefixes Global prefix paths for the *Integration Service* to search
+     * @param[in] is_prefixes Global prefix paths for *Integration Service* to search
      *            for configuration files or `mix` files.
      *
      *            These act as a complement to the already existing environment variables
@@ -131,7 +132,7 @@ public:
     ~Instance();
 
     /**
-     * @brief Run the *Integration Service* instance in its own thread.
+     * @brief Runs the *Integration Service* instance in its own thread.
      *
      * @details The handle allows to wait on that thread or instruct it to quit.
      *
@@ -139,13 +140,13 @@ public:
      *          if the InstanceHandle dies.
      *
      *          If `run()` is called again while another instance handle is still alive
-     *          and running, then the new instance handle will still refer to the same
-     *          running instance.
+     *          and running, the new instance handle will still refer to the previously
+     *          started and still running instance.
      *          Calling `quit()` on any of the handles will make them all quit.
-     *          The automatic RAII shutdown of the instance will take effect once all
+     *          The automatic RAII shutdown of the instance will become effective once all
      *          handles have died.
      *
-     *          If existing handles are still alive but no longer running, then they will
+     *          If the existing handles are still alive but no longer running, they will
      *          become detached from this instance, and calling `run()` will initiate a new
      *          set of instance handles.
      *
@@ -165,7 +166,7 @@ public:
      *        from the interface of Instance.
      *
      *        Methods named equal to some Instance method will not be
-     *        documented again. Usually, the interface class will call to
+     *        documented again. Usually, the interface class will call
      *        `_pimpl->method()`, but the functionality and parameters
      *        are exactly the same.
      */
@@ -200,7 +201,7 @@ public:
     /**
      * @brief Copy constructor.
      *
-     * @param[in] other The InstanceHandle object we want to copy.
+     * @param[in] other The InstanceHandle to be copied.
      */
     InstanceHandle(
             const InstanceHandle& other);
@@ -211,7 +212,7 @@ public:
      * @param[in] other Movable reference to another InstanceHandle object.
      */
     InstanceHandle(
-            InstanceHandle&&);
+            InstanceHandle&& other);
 
     /**
      * @brief Destructor.
@@ -225,7 +226,7 @@ public:
      * @brief It allows to check if the instance is still running.
      *
      * @returns `true` if the *Integration Service* instance is still running,
-     *          or `false` otherwise.
+     *          `false` otherwise.
      */
     bool running() const;
 
@@ -233,37 +234,37 @@ public:
      * @brief `bool()` operator overload. It performs an implicit cast to `running()`.
      *
      * @returns `true` if the *Integration Service* instance is still running,
-     *          or `false` otherwise.
+     *          `false` otherwise.
      */
     operator bool() const;
 
     /**
-     * @brief Wait for the instance to finish running.
+     * @brief Waits for the instance to stop running.
      *
      *        The instance may be stopped by calling `quit()` or by sending `SIGINT`
      *        (*ctrl+C* from the terminal).
      *
-     * @returns The return code for this instance execution process.
+     * @returns The return code for the execution process of this instance.
      */
     int wait();
 
     /**
-     * @brief Wait for the instance to finish running, or until the max time has
-     *        been reached.
+     * @brief Waits for the instance to stop running, or for the max time to
+     *        be reached.
      *
-     * @param[in] max_time Time, in nanoseconds, to wait for the instance to finish running.
+     * @param[in] max_time Time, in milliseconds, to wait for the instance to finish running.
      *
      * @returns A reference to this instance handle, so that it can be chained
      *          with `quit()` or `wait()`.
      */
     InstanceHandle& wait_for(
-            const std::chrono::nanoseconds& max_time);
+            const std::chrono::milliseconds& max_time);
 
     /**
-     * @brief Instruct the node handle to quit (this will not occur instantly).
+     * @brief Instructs the node handle to quit (this will not occur instantly).
      *
-     *        Follow this with a call to `wait()` in order to wait until the instance has
-     *        finished running, and retrieve the return code.
+     *        After this, it calls `wait()` in order to wait until the instance has
+     *        finished running, and retrieves the return code.
      *
      * @returns A reference to this instance handle so that it can be chained
      *          with `wait_for()` or `wait()`.
@@ -271,9 +272,9 @@ public:
     InstanceHandle& quit();
 
     /**
-     * @brief Request the TypeRegitry for a given middleware.
+     * @brief Requests the TypeRegitry for a given middleware.
      *
-     * @param[in] middleware_name The middleware whose TypeRegistry is wanted to be retrieved.
+     * @param[in] middleware_name The middleware whose TypeRegistry is to be retrieved.
      *
      * @returns A pointer to the TypeRegistry, or `nullptr` if the middleware does not exist.
      */
@@ -291,8 +292,8 @@ private:
      *        Allows to use the *pimpl* procedure to separate the implementation
      *        from the interface of InstanceHandle.
      *
-     *        Methods named equal to some InstanceHandle method will not be
-     *        documented again. Usually, the interface class will call to
+     *        Methods named in the same way as some InstanceHandle method will not be
+     *        documented again. Usually, the interface class will call
      *        `_pimpl->method()`, but the functionality and parameters
      *        are exactly the same.
      */
@@ -301,7 +302,7 @@ private:
     /**
      * @brief Constructor.
      *
-     * @details This class cannot be constructed directly, hence the private constructors.
+     * @details This class cannot be constructed directly, whence the private constructors.
      *          Use `Instance::run()` or r`run_instance()` to get an InstanceHandle.
      *
      * @param[in] impl A pointer to the Implementation class.
@@ -319,12 +320,12 @@ private:
 } //  namespace core
 
 /**
- * @brief Create an *Integration Service* instance and run it in its own thread.
- *        This is a wrapper for `core::Instance` constructor + `run()` method.
+ * @brief Creates an *Integration Service* instance and runs it in its own thread.
+ *        This is a wrapper for the `core::Instance` constructor and for the `run()` method.
  *
  * @param[in] argc Number of given arguments.
  *
- * @param[in] argv String representation list of provided arguments,
+ * @param[in] argv String representation list of the provided arguments,
  *            to be parsed before launching the instance.
  *
  * @returns An InstanceHandle to manage the running *Integration Service* instance.
@@ -334,15 +335,15 @@ IS_CORE_API core::InstanceHandle run_instance(
         char* argv[]);
 
 /**
- * @brief Create an *Integration Service* instance and run it in its own thread.
- *        This is a wrapper for `core::Instance` constructor + `run()` method.
+ * @brief Creates an *Integration Service* instance and runs it in its own thread.
+ *        This is a wrapper for the `core::Instance` constructor and the `run()` method.
  *
- * @param[in] config_node The `YAML` configuration, structured as defined in Config `parse()`
- *            method documentation, that should be provided to the *Integration Service*
- *            to successfully start a bridging communicationi between two or more
+ * @param[in] config_node The `YAML` configuration file, structured as defined in the Config
+ *            `parse()` method documentation, that should be provided to *Integration Service*
+ *            to successfully start a communication between two or more
  *            applications using different communication protocols.
  *
- * @param[in] is_prefixes Global prefix paths for the *Integration Service* to search
+ * @param[in] is_prefixes Global prefix paths for *Integration Service* to search
  *            for configuration files or `mix` files.
  *
  *            These act as a complement to the already existing environment variables
@@ -359,15 +360,15 @@ IS_CORE_API core::InstanceHandle run_instance(
         const core::MiddlewarePrefixPathMap& middleware_prefixes = {});
 
 /**
- * @brief Create an *Integration Service* instance and run it in its own thread.
- *        This is a wrapper for `core::Instance` constructor + `run()` method.
+ * @brief Creates an *Integration Service* instance and runs it in its own thread.
+ *        This is a wrapper for the `core::Instance` constructor and the `run()` method.
  *
- * @param[in] config_file_path The `YAML` configuration file, structured as defined in Config `parse()`
- *            method documentation, that should be provided to the *Integration Service*
- *            to successfully start a bridging communicationi between two or more
+ * @param[in] config_file_path The `YAML` configuration file, structured as defined in the Config
+ *            `parse()` method documentation, that should be provided to *Integration Service*
+ *            to successfully start a communication between two or more
  *            applications using different communication protocols.
  *
- * @param[in] is_prefixes Global prefix paths for the *Integration Service* to search
+ * @param[in] is_prefixes Global prefix paths for *Integration Service* to search
  *            for configuration files or `mix` files.
  *
  *            These act as a complement to the already existing environment variables
