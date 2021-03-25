@@ -30,9 +30,7 @@
 #include <yaml-cpp/yaml.h>
 #include <chrono>
 
-#include <catch2/catch.hpp>
-
-using Catch::Matchers::WithinAbs;
+#include <gtest/gtest.h>
 
 constexpr const char* DOMAIN_ID_1 = "5";
 constexpr const char* DOMAIN_ID_2 = "10";
@@ -48,14 +46,14 @@ constexpr const char* DOMAIN_ID_2 = "10";
 #define UNSETENV(id) unsetenv(id)
 #endif // ifdef WIN32
 
-TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
+TEST(ROS2, Change_ROS2_Domain_id)
 {
     char const* const argv[1] = {"soss"};
     if (!rclcpp::ok())
     {
         rclcpp::init(1, argv);
     }
-    REQUIRE(rclcpp::ok());
+    ASSERT_TRUE(rclcpp::ok());
 
     // Create the nodes in separate context, since in ROS2 Foxy each context uses
     // an unique DDS participant and thus creating the two nodes in the same context
@@ -149,7 +147,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
     executor.spin_node_some(node_2);
 
     // In different domains the message should not be received
-    REQUIRE(msg_future.wait_for(0s) != std::future_status::ready);
+    ASSERT_NE(msg_future.wait_for(0s), std::future_status::ready);
 
     // Run soss in order to make the communication possible.
     YAML::Node config_node = YAML::LoadFile(ROS2__TEST_DOMAIN__TEST_CONFIG);
@@ -157,7 +155,7 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
     soss::InstanceHandle handle = soss::run_instance(
         config_node, { ROS2__ROSIDL__BUILD_DIR });
 
-    REQUIRE(handle);
+    ASSERT_TRUE(handle);
 
     // Wait for soss to start properly before publishing.
     std::this_thread::sleep_for(1s);
@@ -166,9 +164,17 @@ TEST_CASE("Change ROS2 Domain id test case", "[ros2]")
     std::this_thread::sleep_for(rclcpp_delay);
     executor.spin_node_some(node_2);
 
-    REQUIRE(msg_future.wait_for(0s) == std::future_status::ready);
+    ASSERT_EQ(msg_future.wait_for(0s), std::future_status::ready);
 
     std_msgs::msg::String received_msg = msg_future.get();
 
-    REQUIRE(pub_msg == received_msg);
+    ASSERT_EQ(pub_msg, received_msg);
+}
+
+int main(
+        int argc,
+        char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
