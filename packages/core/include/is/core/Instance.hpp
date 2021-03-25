@@ -258,7 +258,7 @@ public:
      *          with `quit()` or `wait()`.
      */
     InstanceHandle& wait_for(
-            const std::chrono::milliseconds& max_time);
+            const std::chrono::nanoseconds& max_time);
 
     /**
      * @brief Instructs the node handle to quit (this will not occur instantly).
