@@ -143,7 +143,7 @@ public:
         }
 
         /**
-         * Increment the number of active instances.
+         * Increments the number of active instances.
          */
         {
             std::unique_lock<std::mutex> lock(change_interruption_mutex);
@@ -156,8 +156,8 @@ public:
         for (const auto& [mw_name, systemhandle_info] : _info_map)
         {
             /**
-             * For each systemhandle, create a working thread that will check that the
-             * SystemHandle instance is alive and call spin_once() to execute pending work.
+             * For each systemhandle, creates a working thread that will check that the
+             * SystemHandle instance is alive and calls spin_once() to execute pending work.
              */
             auto runner = [&]()
                     {
@@ -242,8 +242,8 @@ private:
     {
         {
             /**
-             * If there are no more Integration Service instances running in this process,
-             * return the SIGINT handling to the default.
+             * If there are no more *Integration Service* instances running in this process,
+             * returns the SIGINT handling to the default behaviour.
              */
             std::unique_lock<std::mutex> lock(change_interruption_mutex);
             --interruptable_instances;
@@ -284,7 +284,7 @@ public:
     Implementation(
             int argc,
             char* argv[])
-        : _early_return_code(1) // Assume that an early return should be coded as 1
+        : _early_return_code(1) // Assumes that an early return should be coded as 1
         , _logger("is::core::Instance")
     {
         _run_instance = parse_arguments(argc, argv);
@@ -505,8 +505,8 @@ public:
     {
         if (!_run_instance)
         {
-            // There was an error during configuration, so we really shouldn't run
-            // this instance. We'll return a dead InstanceHandle.
+            // There was an error during configuration, so we shouldn't run
+            // this instance. It returns a dead InstanceHandle.
             return InstanceHandle(std::make_shared<InstanceHandle::Implementation>(
                                _early_return_code));
         }

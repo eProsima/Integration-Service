@@ -33,10 +33,10 @@ namespace core {
 /**
  * @class Search
  *        This class searches for *Integration Service* message/service plugin
- *         resource files, called MiddlewareInterfaceExtension *(.mix)* files.
+ *        resource files, called MiddlewareInterfaceExtension *(.mix)* files.
  *
- *        These files will be searched for based on a fixed lookup scheme.
- *        This lookup scheme has two phases:
+ *        These files will be searched based on a fixed lookup scheme.
+ *        This lookup scheme comprises two phases:
  *
  *        1. Search based on the middleware prefixes `mw_prefix`.
  *        2. Search based on the *Integration Service* prefixes `<is_prefix>`.
@@ -55,7 +55,7 @@ namespace core {
  *        directory is expected to be inside a *lib* directory.
  *        Finally, `/usr/local/lib/<arch>`, `/usr/local/lib`, `/usr/lib/<arch>`,
  *        and `/usr/lib` will be added to the *Integration Service* prefixes
- *        `<is_prefix>` in that order of precedence.
+ *        `<is_prefix>` in this same order of precedence.
  *
  *        The search scheme is described below, where `mw_prefix` and `<is_prefix>`
  *        are defined above. `<middleware>` refers to the name of the middleware (as
@@ -87,7 +87,7 @@ class IS_CORE_API Search
 public:
 
     /**
-     * @brief Create a Search utility instance for the specified middleware.
+     * @brief Creates a Search utility instance for the specified middleware.
      *
      * @param[in] middleware_name The middleware for which a Search utility will be created.
      */
@@ -97,7 +97,7 @@ public:
     /**
      * @brief Copy constructor.
      *
-     * @param[in] other Const reference to Search object to be copied.
+     * @param[in] other Const reference to the Search object to be copied.
      */
     Search(
             const Search& other);
@@ -105,7 +105,7 @@ public:
     /**
      * @brief Move constructor.
      *
-     * @param[in] other Movable reference of Search object to be moved.
+     * @param[in] other Movable reference of the Search object to be moved.
      */
     Search(
             Search&& other);
@@ -139,7 +139,7 @@ public:
      * @brief Used by the Instance class to set *Integration Service*
      *        prefixes that were specified from the command line.
      *
-     * @param[in] path The path to be added as *Integration Service* prefix.
+     * @param[in] path The path to be added as the *Integration Service* prefix.
      */
     static void add_cli_is_prefix(
             const std::string& path);
@@ -150,7 +150,7 @@ public:
      *
      * @param[in] middleware The middleware to which the prefix will be added.
      *
-     * @param[in] path The prefix to add.
+     * @param[in] path The path to be added as the *Integration Service* prefix.
      */
     static void add_cli_middleware_prefix(
             const std::string& middleware,
@@ -160,7 +160,7 @@ public:
      * @brief Used by the Instance class to set the path where the configuration
      *        file is stored.
      *
-     * @param[in] path The path to be set as configuration directory.
+     * @param[in] path The path to be set as the configuration directory.
      */
     static void set_config_file_directory(
             const std::string& path);
@@ -171,64 +171,64 @@ public:
             const std::string& path);
 
     /**
-     * @brief Add a custom middleware prefix path. The paths given here will be used
+     * @brief Adds a custom middleware prefix path. The paths given here will be used
      *        as `mw_prefix` path prefixes, and will be checked after all other
-     *        middleware prefixes have been exhausted. The prefix paths passed into this
-     *        function will be evaluated starting from the path most recently passed in,
+     *        middleware prefixes have been exhausted. The prefix paths passed to this
+     *        function will be evaluated starting from the path most recently passed in
      *        to the first one passed in (i.e. in reverse order).
      *
-     * @param[in] path An absolute path to search as a middleware prefix path.
+     * @param[in] path An absolute path to use as a middleware prefix search path.
      */
     void add_fallback_middleware_prefix(
             const std::string& path);
 
     /**
-     * @brief Find a *mix* file that provides information for a message type.
+     * @brief Looks for a *mix* file that provides information for a message type.
      *
-     * @param[in] msg_type This will be used for `type` in the search scheme.
+     * @param[in] msg_type This type will be used for `type` in the search scheme.
      *
-     * @param[out] checked_paths If given a non-nullptr, this will be filled
-     *             with a list of paths that were searched.
-     *             This may be useful for debugging purposes.
+     * @param[out] checked_paths If given a non-nullptr, it will be filled
+     *             with a list of the paths that were searched.
+     *             It may be useful for debugging purposes.
      *
      * @returns The full path to the .mix file if found. If not found,
-     *          this will be an empty string.
+     *          it will return an empty string.
      */
     const std::string find_message_mix(
             const std::string& msg_type,
             std::vector<std::string>* checked_paths = nullptr) const;
 
     /**
-     * @brief Find a *mix* file that provides information for a service type.
+     * @brief Looks for a *mix* file that provides information for a service type.
      *
-     * @param[in] srv_type This will be used for `type` in the search scheme.
+     * @param[in] srv_type This type will be used for `type` in the search scheme.
      *
-     * @param[out] checked_paths If given a non-nullptr, this will be filled
-     *             with a list of paths that were searched.
-     *             This may be useful for debugging purposes.
+     * @param[out] checked_paths If given a non-nullptr, it will be filled
+     *             with a list of the paths that were searched.
+     *             It may be useful for debugging purposes.
      *
      * @returns The full path to the .mix file if found. If not found,
-     *          this will be an empty string.
+     *          it will return an empty string.
      */
     const std::string find_service_mix(
             const std::string& srv_type,
             std::vector<std::string>* checked_paths = nullptr) const;
 
     /**
-     * @brief Find a *mix* file that provides some kind of information
-     *        besides a message or a service.
+     * @brief Looks for a *mix* file that provides information
+     *        for a type which is not a message nor a service.
      *
-     * @param[in] type This will be used for `type` in the search scheme.
+     * @param[in] type This type will be used for `type` in the search scheme.
      *
      * @param[in] subdir This will replace `<msg|srv|*>` in the search scheme.
      *            Leave this as an empty string to not search in a `<msg|srv|*>` subdirectory.
      *
-     * @param[out] checked_paths If given a non-nullptr, this will be filled
-     *             with a list of paths that were searched.
-     *             This may be useful for debugging purposes.
+     * @param[out] checked_paths If given a non-nullptr, it will be filled
+     *             with a list of the paths that were searched.
+     *             It may be useful for debugging purposes.
      *
      * @returns The full path to the .mix file if found. If not found,
-     *          this will be an empty string.
+     *          it will return an empty string.
      */
     const std::string find_generic_mix(
             const std::string& type,
@@ -236,21 +236,22 @@ public:
             std::vector<std::string>* checked_paths = nullptr) const;
 
     /**
-     * @brief Find any file (with any extension, not just .mix) that may be
+     * @brief Looks for any file (with any extension, not just .mix) that may be
      *        residing in an *Integration Service* or middleware subdirectory.
      *
      * @param[in] filename The name of the file, including its extension.
-     *            This should include any directories that it may be nested
-     *            in relative to its *Integration Service* or middleware directory.
+     *            This should include any nested directories that it may contain
+     *            relative to the *Integration Service* or middleware directories.
      *
-     * @param[in] subdir A subdirectory that it might or might not be nested inside of.
+     * @param[in] subdir A subdirectory that might or might not be nested into
+     *            the *Integration Service* or middleware directories.
      *
-     * @param[out] checked_paths If given a non-nullptr, this will be filled
-     *             with a list of paths that were searched.
-     *             This may be useful for debugging purposes.
+     * @param[out] checked_paths If given a non-nullptr, it will be filled
+     *             with a list of the paths that were searched.
+     *             It may be useful for debugging purposes.
      *
      * @returns The full path to the file if found. If not found,
-     *          this will be an empty string.
+     *          it will return an empty string.
      */
     const std::string find_file(
             const std::string& filename,
@@ -258,18 +259,18 @@ public:
             std::vector<std::string>* checked_paths = nullptr) const;
 
     /**
-     * @brief Find *mix* file for the middleware specified during the construction
+     * @brief Looks for a *mix* file for the middleware specified during the construction
      *        of this Search instance.
      *
-     * @param[out] checked_paths If given a non-nullptr, this will be filled
-     *             with a list of paths that were searched.
-     *             This may be useful for debugging purposes.
+     * @param[out] checked_paths If given a non-nullptr, it will be filled
+     *             with a list of the paths that were searched.
+     *             It may be useful for debugging purposes.
      */
     const std::string find_middleware_mix(
             std::vector<std::string>* checked_paths = nullptr) const;
 
     /**
-     * @brief Use this to toggle whether the Search should check for files
+     * @brief It can be used to toggle the Search to check for files
      *        relative to the directory of the config file that was used
      *        to launch the *Integration Service*.
      *
@@ -278,18 +279,18 @@ public:
      *        The config-file directory will be treated as a middleware prefix,
      *        whose priority comes directly before the "fallback" middleware prefixes.
      *        It will be searched after "priority" middleware prefixes, and after any
-     *        prefixes passed in as command line arguments or given as environment
+     *        prefix passed in as command line argument or given as environment
      *        variables.
      *
      * @param[in] toggle Boolean to enable or disable this behaviour.
      *
-     * @returns A reference to this same Search instance.
+     * @returns A reference to this very Search instance.
      */
     Search& relative_to_config(
             bool toggle = true);
 
     /**
-     * @brief Use this to toggle whether the Search should check for files
+     * @brief It can be used to toggle the Search to check for files
      *        relative to the user's home directory.
      *
      *        By default this behaviour is turned off.
@@ -301,46 +302,47 @@ public:
      *
      * @param[in] toggle Boolean to enable or disable this behaviour.
      *
-     * @returns A reference to this same Search instance.
+     * @returns A reference to this very Search instance.
      */
     Search& relative_to_home(
             bool toggle = true);
 
     /**
-     * @brief Use this to toggle whether system prefixes should be ignored.
+     * @brief It can be used to toggle whether the system prefixes are ignored or not.
      *        Note that this has some overlap with the `ignore_is_prefixes` option.
      *
      *        By default these prefixes are not ignored.
      *
      * @param[in] toggle Boolean to enable or disable this behaviour.
      *
-     * @returns A reference to this same Search instance.
+     * @returns A reference to this very Search instance.
      */
     Search& ignore_system_prefixes(
             bool toggle = true);
 
     /**
-     * @brief Use this to toggle whether all *Integration Service*
-     *        prefixes should be ignored. Note that this has some overlap
-     *        with the `ignore_system_prefixes` option.
+     * @brief It can be used to toggle whether all *Integration Service* prefixes are
+     *        ignored or not. Note that this has some overlap with the
+     *        `ignore_system_prefixes` option.
      *
      *        By default these prefixes are not ignored.
      *
      * @param[in] toggle Boolean to enable or disable this behaviour.
      *
-     * @returns A reference to this same Search instance.
+     * @returns A reference to this very Search instance.
      */
     Search& ignore_is_prefixes(
             bool toggle = true);
 
     /**
-     * @brief Use this to toggle whether middleware prefixes should be ignored.
+     * @brief It can be used to toggle whether the middleware prefixes are
+     *        ignored or not.
      *
      *        By default these prefixes are not ignored.
      *
      * @param[in] toggle Boolean to enable or disable this behaviour.
      *
-     * @returns A reference to this same Search instance.
+     * @returns A reference to this very Search instance.
      */
     Search& ignore_middleware_prefixes(
             bool toggle = true);
@@ -365,7 +367,7 @@ private:
      *        from the interface of Search.
      *
      *        Methods named equal to some Search method will not be
-     *        documented again. Usually, the interface class will call to
+     *        documented again. Usually, the interface class will call
      *        `_pimpl->method()`, but the functionality and parameters
      *        are exactly the same.
      */

@@ -55,7 +55,7 @@ public:
     std::map<std::string, MockServiceCallback> mock_services;
 
     // We deposit references to clients into this vector to guarantee that their
-    // promises don't get broken the user has a chance to read them. This is a
+    // promises don't get broken and the user has a chance to read them. This is a
     // terribly memory inefficient approach, and it's essentially a memory leak,
     // but the mock middleware is only meant for testing purposes, so this isn't
     // really a concern.
@@ -83,13 +83,13 @@ public:
             const std::string& topic)
         : _topic(topic)
     {
-        // Do nothing
+        // Does nothing
     }
 
     bool publish(
             const xtypes::DynamicData& message) override
     {
-        // Test that we have advertised this topic
+        // Tests that we have advertised this topic
         const auto pub_it = impl().publishers.find(_topic);
         if (pub_it == impl().publishers.end() || pub_it->second.empty())
         {
@@ -274,7 +274,7 @@ public:
         : response_received(false)
         , quit(false)
     {
-        // Do nothing
+        // Does nothing
     }
 
     std::shared_future<xtypes::DynamicData> request(

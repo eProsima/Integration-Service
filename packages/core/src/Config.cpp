@@ -200,7 +200,7 @@ bool add_types(
             for (auto& type: context.get_all_scoped_types())
             {
                 types.insert(type);
-                // Some SH expect the types without the initial "::", and others with it,
+                // Some SHs expect the types without the initial "::", and others with it,
                 // so we must add both of them.
                 if (type.first.find("::") == 0)
                 {
@@ -749,7 +749,7 @@ bool Config::parse(
     }
 
     /**
-     * Iterate through systems and retrieve their 'type' (ros2, ros1, dds, websocket...)
+     * Iterates through systems and retrieves their 'type' (ros2, ros1, dds, websocket...)
      * and the `types-from` attribute, if applicable.
      */
     for (YAML::const_iterator it = systems.begin(); it != systems.end(); ++it)
@@ -795,7 +795,7 @@ bool Config::parse(
     }
 
     /**
-     * Retrieve types from the `types` section and add them to the _m_types database.
+     * Retrieves types from the `types` section and adds them to the _m_types database.
      */
     if (!add_types(config_node, file, _m_types))
     {
@@ -803,8 +803,8 @@ bool Config::parse(
     }
 
     /**
-     * Retrieve routes from the `routes` section and add them to the _m_topic_routes
-     * or the _m_service_routes database, accordingly.
+     * Retrieves routes from the `routes` section and adds them to the _m_topic_routes
+     * or the _m_service_routes database accordingly.
      */
     auto read_route =
             [&](const std::string& key, const YAML::Node& node) -> bool
@@ -818,7 +818,7 @@ bool Config::parse(
     }
 
     /**
-     * Retrieve topics from the `topics` section and add them to the _m_topic_configs database.
+     * Retrieves topics from the `topics` section and adds them to the _m_topic_configs database.
      */
     auto read_topic =
             [&](const std::string& key, const YAML::Node& node) -> bool
@@ -832,7 +832,7 @@ bool Config::parse(
     }
 
     /**
-     * Retrieve services from the `services` section and add them to the _m_service_configs database.
+     * Retrieves services from the `services` section and adds them to the _m_service_configs database.
      */
     auto read_service =
             [&](const std::string& key, const YAML::Node& node) -> bool
@@ -846,12 +846,12 @@ bool Config::parse(
     }
 
     /**
-     * Check topics configuration.
+     * Checks topics configuration.
      */
     for (const auto& [topic_name, topic_config] : _m_topic_configs)
     {
         /**
-         * Check that the route associated to the topic is correct, in terms of
+         * Checks that the route associated to the topic is correct, in terms of
          * the middlewares it connects being present in the `systems` section.
          *
          * The type will be added to the RequiredTypes map only if no remapping
@@ -877,7 +877,7 @@ bool Config::parse(
         }
 
         /**
-         * Also, check that the remapping attributes are correctly defined, that is,
+         * Also, checks that the remapping attributes are correctly defined, that is,
          * remapping can only be done to one of the systems specified in the route.
          */
         for (auto&& [mw_name, topic_info] : topic_config.remap)
@@ -900,7 +900,7 @@ bool Config::parse(
     for (const auto& [service_name, service_config] : _m_service_configs)
     {
         /**
-         * Check that the route associated to the service is correct, in terms of
+         * Checks that the route associated to the service is correct, in terms of
          * the middlewares it connects being present in the `systems` section.
          *
          * The type will be added to the RequiredTypes map only if no remapping
@@ -931,7 +931,7 @@ bool Config::parse(
         }
 
         /**
-         * Also, check that the remapping attributes are correctly defined, that is,
+         * Also, checks that the remapping attributes are correctly defined, that is,
          * remapping can only be done to one of the systems specified in the route.
          */
         for (auto&& [mw_name, service_info] : service_config.remap)
@@ -952,7 +952,7 @@ bool Config::parse(
     }
 
     /**
-     * Check for defined but unused middlewares. Also, check that at least two are being used.
+     * Checks for defined but unused middlewares. Also, checks that at least two are being used.
      */
     std::size_t active_mw_count = 0;
     for (const auto& [mw_name, mw_config] : _m_middlewares)
@@ -1001,7 +1001,7 @@ bool Config::load_middlewares(
         is::internal::SystemHandleInfoMap& info_map) const
 {
     /**
-     * Sort middlewares according to their dependencies in the `types-from``department.
+     * Sorts middlewares according to their dependencies in the `types-from` department.
      * Middlewares specified in a `types-from` tag must be configured first.
      */
     using Entry = std::map<std::string, MiddlewareConfig>::value_type;
@@ -1016,7 +1016,7 @@ bool Config::load_middlewares(
         });
 
     /**
-     * Iterate through the sorted middlewares list, to load them in the appropriate order.
+     * Iterates through the sorted middlewares list, to load them in the appropriate order.
      */
     for (const auto& [mw_name, mw_config] : middlewares)
     {
@@ -1025,7 +1025,7 @@ bool Config::load_middlewares(
         const Search search(mw_config.type);
 
         /**
-         * Look for the middleware's SystemHandle dynamic library.
+         * Looks for the middleware's SystemHandle dynamic library.
          */
         std::vector<std::string> checked_paths;
         const std::string path = search.find_middleware_mix(&checked_paths);
@@ -1058,7 +1058,7 @@ bool Config::load_middlewares(
         }
 
         /**
-         *  After loading the mix file, the middleware's SystemHandle library should be
+         * After loading the mix file, the middleware's SystemHandle library should be
          * loaded, and it should be possible to find the middleware info in the
          * internal Register.
          */
@@ -1072,8 +1072,8 @@ bool Config::load_middlewares(
         bool configured = true;
 
         /**
-         * Now, iterate the middleware required types map.
-         * For each middleware, check which types it needs, and place them into
+         * Now, it iterates the middleware required types map.
+         * For each middleware, it checks which types it needs, and places them into
          * the SystemHandleInfo structure.
          */
         const auto requirements = _m_required_types.find(mw_name);
@@ -1081,7 +1081,7 @@ bool Config::load_middlewares(
         if (requirements != _m_required_types.end())
         {
             /**
-             * Add topics message types into the type registry, avoiding to insert duplicates.
+             * Adds topics message types into the type registry, avoiding to insert duplicates.
              */
             for (const std::string& required_type : requirements->second.messages)
             {
@@ -1094,7 +1094,7 @@ bool Config::load_middlewares(
             }
 
             /**
-             * Add service types into the type registry, avoiding to insert duplicates.
+             * Adds service types into the type registry, avoiding to insert duplicates.
              */
             for (const std::string& required_type : requirements->second.services)
             {
@@ -1107,7 +1107,7 @@ bool Config::load_middlewares(
             }
 
             /**
-             * Check here the `types-from` attribute for this middleware.
+             * Checks here the `types-from` attribute for this middleware.
              * If it exists, it will contain a list of the middlewares it wants to
              * import the types from.
              *
@@ -1142,7 +1142,7 @@ bool Config::load_middlewares(
                  *
                  * Therefore, iterating through its required_types and checking that every
                  * type exists in the SystemHandleInfo::TypeRegistry should be ok. Otherwise,
-                 * warn and return false.
+                 * it warns and returns false.
                  */
                 for (const std::string& required_type : requirements->second.messages)
                 {
@@ -1176,15 +1176,15 @@ bool Config::load_middlewares(
             }
 
             /**
-             * Finally, now that the SystemHandleInfo struct is filled with all its types,
-             * call to SystemHandle::configure override function for the selected middleware.
+             * Finally, now that the SystemHandleInfo struct is filled with all its types, it
+             * calls to the SystemHandle::configure override function for the selected middleware.
              */
             configured = info.handle->configure(
                 requirements->second, mw_config.config_node, info.types);
         }
 
         /**
-         * If the middleware was correctly configured, insert it within the info_map.
+         * If the middleware was correctly configured, it inserts it within the info_map.
          */
         if (configured)
         {
@@ -1206,12 +1206,12 @@ bool Config::configure_topics(
     bool valid = true;
 
     /**
-     * Iterate through the topics section of the provided configuration.
+     * Iterates through the topics section of the provided configuration.
      */
     for (const auto& [topic_name, topic_config] : _m_topic_configs)
     {
         /**
-         * First, check topic compatibility in terms of the registered types
+         * First, it checks topic compatibility in terms of the registered types
          * in the source and destination endpoints.
          */
         if (!check_topic_compatibility(info_map, topic_name, topic_config))
@@ -1263,7 +1263,7 @@ bool Config::configure_topics(
             }
 
             /**
-             * Do remapping and type resolution, if applicable.
+             * Does remapping and type resolution, if applicable.
              */
             TopicInfo topic_info = remap_if_needed(
                 to, topic_config.remap, TopicInfo(topic_name, topic_config.message_type));
@@ -1272,7 +1272,7 @@ bool Config::configure_topics(
                 it_to->second.types, topic_info.type);
 
             /**
-             * Advertise the TopicPublisher using the TopicPublisherSystem provided
+             * Advertises the TopicPublisher using the TopicPublisherSystem provided
              * by the "to" middleware's SystemHandle.
              */
             std::shared_ptr<TopicPublisher> publisher =
@@ -1305,7 +1305,7 @@ bool Config::configure_topics(
         /**
          * For each `from` attribute in the route, the corresponding SystemHandle
          * must produce a subscriber that fetches the data from the user's source
-         * application and converts it to the common language representation, that is,
+         * application and convert it to the common language representation, that is,
          * `eprosima::xtypes::DynamicData`.
          * Then, this subscriber callback will take care of publishing the data
          * in each one of the TopicPublishers defined in the `to` middleware list.
@@ -1313,7 +1313,7 @@ bool Config::configure_topics(
         for (const std::string& from : topic_config.route.from)
         {
             /**
-             * First, check subscribing capabilities of the middleware's SystemHandle.
+             * First, it checks the subscribing capabilities of the middleware's SystemHandle.
              */
             const auto it_from = info_map.find(from);
             if (it_from == info_map.end() || !it_from->second.topic_subscriber)
@@ -1327,7 +1327,7 @@ bool Config::configure_topics(
             }
 
             /**
-             * Do remapping and type resolution, if applicable.
+             * Does remapping and type resolution, if applicable.
              */
             TopicInfo topic_info = remap_if_needed(
                 from, topic_config.remap, TopicInfo(topic_name, topic_config.message_type));
@@ -1366,7 +1366,7 @@ bool Config::configure_topics(
             }
 
             /**
-             * Define the Integration Service SubscriptionCallback lambda that will
+             * Defines the Integration Service SubscriptionCallback lambda that will
              * iterate over all the publishers created from the `to` field and
              * publish the data received through this subscriber over them.
              * This is the core of the `from/to` route communication process.
@@ -1430,12 +1430,12 @@ bool Config::configure_services(
     bool valid = true;
 
     /**
-     * Iterate through the services section of the provided configuration.
+     * Iterates through the services section of the provided configuration.
      */
     for (const auto& [service_name, service_config] : _m_service_configs)
     {
         /**
-         * First, check service compatibility in terms of the registered types
+         * First, it checks service compatibility in terms of the registered types
          * in the source and destination endpoints, both for request and reply types.
          */
         if (!check_service_compatibility(info_map, service_name, service_config))
@@ -1459,7 +1459,7 @@ bool Config::configure_services(
         }
 
         /**
-         * Do remapping and type resolution, if applicable.
+         * Does remapping and type resolution, if applicable.
          */
         ServiceInfo server_info = remap_if_needed(
             server, service_config.remap,
@@ -1469,7 +1469,7 @@ bool Config::configure_services(
             it_server->second.types, server_info.type);
 
         /**
-         * Create the ServiceProvider instance, differenciating the case of the service having a reply type, or not.
+         * Creates the ServiceProvider instance, differenciating the case of the service having a reply type, or not.
          */
         std::shared_ptr<ServiceProvider> provider = nullptr;
 
@@ -1530,24 +1530,24 @@ bool Config::configure_services(
         }
 
         /**
-         * Define the Integration Service RequestCallback lambda that will
+         * Defines the Integration Service RequestCallback lambda that will
          * be called each time the user client application makes a request.
          *
          * The specific middleware's SystemHandle implementation of the ServiceClient proxy
          * should internally create a "server" of the specific middleware, to receive the
-         * request from the user application. This service uses the RequestCallback lambda to,
-         * each time a requests comes from the user, use the afore created ServiceProvider (which
+         * request from the user application. This service uses the RequestCallback lambda to
+         * use the ServiceProvider created before, each time a request comes from the user (which
          * defines a destination middleware client internally) to actually call the service
          * on the user server application.
          *
          * The `call service` method signature passes as input argument a reference to the
-         * ServiceClient that made the request, which will call to `receive_response` to send
+         * ServiceClient that made the request, which will call `receive_response` to send
          * the response back to the user's client application.
          */
         for (const std::string& client : service_config.route.clients)
         {
             /**
-             * First, check the middleware's SystemHandle capabilities for creating service clients.
+             * First, it checks the middleware's SystemHandle capabilities for creating service clients.
              */
             const auto it_client = info_map.find(client);
             if (it_client == info_map.end() || !it_client->second.service_client)
@@ -1562,7 +1562,7 @@ bool Config::configure_services(
             }
 
             /**
-             * Do remapping and type resolution, if applicable.
+             * Does remapping and type resolution, if applicable.
              */
             ServiceInfo client_info = remap_if_needed(
                 client, service_config.remap,
@@ -1572,7 +1572,7 @@ bool Config::configure_services(
                 it_client->second.types, client_info.type);
 
             /**
-             * Define the RequestCallback that will perform the corresponding call to the service.
+             * Defines the RequestCallback that will perform the corresponding call to the service.
              */
             eprosima::xtypes::TypeConsistency consistency = client_type->is_compatible(*server_type);
             ServiceClientSystem::RequestCallback callback =
@@ -1592,7 +1592,7 @@ bool Config::configure_services(
                     };
 
             /**
-             * Finally, create the service client proxy, differentiating between the cases of
+             * Finally, creates the service client proxy, differentiating between the cases of
              * having a request_type + a reply_type, or only an unique type defined for the service.
              */
             bool created_client_proxy;
@@ -1683,11 +1683,11 @@ bool Config::check_topic_compatibility(
             const eprosima::xtypes::DynamicType* to_type = resolve_type(it_from->second.types, topic_info_from.type);
 
             /**
-             * Check type compatibility between `from` and `to` defined types using eprosima::xtypes::TypeConsistency.
-             * If no consistency is found, return false; otherwise, allow the type conversion, but warn the user
+             * Checks type compatibility between `from` and `to` defined types using eprosima::xtypes::TypeConsistency.
+             * If no consistency is found, returns false; otherwise, allows the type conversion, but warns the user
              * about which consistency levels are being ignored and which policies are being applied.
              *
-             * TODO (@jamoralp): users might want to specifically enable or disable this policies through the YAML
+             * TODO (@jamoralp): users might want to specifically enable or disable these policies through the YAML
              * configuration file.
              */
             eprosima::xtypes::TypeConsistency consistency = from_type->is_compatible(*to_type);
@@ -1763,8 +1763,8 @@ bool Config::check_service_compatibility(
                 resolve_type(it_server->second.types, topic_info_server.type);
 
         /**
-         * Check type compatibility between `clients` and `server` defined types using eprosima::xtypes::TypeConsistency.
-         * If no consistency is found, return false; otherwise, allow the type conversion, but warn the user
+         * Checks type compatibility between `clients` and `server` defined types using eprosima::xtypes::TypeConsistency.
+         * If no consistency is found, returns false; otherwise, allows the type conversion, but warns the user
          * about which consistency levels are being ignored and which policies are being applied.
          *
          * By default, this will always be applied to the `request_type`, as it is mandatory.
@@ -1817,7 +1817,7 @@ bool Config::check_service_compatibility(
         }
 
         /**
-         * Now, do the same for reply type.
+         * Now, does the same for reply type.
          */
         if (!topic_info_client.reply_type.empty() && !topic_info_server.reply_type.empty())
         {

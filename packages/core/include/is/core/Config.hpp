@@ -117,7 +117,7 @@ struct TopicInfo
     }
 
     std::string name;
-    std::string type; //  AKA request_type for Services with request + reply types.
+    std::string type; //  AKA request_type for Services with both request and reply types.
     std::string reply_type; //  Only used for Services with reply_type.
 };
 
@@ -131,7 +131,7 @@ struct TopicConfig
     std::string message_type;
     TopicRoute route;
 
-    std::map<std::string, TopicInfo> remap; //  "key" is middleware alias.
+    std::map<std::string, TopicInfo> remap; //  The "key" is the middleware alias.
 
     std::map<std::string, YAML::Node> middleware_configs;
 };
@@ -145,7 +145,7 @@ struct ServiceConfig
     std::string reply_type; //  Optional
     ServiceRoute route;
 
-    std::map<std::string, ServiceInfo> remap; //  "key" is middleware alias.
+    std::map<std::string, ServiceInfo> remap; //  The "key" is the middleware alias.
 
     std::map<std::string, YAML::Node> middleware_configs;
 };
@@ -162,7 +162,7 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param[in] node Parsed rpresentation of the `YAML` configuration file.
+     * @param[in] node Parsed representation of the `YAML` configuration file.
      *            It defaults to empty.
      *
      * @param[in] filename The path of the `YAML` configuration file.
@@ -180,12 +180,12 @@ public:
             const std::string& file);
 
     /**
-     * @brief Parse the provided configuration, according to the configuration file
+     * @brief Parses the provided configuration, according to the configuration file
      *        scheme defined for *Integration Service*.
      *
      * @details Configuration files typically contain the following sections:
      *
-     *          1. `types`: Specify the `IDL` types used by *Integration Service*
+     *          1. `types`: Specifies the `IDL` types used by *Integration Service*
      *             to transmit messages. These `IDL` definitions will be parsed using
      *             `eprosima::xtypes` parser for `IDL` files, and the resulting
      *             *Dynamic Types* will be added to the available types database.
@@ -193,24 +193,24 @@ public:
      *             The following subsections are permitted:
      *
      *             1.1. `idl`: IDL content.
-     *             1.2. `paths`: include paths containing IDL definitions that will
+     *             1.2. `paths`: includes paths containing IDL definitions that will
      *                  also be parsed and added to the types database.
      *
-     *          2. `systems`: List the middlewares involved in the communication,
+     *          2. `systems`: Lists the middlewares involved in the communication,
      *             allowing to configure them. Custom aliases can be given to any system.
      *
      *             The following subsections are permitted:
      *
-     *             2.1. `type`: to be selected among the supported middlewares by the
+     *             2.1. `type`: to be selected among the middlewares supported by
      *                  *Integration Service*: `ros2`, `dds`, `websocket`, `ros1`...
      *             2.2. `types-from`: allows to inherit type definitions from one
-     *                  system to another. This way, users do not have to redefine
+     *                  system to another. In this way, users do not have to redefine
      *                  types for each system.
      *             2.3. Custom configuration parameters, such as `domain_id` (for ROS 2).
      *                  Each System Handle may define its own configuration fields,
      *                  please refer to their documentation for more details.
      *
-     *          3. `routes`: Lists which bridge communications the *Integration Service*
+     *          3. `routes`: Lists the communication bridges that *Integration Service*
      *             needs to establish among `systems`. Each route has a specific name.
      *
      *             The following subsections are permitted:
@@ -218,10 +218,10 @@ public:
      *             3.1. `from/to`: publisher/subscriber communication.
      *             3.2. `server/clients`: server/client communication.
      *
-     *          4. `topics/services`: Allows to configure and provide detailed information
-     *             about the topics exchanged over the `routes` described above,
-     *             in either publisher/subscriber or client/server communication.
-     *             Each topic or service must have an unique name in the `YAML` file.
+     *          4. `topics/services`: Allows to configure the topics exchanged over the `routes`
+     *             described above, in either publisher/subscriber or client/server
+     *             communication, and provides detailed information about them.
+     *             Each topic or service must have a unique name in the `YAML` file.
      *
      *             The following subsections are permitted:
      *
@@ -235,18 +235,18 @@ public:
      *             4.4. Custom configuration parameters, which are specific for each middleware.
      *                  Please refer to the specific System Handle documentation.
      *
-     * @param[in] node The parsed YAML representation of the provided configuration file.
+     * @param[in] node The parsed YAML representation of the configuration file provided.
      *
      * @param[in] filename The path of the configuration file.
      *
-     * @returns `True` if the parsing was correct, or `false` if some error occurred.
+     * @returns `True` if the parsing was correct, `false` if some error occurred.
      */
     bool parse(
             const YAML::Node& node,
             const std::string& filename = "<text>");
 
     /**
-     * @brief Check if everything is okay with the configuration process.
+     * @brief Checks if everything is okay with the configuration process.
      *
      * @returns The `_okay` boolean parameter.
      */
@@ -260,25 +260,25 @@ public:
     operator bool() const;
 
     /**
-     * @brief Perform a search and load of the dynamic libraries required
-     *        for each middleware, that is, the SystemHandle entities.
+     * @brief Performs a search and loads the dynamic libraries required
+     *        for each middleware, that is, the System Handle entities.
      *
      * @details After the System Handle shared library is loaded successfully,
      *          the required types to be found during the System Handle configuration
      *          phase are registered, according to what was specified in the `YAML` configuration.
      *
-     *          Next, the `types-from` parameter is checked, so that the middleware
-     *          from which each System Handle wants to inherit types from is declared
+     *          Next, the `types-from` parameter is checked, which specifies the middleware
+     *          from which each System Handle wants to inherit types from, as declared
      *          in the configuration.
      *
-     *          Finally, for each SystemHandle, the `configure` method is called.
-     *          If one of the listed middlewares is not properly configured,
+     *          Finally, for each System Handle, the `configure` method is called.
+     *          If one of the middlewares listed is not properly configured,
      *          the whole process fails.
      *
-     * @param[out] info_map Map from the middleware names to its SystemHandle
-     *             instance information (handle pointer, topic publisher and subscriber
+     * @param[out] info_map Map between the middlewares and their System Handle
+     *             instances information (handle pointer, topic publisher and subscriber
      *             and service client and provider systems, as well as its type registry).
-     *             This map should be filled with the information for all the SystemHandle
+     *             This map should be filled with the information for all the System Handles
      *             defined in the configuration, once this method succeeds.
      *
      * @return Boolean value indicating whether the load process was successful or not.
@@ -287,7 +287,7 @@ public:
             is::internal::SystemHandleInfoMap& info_map) const;
 
     /**
-     * @brief Configure topics communication, according to the specified route,
+     * @brief Configures topics communication, according to the specified route,
      *        type and remapping parameters.
      *
      * @details First, compatibility between the type defined in the `from` endpoint
@@ -298,31 +298,31 @@ public:
      *          documentation for more details.
      *
      *          If the types are compatible, the next step is to check the publishing capabilities
-     *          of the destination endpoint, and if everything is correct, that is,
-     *          the system has an associated TopicPublisherSystem, the SystemHandle advertises
+     *          of the destination endpoint, and if everything is correct, that is, if
+     *          the system has an associated TopicPublisherSystem, the System Handle advertises
      *          the topic. This publication will transmit the data to the user application,
      *          which must define a subscriber capable of receiving and processing the data.
      *
-     *          Then, in the source endpoint, subscribing capabilities are checked to exist,
-     *          and, if true, the subscriber defines a SubscriptionCallback lambda, that
+     *          Then, in the source endpoint, the existence of subscribing capabilities is checked,
+     *          and, if so, the subscriber defines a SubscriptionCallback lambda, that
      *          iterates through the previous constructed list of publishers and ensures that
      *          each defined destination endpoint gets the data published. This callback
      *          is used to call to `TopicSubscriberSystem::subscribe` method.
      *
-     *          If any of the defined topics can not meet publishing or subscription capabilities
+     *          If any of the defined topics cannot find publishing or subscription capabilities
      *          (i.e. invalid routes), the returned value will be false and the process will fail.
      *
      * @param[in] info_map Map filled during the `load_middlewares` phase and containing
      *            the information for each loaded SystemHandle, in terms of its instance,
-     *            supported types and publish/subscribe and client/server capabilities.
+     *            supported types and publish/subscribe or client/server capabilities.
      *
-     * @returns `true` if all the topics were successfully configured, or `false` otherwise.
+     * @returns `true` if all the topics were successfully configured, `false` otherwise.
      */
     bool configure_topics(
             const is::internal::SystemHandleInfoMap& info_map) const;
 
     /**
-     * @brief Configure services, according to the specified route, type and remapping
+     * @brief Configures services, according to the specified route, type and remapping
      *        parameters.
      *
      * @details First, compatibility between the request and reply types defined
@@ -334,32 +334,32 @@ public:
      *          documentation for more details.
      *
      *          If the types are compatible, the next step is to check the service providing
-     *          capabilities of the server endpoint, and if everything is correct, that is,
+     *          capabilities of the server endpoint, and if everything is correct, that is, if
      *          the system has an associated ServiceProviderSystem, the SystemHandle creates
      *          the corresponding service provider proxy.
      *
      *          Then, for all the defined clients, ServiceClientSystem capabilities
-     *          are cheched to exist, and a request callbac is defined, which basically
+     *          are checked, and a request callback is defined, which basically
      *          executes the `ServiceProvider::call_service` method from the associated provider.
      *          This `call_service` is then responsible of sending back the response
      *          to the client, if applicable (that is, if a `reply_type` has been defined
      *          in the `YAML` configuration.)
      *
-     *          If any of the defined services can not meet server or client capabilities
+     *          If any of the defined services cannot find server or client capabilities
      *          (i.e. invalid routes), the returned value will be false and the process will fail.
      *
      * @param[in] info_map Map filled during the `load_middlewares` phase and containing
      *            the information for each loaded SystemHandle, in terms of its instance,
      *            supported types and publish/subscribe and client/server capabilities.
      *
-     * @returns `true` if all the services were successfully configured, or `false` otherwise.
+     * @returns `true` if all the services were successfully configured, `false` otherwise.
      */
     bool configure_services(
             const is::internal::SystemHandleInfoMap& info_map) const;
 
     /**
-     * @brief Check compatibility between the TopicInfo registered in the endpoints responsible
-     *        of a topic publish/subscribe communication in the *Integration Service*.
+     * @brief Checks compatibility between the TopicInfo registered in the endpoints responsible
+     *        for a topic publish/subscribe communication in *Integration Service*.
      *
      *        This compatibility check is ensured thanks to eProsima `xtypes` library
      *        and its `TypeConsistency` definition. If types are not equal, some policies
@@ -368,7 +368,7 @@ public:
      *
      * @param[in] info_map Map filled during the `load_middlewares` phase and containing
      *            the information for each loaded SystemHandle, in terms of its instance,
-     *            supported types and publish/subscribe and client/server capabilities.
+     *            supported types and publish/subscribe or client/server capabilities.
      *
      * @param[in] topic_name The topic whose compatibility will be checked between endpoints.
      *
@@ -376,7 +376,7 @@ public:
      *            the source/destination defined route and the remappings, as well as the
      *            specific middleware configurations for this topic.
      *
-     * @returns `true` if the topic is compatible among the defined systems, or `false` otherwise.
+     * @returns `true` if the topic is compatible among the defined systems, `false` otherwise.
      */
     bool check_topic_compatibility(
             const is::internal::SystemHandleInfoMap& info_map,
@@ -384,7 +384,7 @@ public:
             const TopicConfig& config) const;
 
     /**
-     * @brief Check compatibility between the ServiceConfig registered in the endpoints
+     * @brief Checks compatibility between the ServiceConfig registered in the endpoints
      *        responsible of a server/client communication in the *Integration Service*.
      *
      *        This compatibility check is ensured thanks to eProsima `xtypes` library
@@ -404,7 +404,7 @@ public:
      *            request and reply types, the server and clients defined route and the remappings,
      *            as well as the specific middleware configurations for this service.
      *
-     * @returns `true` if the service is compatible among the defined systems, or `false` otherwise.
+     * @returns `true` if the service is compatible among the defined systems, `false` otherwise.
      */
     bool check_service_compatibility(
             const is::internal::SystemHandleInfoMap& info_map,
@@ -412,7 +412,7 @@ public:
             const ServiceConfig& config) const;
 
     /**
-     * @brief This function allows to retrieve a type member from an outer defined type containing
+     * @brief This function allows to retrieve a type member from an externally defined type containing
      *        it, to use it as the type for a certain configuration.
      *
      * @details The used syntax when retrieving the inner type must be `<outer_type>.<type_member_name>`.

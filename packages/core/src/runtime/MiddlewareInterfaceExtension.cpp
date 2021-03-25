@@ -93,14 +93,14 @@ public:
 private:
 
     /**
-     * @brief Load a certain dynamic library if it exists; otherwise,
-     *        print an error trace and return failure.
+     * @brief Loads a certain dynamic library if it exists; otherwise,
+     *        prints an error trace and returns failure.
      *
      * @param[in] path String representation of the library path.
      *
      * @param[in] relative_to Path to which the library's path is relative to.
      *
-     * @returns `true` if the shared library was loaded, or `false` otherwise.
+     * @returns `true` if the shared library was loaded, `false` otherwise.
      */
     bool load_if_exists(
             const std::string& path,

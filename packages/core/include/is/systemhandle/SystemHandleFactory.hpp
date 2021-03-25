@@ -39,7 +39,7 @@ using SystemHandleFactoryBuilder = std::function<std::unique_ptr<SystemHandle>()
  *
  * @param[in] middleware The middleware's name.
  *
- * @param[in] handle The handle function responsible of creating the
+ * @param[in] handle The handle function responsible for creating the
  *            SystemHandle instance.
  */
 void IS_CORE_API register_system_handle_factory(
@@ -61,7 +61,7 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param[in] middleware The middleware name we want to register into the factory.
+     * @param[in] middleware The middleware name to be registered into the factory.
      */
     SystemHandleRegistrar(
             std::string&& middleware)
