@@ -52,7 +52,8 @@ macro(compile_test)
         websocket__roundtrip_server.yaml
         websocket__roundtrip_client.yaml
         websocket__dispatch.yaml
-        websocket__services.yaml)
+        websocket__services__security.yaml
+        websocket__services__nosecurity.yaml)
 
       get_filename_component(resource_name ${resource} NAME_WE)
       string(TOUPPER ${resource_name} CAPS_RESOURCE_NAME)

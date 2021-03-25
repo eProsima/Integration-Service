@@ -284,7 +284,7 @@ public:
         _tcp_client->set_message_handler(
             [&](ConnectionHandlePtr handle, TcpMessagePtr message)
             {
-                this->_handle_tls_message(std::move(handle), std::move(message));
+                this->_handle_tcp_message(std::move(handle), std::move(message));
             });
 
         _tcp_client->set_close_handler(
