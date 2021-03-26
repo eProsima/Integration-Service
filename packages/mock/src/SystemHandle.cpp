@@ -139,8 +139,8 @@ public:
         bool only_service = impl().mock_services.count(_service) > 0;
         const auto it =
                 (only_service
-        ? impl().mock_services.find(_service)
-        : impl().mock_services.find(_service + "_" + request.type().name()));
+                ? impl().mock_services.find(_service)
+                : impl().mock_services.find(_service + "_" + request.type().name()));
 
         if (it == impl().mock_services.end())
         {
