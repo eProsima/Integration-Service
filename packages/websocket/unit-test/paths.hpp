@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef UNIT_TEST__PATHS_HPP
 #define UNIT_TEST__PATHS_HPP
