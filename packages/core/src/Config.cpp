@@ -54,7 +54,7 @@ bool scalar_or_list_node_to_set(
 
     if (!valid)
     {
-        Config::logger << utils::Logger::Level::WARN
+        Config::logger << utils::Logger::Level::ERROR
                        << "config-file '" << field << "' entry in " << route_type
                        << " route must point to a string or list of at least one string"
                        << std::endl;
@@ -213,7 +213,7 @@ bool add_types(
             }
             if (types.empty())
             {
-                Config::logger << utils::Logger::Level::ERROR
+                Config::logger << utils::Logger::Level::WARN
                                << "Parsing the IDL number '" << idl_index
                                << "' placed in the YAML config. "
                                << "The parsing was successful but no types were found."
@@ -286,7 +286,7 @@ bool add_named_route(
     }
     else
     {
-        Config::logger << utils::Logger::Level::WARN
+        Config::logger << utils::Logger::Level::ERROR
                        << "Cannot recognize route named '" << name << "' because it "
                        << "does not match a topic route scheme {from: X, to: Y} "
                        << "or a service route scheme {server: X, clients: Y}" << std::endl;
@@ -405,7 +405,7 @@ bool add_topic_or_service_config(
             const auto it = predefined_routes.find(route_name);
             if (it == predefined_routes.end())
             {
-                Config::logger << utils::Logger::Level::WARN
+                Config::logger << utils::Logger::Level::ERROR
                                << "The " << channel_type << " configuration '" << name
                                << "' requested a route named '" << route_name << "' but a "
                                << "route with that name was never defined in the 'routes' "
@@ -485,10 +485,10 @@ bool add_topic_or_service_config(
     {
         if (!config_map.insert(std::make_pair(name, config)).second)
         {
+            // If configuration specified twice, we will stick with the first one
             Config::logger << utils::Logger::Level::WARN
                            << channel_type << " configuration '" << name
                            << "' was specified twice!" << std::endl;
-            valid = false;
         }
     }
 
@@ -702,7 +702,7 @@ Config Config::from_file(
     }
     catch (const std::exception& e)
     {
-        logger << utils::Logger::Level::WARN
+        logger << utils::Logger::Level::ERROR
                << "Could not parse the config-file named '" << file
                << "': " << e.what() << std::endl;
         return Config();
@@ -710,7 +710,7 @@ Config Config::from_file(
 
     if (!config_node)
     {
-        logger << utils::Logger::Level::WARN
+        logger << utils::Logger::Level::ERROR
                << "Could not parse the config-file '" << file
                << "'" << std::endl;
         return Config();
@@ -863,7 +863,7 @@ bool Config::parse(
         {
             if (_m_middlewares.find(mw) == _m_middlewares.end())
             {
-                logger << utils::Logger::Level::WARN
+                logger << utils::Logger::Level::ERROR
                        << "Unrecognized system '" << mw << "' requested for topic '"
                        << topic_name << "'." << std::endl;
                 return false;
@@ -884,7 +884,7 @@ bool Config::parse(
         {
             if (_m_middlewares.find(mw_name) == _m_middlewares.end())
             {
-                logger << utils::Logger::Level::WARN
+                logger << utils::Logger::Level::ERROR
                        << "Unrecognized system '" << mw_name
                        << "' requested for remapping topic "
                        << "'" << topic_name << "'" << std::endl;
@@ -911,7 +911,7 @@ bool Config::parse(
         {
             if (_m_middlewares.find(mw) == _m_middlewares.end())
             {
-                logger << utils::Logger::Level::WARN
+                logger << utils::Logger::Level::ERROR
                        << "Unrecognized system '" << mw << "' requested for service "
                        << "'" << service_name << "'" << std::endl;
                 return false;
@@ -938,7 +938,7 @@ bool Config::parse(
         {
             if (_m_middlewares.find(mw_name) == _m_middlewares.end())
             {
-                logger << utils::Logger::Level::WARN
+                logger << utils::Logger::Level::ERROR
                        << "Unrecognized system '" << mw_name << "' requested for remapping service "
                        << "'" << service_name << "'" << std::endl;
                 return false;
@@ -1750,17 +1750,17 @@ bool Config::check_service_compatibility(
     {
         const auto it_client = info_map.find(client);
 
-        ServiceInfo topic_info_client = remap_if_needed(client, config.remap,
+        ServiceInfo client_info = remap_if_needed(client, config.remap,
                         ServiceInfo(service_name, config.request_type, config.reply_type));
         const eprosima::xtypes::DynamicType* client_type =
-                resolve_type(it_client->second.types, topic_info_client.type);
+                resolve_type(it_client->second.types, client_info.type);
 
         const auto it_server = info_map.find(config.route.server);
 
-        ServiceInfo topic_info_server = remap_if_needed(config.route.server, config.remap,
+        ServiceInfo server_info = remap_if_needed(config.route.server, config.remap,
                         ServiceInfo(service_name, config.request_type, config.reply_type));
         const eprosima::xtypes::DynamicType* server_type =
-                resolve_type(it_server->second.types, topic_info_server.type);
+                resolve_type(it_server->second.types, server_info.type);
 
         /**
          * Checks type compatibility between `clients` and `server` defined types using eprosima::xtypes::TypeConsistency.
@@ -1778,9 +1778,9 @@ bool Config::check_service_compatibility(
         if (request_consistency == eprosima::xtypes::TypeConsistency::NONE)
         {
             logger << utils::Logger::Level::ERROR
-                   << "Remapping error: service request type '" << topic_info_client.type
+                   << "Remapping error: service request type '" << client_info.type
                    << "' from '" << it_client->first << "' is not compatible with '"
-                   << topic_info_server.type << "' in '" << it_server->first << "'." << std::endl;
+                   << server_info.type << "' in '" << it_server->first << "'." << std::endl;
 
             valid = false;
             continue;
@@ -1788,8 +1788,8 @@ bool Config::check_service_compatibility(
         else if (request_consistency != eprosima::xtypes::TypeConsistency::EQUALS)
         {
             logger << utils::Logger::Level::WARN
-                   << "The conversion between request '" << topic_info_client.type << "' from '"
-                   << it_client->first << "' and '" << topic_info_server.type << "' in '"
+                   << "The conversion between request '" << client_info.type << "' from '"
+                   << it_client->first << "' and '" << server_info.type << "' in '"
                    << it_server->first << "' has been allowed by adding the following QoS policies: ";
 
             auto policy_name =
@@ -1819,22 +1819,22 @@ bool Config::check_service_compatibility(
         /**
          * Now, does the same for reply type.
          */
-        if (!topic_info_client.reply_type.empty() && !topic_info_server.reply_type.empty())
+        if (!client_info.reply_type.empty() && !server_info.reply_type.empty())
         {
             const eprosima::xtypes::DynamicType* client_reply =
-                    resolve_type(it_client->second.types, topic_info_client.reply_type);
+                    resolve_type(it_client->second.types, client_info.reply_type);
 
             const eprosima::xtypes::DynamicType* server_reply =
-                    resolve_type(it_server->second.types, topic_info_server.reply_type);
+                    resolve_type(it_server->second.types, server_info.reply_type);
 
             auto reply_consistency = client_reply->is_compatible(*server_reply);
 
             if (reply_consistency == xtypes::TypeConsistency::NONE)
             {
                 logger << utils::Logger::Level::ERROR
-                       << "Remapping error: service reply type '" << topic_info_client.reply_type
+                       << "Remapping error: service reply type '" << client_info.reply_type
                        << "' from '" << it_client->first << "' is not compatible with '"
-                       << topic_info_server.reply_type << "' in '"
+                       << server_info.reply_type << "' in '"
                        << it_server->first << "'." << std::endl;
 
                 valid = false;
@@ -1842,8 +1842,8 @@ bool Config::check_service_compatibility(
             else if (reply_consistency != eprosima::xtypes::TypeConsistency::EQUALS)
             {
                 logger << utils::Logger::Level::WARN
-                       << "The conversion between reply '" << topic_info_client.reply_type << "' from '"
-                       << it_client->first << "' and '" << topic_info_server.reply_type << "' in '"
+                       << "The conversion between reply '" << client_info.reply_type << "' from '"
+                       << it_client->first << "' and '" << server_info.reply_type << "' in '"
                        << it_server->first << "' has been allowed by adding the following QoS policies: ";
 
                 auto policy_name =
