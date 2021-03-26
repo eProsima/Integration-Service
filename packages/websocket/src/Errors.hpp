@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SRC__ERRORS_HPP
 #define SRC__ERRORS_HPP
@@ -28,17 +28,20 @@ class ParseError : public std::exception
 {
 public:
 
-  explicit ParseError(std::string what)
-  : _what(std::move(what)) {}
+    explicit ParseError(
+            std::string what)
+        : _what(std::move(what))
+    {
+    }
 
-  const char* what() const noexcept override
-  {
-    return _what.c_str();
-  }
+    const char* what() const noexcept override
+    {
+        return _what.c_str();
+    }
 
 private:
 
-  std::string _what;
+    std::string _what;
 };
 
 } // namespace websocket

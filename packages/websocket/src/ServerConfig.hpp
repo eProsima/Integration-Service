@@ -17,8 +17,11 @@ public:
             const YAML::Node& auth_node);
 
 private:
-  static std::string _glob_to_regex(const std::string& s);
-  static VerificationPolicy _parse_policy_yaml(const YAML::Node& policy_node);
+
+    static std::string _glob_to_regex(
+            const std::string& s);
+    static VerificationPolicy _parse_policy_yaml(
+            const YAML::Node& policy_node);
 };
 
 } // namespace websocket

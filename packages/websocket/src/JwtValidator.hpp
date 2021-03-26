@@ -29,40 +29,42 @@ class VerificationPolicy
 {
 public:
 
-  using Rule = std::pair<std::string, std::string>;
+    using Rule = std::pair<std::string, std::string>;
 
-  VerificationPolicy(std::vector<Rule> rules,
-    std::vector<Rule> header_rules,
-    std::string secret_or_pubkey);
+    VerificationPolicy(
+            std::vector<Rule> rules,
+            std::vector<Rule> header_rules,
+            std::string secret_or_pubkey);
 
-  inline const std::string& secret_or_pubkey() const
-  {
-    return _secret_or_pubkey;
-  }
+    inline const std::string& secret_or_pubkey() const
+    {
+        return _secret_or_pubkey;
+    }
 
-  /**
-   * @throws VerificationError
-   */
-  void check(
-    const std::string& token,
-    const json_t& header,
-    const json_t& payload);
+    /**
+     * @throws VerificationError
+     */
+    void check(
+            const std::string& token,
+            const json_t& header,
+            const json_t& payload);
 
 private:
 
-  std::string _secret_or_pubkey;
-  std::vector<Rule> _rules;
-  std::vector<Rule> _header_rules;
-  std::unordered_map<std::string, std::regex> _matchers;
-  std::unordered_map<std::string, std::regex> _header_matchers;
+    std::string _secret_or_pubkey;
+    std::vector<Rule> _rules;
+    std::vector<Rule> _header_rules;
+    std::unordered_map<std::string, std::regex> _matchers;
+    std::unordered_map<std::string, std::regex> _header_matchers;
 };
 
 class JwtValidator
 {
 public:
-  /**
-   * @throws VerificationError
-   */
+
+    /**
+     * @throws VerificationError
+     */
     void verify(
             const std::string& token);
 
