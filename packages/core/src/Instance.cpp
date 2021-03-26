@@ -132,7 +132,7 @@ public:
         if (_info_map.size() < 2)
         {
             _logger << utils::Logger::Level::ERROR
-                    << "Error: Attemtping to run an Integration Service instance without at least "
+                    << "Attemtping to run an Integration Service instance without at least "
                     << "two systems (you are using: " << _info_map.size()
                     << "). An Integration Service instance with less than two systems is "
                     << "useless, so we will quit soon." << std::endl;
