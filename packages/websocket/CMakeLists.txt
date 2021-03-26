@@ -34,7 +34,6 @@ add_library(soss-websocket SHARED
   src/ServerConfig.cpp
   src/ServiceProvider.cpp
   src/TopicPublisher.cpp
-  src/FileManager.cpp
   )
 
 target_link_libraries(soss-websocket

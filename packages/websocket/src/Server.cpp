@@ -28,6 +28,7 @@
 namespace soss {
 namespace websocket {
 
+const std::string WebsocketMiddlewareName = "websocket";
 const std::string HomeEnvVar = "HOME";
 const std::string YamlCertificateKey = "cert";
 const std::string YamlPrivateKeyKey = "key";
