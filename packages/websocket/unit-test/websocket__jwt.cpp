@@ -44,10 +44,10 @@ TEST(JwtValidator, Validates_jwt_token)
     // { "iss": "test" } signed with secret "bad_token" and algo "HS256"
     std::string bad_token =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiaWF0IjoxNTU1MDQxOTE0fQ.uA-YwAns6NMVl7jgKueJVYSukUTenxaSV_xTxGHpF_E";
-    EXPECT_THROW(jwt_validator.verify(bad_token));
+    EXPECT_THROW(jwt_validator.verify(bad_token), jwt::VerificationError);
 
     std::string invalid_token = "xaxaxa.xaxaxa.xaxaxa";
-    EXPECT_FALSE(jwt_validator.verify(invalid_token));
+    EXPECT_THROW(jwt_validator.verify(invalid_token), jwt::VerificationError);
 }
 
 TEST(JwtValidator, Simple_verification_strategy)
@@ -57,7 +57,7 @@ TEST(JwtValidator, Simple_verification_strategy)
     jwt_validator.add_verification_policy(VerificationPolicy(
                 {{ "iss", "test" }, { "sub", "test" }
                 }, {}, "test"));
-    EXPECT_THROW(jwt_validator.verify(hs256_token));
+    EXPECT_THROW(jwt_validator.verify(hs256_token), jwt::VerificationError);
 
     jwt_validator.add_verification_policy(VerificationPolicy(
                 {{ "iss", "test" }
@@ -81,7 +81,7 @@ TEST(JwtValidator, No_secret_or_pubkey)
     ASSERT_FALSE(ServerConfig::load_auth_policy(jwt_validator, auth_node));
 }
 
-TEST_CASE(JwtValidator, Both_secret_and_pubkey)
+TEST(JwtValidator, Both_secret_and_pubkey)
 {
     JwtValidator jwt_validator;
     YAML::Node auth_node = YAML::Load("{ secret: test, pubkey: test }");
@@ -102,7 +102,7 @@ TEST(JwtValidator, Default_policy)
     EXPECT_NO_THROW(jwt_validator.verify(hs256_token));
 }
 
-TEST_CASE(JwtValidator, No_alg)
+TEST(JwtValidator, No_alg)
 {
     JwtValidator jwt_validator;
     YAML::Node auth_node = YAML::Load(R"raw(
@@ -210,7 +210,7 @@ TEST(JwtValidator, Wildcard_pattern_rule_question_mark)
 }
 )raw");
     ServerConfig::load_auth_policy(jwt_validator, auth_node);
-    EXPECT_THROW(jwt_validator.verify(hs256_token));
+    EXPECT_THROW(jwt_validator.verify(hs256_token), jwt::VerificationError);
 }
 
 TEST(JwtValidator, Wildcard_pattern_rule_mixed)

@@ -1,5 +1,7 @@
 find_package(OpenSSL REQUIRED)
 
+configure_file(paths.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/paths.cpp)
+
 include(CTest)
 include(${PROJECT_SOURCE_DIR}/../core/cmake/common/gtest.cmake)
 enable_testing()

@@ -18,8 +18,8 @@
 #include "ServerConfig.hpp"
 
 #include "Errors.hpp"
-#include "FileManager.hpp"
 
+#include <soss/Search.hpp>
 #include <boost/algorithm/string.hpp>
 #include <fstream>
 #include <iostream>
@@ -27,6 +27,7 @@
 namespace soss {
 namespace websocket {
 
+static const std::string WebsocketMiddlewareName = "websocket";
 const std::string YamlPoliciesKey = "policies";
 const std::string YamlRulesKey = "rules";
 const std::string YamlSecretKey = "secret";
@@ -109,7 +110,9 @@ VerificationPolicy ServerConfig::_parse_policy_yaml(
   else
   {
     const auto param = policy_node[YamlPubkeyKey].as<std::string>();
-    const auto filepath = FileManager::find_file(param);
+    const ::soss::Search search = ::soss::Search(WebsocketMiddlewareName);
+    std::vector<std::string> checked_paths;
+    const std::string filepath = search.find_file(param, "", &checked_paths);
     if (filepath.empty())
     {
       std::string err = std::string()
