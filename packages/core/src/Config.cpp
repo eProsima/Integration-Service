@@ -979,8 +979,8 @@ bool Config::configure_topics(
                 topic_info.name,
                 //*pub_type,
                 (topic_info.type.find(".") == std::string::npos
-                       ? *pub_type
-                       : *m_types.at(topic_info.type.substr(0, topic_info.type.find(".")))),
+                ? *pub_type
+                : *m_types.at(topic_info.type.substr(0, topic_info.type.find(".")))),
                 config_or_empty_node(to, config.middleware_configs));
 
             if (!publisher)
@@ -1047,8 +1047,8 @@ bool Config::configure_topics(
                 topic_info.name,
                 //*sub_type,
                 (topic_info.type.find(".") == std::string::npos
-                   ? *sub_type
-                   : *m_types.at(topic_info.type.substr(0, topic_info.type.find(".")))),
+                ? *sub_type
+                : *m_types.at(topic_info.type.substr(0, topic_info.type.find(".")))),
                 callback,
                 config_or_empty_node(from, config.middleware_configs));
         }
@@ -1098,11 +1098,11 @@ bool Config::configure_services(
                     it->second.service_provider->create_service_proxy(
                 server_info.name,
                 (server_info.type.find(".") == std::string::npos
-                   ? *server_type
-                   : *m_types.at(server_info.type.substr(0, server_info.type.find(".")))),
+                ? *server_type
+                : *m_types.at(server_info.type.substr(0, server_info.type.find(".")))),
                 (server_info.reply_type.find(".") == std::string::npos
-                   ? *server_reply_type
-                   : *m_types.at(server_info.reply_type.substr(0, server_info.reply_type.find(".")))),
+                ? *server_reply_type
+                : *m_types.at(server_info.reply_type.substr(0, server_info.reply_type.find(".")))),
                 config_or_empty_node(server, config.middleware_configs));
         }
         else
@@ -1111,8 +1111,8 @@ bool Config::configure_services(
                     it->second.service_provider->create_service_proxy(
                 server_info.name,
                 (server_info.type.find(".") == std::string::npos
-                   ? *server_type
-                   : *m_types.at(server_info.type.substr(0, server_info.type.find(".")))),
+                ? *server_type
+                : *m_types.at(server_info.type.substr(0, server_info.type.find(".")))),
                 config_or_empty_node(server, config.middleware_configs));
         }
 
@@ -1168,8 +1168,8 @@ bool Config::configure_services(
                     client_info.name,
                     //*client_type,
                     (client_info.type.find(".") == std::string::npos
-                     ? *client_type
-                     : *m_types.at(client_info.type.substr(0, client_info.type.find(".")))),
+                    ? *client_type
+                    : *m_types.at(client_info.type.substr(0, client_info.type.find(".")))),
                     callback,
                     config_or_empty_node(client, config.middleware_configs));
             }
@@ -1181,11 +1181,11 @@ bool Config::configure_services(
                     client_info.name,
                     //*client_type,
                     (client_info.type.find(".") == std::string::npos
-                     ? *client_type
-                     : *m_types.at(client_info.type.substr(0, client_info.type.find(".")))),
+                    ? *client_type
+                    : *m_types.at(client_info.type.substr(0, client_info.type.find(".")))),
                     (client_info.reply_type.find(".") == std::string::npos
-                     ? *client_reply_type
-                     : *m_types.at(client_info.reply_type.substr(0, client_info.reply_type.find(".")))),
+                    ? *client_reply_type
+                    : *m_types.at(client_info.reply_type.substr(0, client_info.reply_type.find(".")))),
                     callback,
                     config_or_empty_node(client, config.middleware_configs));
             }
@@ -1330,7 +1330,7 @@ bool Config::check_service_compatibility(
             {
                 std::cerr << "Remapping error: service reply type ["
                           << topic_info_client.reply_type <<
-                                "] from [" + it_client->first + "] can not be read as type ["
+                    "] from [" + it_client->first + "] can not be read as type ["
                           << topic_info_server.reply_type << "] in [" + it_server->first + "]" << std::endl;
             }
         }

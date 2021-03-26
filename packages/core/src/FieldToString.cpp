@@ -41,8 +41,8 @@ public:
     {
         const std::string& type =
                 (field.type().name().find("std::string") != std::string::npos)
-      ? "std::string"
-      : field.type().name();
+                ? "std::string"
+                : field.type().name();
         const auto it = conversions.find(type);
         if (it != conversions.end())
         {

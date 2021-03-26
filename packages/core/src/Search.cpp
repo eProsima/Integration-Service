@@ -479,7 +479,7 @@ Search::Implementation::GlobalPathInitializer::GlobalPathInitializer()
 
 //==============================================================================
 auto Search::Implementation::GlobalPaths::get_cli_middleware_prefixes(
-        const std::string& middleware) const -> const PathSet&
+        const std::string& middleware) const -> const PathSet &
 {
     return const_cast<Search::Implementation::GlobalPaths&>(*this)
            .get_cli_middleware_prefixes(middleware);

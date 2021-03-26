@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef SOSS__DETAIL__MESSAGEIMPL_HPP
 #define SOSS__DETAIL__MESSAGEIMPL_HPP
@@ -29,86 +29,116 @@ namespace detail {
 
 //==============================================================================
 template<typename T>
-using Raw_t = std::remove_cv_t<std::remove_reference_t<T>>;
+using Raw_t = std::remove_cv_t<std::remove_reference_t<T> >;
 
 } // namespace detail
 
 //==============================================================================
 template<typename T>
-void Field::set(T&& data)
+void Field::set(
+        T&& data)
 {
-  _set(typeid(detail::Raw_t<T>),
-       new detail::Raw_t<T>(std::forward<T>(data)),
-       [](const void* other) -> void*
-          {
-            return new detail::Raw_t<T>(
-                  *static_cast<const detail::Raw_t<T>*>(other));
-          },
-       [](void* expired){ delete static_cast<detail::Raw_t<T>*>(expired); });
+    _set(typeid(detail::Raw_t<T>),
+            new detail::Raw_t<T>(std::forward<T>(data)),
+            [](const void* other) -> void*
+            {
+                return new detail::Raw_t<T>(
+                    *static_cast<const detail::Raw_t<T>*>(other));
+            },
+            [](void* expired)
+            {
+                delete static_cast<detail::Raw_t<T>*>(expired);
+            });
 }
 
 //==============================================================================
 template<typename T>
-T* Field::cast(std::enable_if_t<std::is_integral<T>::value>*)
+T* Field::cast(
+        std::enable_if_t<std::is_integral<T>::value>*)
 {
-  // call the const-qualified overload
-  return const_cast<T*>(const_cast<const Field*>(this)->cast<T>());
+    // call the const-qualified overload
+    return const_cast<T*>(const_cast<const Field*>(this)->cast<T>());
 }
 
 //==============================================================================
 template<typename T>
-T* Field::cast(std::enable_if_t<!std::is_integral<T>::value>*)
+T* Field::cast(
+        std::enable_if_t<!std::is_integral<T>::value>*)
 {
-  return static_cast<T*>(_cast(typeid(detail::Raw_t<T>)));
+    return static_cast<T*>(_cast(typeid(detail::Raw_t<T>)));
 }
 
 //==============================================================================
 template<typename T>
-const T* Field::cast(std::enable_if_t<std::is_integral<T>::value>*) const
+const T* Field::cast(
+        std::enable_if_t<std::is_integral<T>::value>*) const
 {
-  if (type() == typeid(int64_t).name())
-    return _integral_cast<const T, int64_t>();
-  else if (type() == typeid(uint64_t).name())
-    return _integral_cast<const T, uint64_t>();
-  else if (type() == typeid(int32_t).name())
-    return _integral_cast<const T, int32_t>();
-  else if (type() == typeid(uint32_t).name())
-    return _integral_cast<const T, uint32_t>();
-  else if (type() == typeid(int16_t).name())
-    return _integral_cast<const T, int16_t>();
-  else if (type() == typeid(uint16_t).name())
-    return _integral_cast<const T, uint16_t>();
-  else if (type() == typeid(int8_t).name())
-    return _integral_cast<const T, int8_t>();
-  else if (type() == typeid(uint8_t).name())
-    return _integral_cast<const T, uint8_t>();
-  else if (type() == typeid(bool).name())
-    return _integral_cast<const T, bool>();
-  else
-    return nullptr;
+    if (type() == typeid(int64_t).name())
+    {
+        return _integral_cast<const T, int64_t>();
+    }
+    else if (type() == typeid(uint64_t).name())
+    {
+        return _integral_cast<const T, uint64_t>();
+    }
+    else if (type() == typeid(int32_t).name())
+    {
+        return _integral_cast<const T, int32_t>();
+    }
+    else if (type() == typeid(uint32_t).name())
+    {
+        return _integral_cast<const T, uint32_t>();
+    }
+    else if (type() == typeid(int16_t).name())
+    {
+        return _integral_cast<const T, int16_t>();
+    }
+    else if (type() == typeid(uint16_t).name())
+    {
+        return _integral_cast<const T, uint16_t>();
+    }
+    else if (type() == typeid(int8_t).name())
+    {
+        return _integral_cast<const T, int8_t>();
+    }
+    else if (type() == typeid(uint8_t).name())
+    {
+        return _integral_cast<const T, uint8_t>();
+    }
+    else if (type() == typeid(bool).name())
+    {
+        return _integral_cast<const T, bool>();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 //==============================================================================
 template<typename T>
-const T* Field::cast(std::enable_if_t<!std::is_integral<T>::value>*) const
+const T* Field::cast(
+        std::enable_if_t<!std::is_integral<T>::value>*) const
 {
-  return static_cast<const T*>(_cast(typeid(detail::Raw_t<T>)));
+    return static_cast<const T*>(_cast(typeid(detail::Raw_t<T>)));
 }
 
 //==============================================================================
 template<typename T, typename InnerT>
 const T* Field::_integral_cast() const
 {
-  auto* inner = static_cast<const InnerT*>(_cast(typeid(InnerT)));
-  if (!inner)
-    return nullptr;
+    auto* inner = static_cast<const InnerT*>(_cast(typeid(InnerT)));
+    if (!inner)
+    {
+        return nullptr;
+    }
 
-  if (static_cast<T>(*inner) > std::numeric_limits<T>::max()
-    || static_cast<T>(*inner) < std::numeric_limits<T>::min())
-  {
-    return nullptr;
-  }
-  return reinterpret_cast<T*>(inner);
+    if (static_cast<T>(*inner) > std::numeric_limits<T>::max()
+            || static_cast<T>(*inner) < std::numeric_limits<T>::min())
+    {
+        return nullptr;
+    }
+    return reinterpret_cast<T*>(inner);
 }
 
 } // namespace soss

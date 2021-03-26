@@ -33,7 +33,7 @@ TEST(Search, Use_config_file_directory)
     const soss::Search with_config_dir = soss::Search("mock")
             .relative_to_config();
     ASSERT_EQ(with_config_dir.find_file(SEARCH_TEST__MOCK_FILE_NAME),
-        SEARCH_TEST__MOCK_FILE_PATH);
+            SEARCH_TEST__MOCK_FILE_PATH);
 }
 
 int main(
