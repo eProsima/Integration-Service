@@ -5,7 +5,6 @@ Changelog for package soss-core
 2.0.0 (2020-07-23)
 ------------------
 * Fix/int segfault (`#36 <https://github.com/osrf/soss/issues/36>`_) (`#37 <https://github.com/osrf/soss/pull/37>`_)
-* Add middleware configurations parameters for each topic (`#27 <https://github.com/osrf/soss/pull/27>`_)
 * Add Windows compatibility (`#18 <https://github.com/osrf/soss/pull/18>`_)
 * Support both Crystal and Dashing (`#16 <https://github.com/osrf/soss/pull/16>`_)
 * Fix vector-of-bool conversions (`#14 <https://github.com/osrf/soss/pull/14>`_)
