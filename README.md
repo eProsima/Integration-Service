@@ -7,7 +7,7 @@
  * **Finished** `soss-core` -- core libraries and utilities for SOSS
  * **Finished** `soss-rosidl` -- utility for converting rosidl (ROS2) message/service specifications (.msg/.srv files) into middleware translation libraries
  * **Finished** `soss-genmsg` -- utility for converting genmsg (ROS1) message/service specifications (.msg/.srv files) into middleware translation libraries
- * **Finished** `soss-ros1` -- [ROS1 extension for SOSS](https://github.com/eprosima/soss-ros1)
+ * **Finished** `soss-ros1` -- [ROS1 extension for SOSS](https://github.com/eprosima/soss-ros1.git)
  * **Finished** `soss-ros2` -- ROS2 extension for SOSS
  * **Finished** `soss-websocket` -- websocket extension for SOSS
  * **Finished** `soss-mock` -- a mock middleware used for testing extensions of SOSS
