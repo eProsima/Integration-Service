@@ -30,7 +30,8 @@ namespace websocket {
 
 const std::string WebsocketMiddlewareName = "websocket";
 const std::string YamlClientTokenKey = "token";
-const std::string WebsocketUriPrefix = "wss://";
+const std::string WebsocketTlsUriPrefix = "wss://";
+const std::string WebsocketTcpUriPrefix = "ws://";
 const std::string DefaultHostname = "localhost";
 
 const std::string YamlCertAuthoritiesKey = "cert_authorities";
@@ -65,10 +66,12 @@ public:
         // Do nothing
     }
 
-    WsCppEndpoint* configure_endpoint(
+    TlsEndpoint* configure_tls_endpoint(
             const RequiredTypes& /*types*/,
             const YAML::Node& configuration) override
     {
+        _use_security = true;
+        _tls_client = std::make_shared<TlsClient>(TlsClient());
         const int32_t port = parse_port(configuration);
         if (port < 0)
         {
@@ -94,14 +97,42 @@ public:
 
                     return extra_ca;
                 }
-                ();
+                    ();
 
         if (!configure_client(hostname, static_cast<uint16_t>(port), extra_ca))
         {
             return nullptr;
         }
 
-        return &_client;
+        return _tls_client.get();
+    }
+
+    TcpEndpoint* configure_tcp_endpoint(
+            const RequiredTypes& /*types*/,
+            const YAML::Node& configuration) override
+    {
+        _use_security = false;
+        _tcp_client = std::make_shared<TcpClient>(TcpClient());
+        const int32_t port = parse_port(configuration);
+        if (port < 0)
+        {
+            return nullptr;
+        }
+
+        const std::string hostname = parse_hostname(configuration);
+
+        const YAML::Node auth_node = configuration[YamlAuthKey];
+        if (auth_node)
+        {
+            _load_auth_config(auth_node);
+        }
+
+        if (!configure_client(hostname, static_cast<uint16_t>(port), std::vector<std::string>()))
+        {
+            return nullptr;
+        }
+
+        return _tcp_client.get();
     }
 
     bool configure_client(
@@ -109,9 +140,10 @@ public:
             const uint16_t port,
             const std::vector<std::string>& extra_certificate_authorities)
     {
-        _host_uri = WebsocketUriPrefix + hostname + ":" + std::to_string(port);
+        std::string uri_prefix = (_use_security) ? WebsocketTlsUriPrefix : WebsocketTcpUriPrefix;
+        _host_uri = uri_prefix + hostname + ":" + std::to_string(port);
 
-        _context = std::make_shared<WsCppSslContext>(
+        _context = std::make_shared<SslContext>(
             boost::asio::ssl::context::tlsv12);
 
         boost::system::error_code ec;
@@ -183,77 +215,156 @@ public:
             return false;
         }
 
-        _client.clear_access_channels(
+        if (_use_security)
+        {
+            initialize_tls_client();
+        }
+        else
+        {
+            initialize_tcp_client();
+        }
+
+        return true;
+    }
+
+    void initialize_tls_client()
+    {
+        _tls_client->clear_access_channels(
             websocketpp::log::alevel::frame_header |
             websocketpp::log::alevel::frame_payload);
 
-        _client.init_asio();
-        _client.start_perpetual();
+        _tls_client->init_asio();
+        _tls_client->start_perpetual();
 
-        _client.set_message_handler(
-            [&](WsCppWeakConnectPtr handle, WsCppMessagePtr message)
+        _tls_client->set_message_handler(
+            [&](ConnectionHandlePtr handle, TlsMessagePtr message)
             {
-                this->_handle_message(std::move(handle), std::move(message));
+                this->_handle_tls_message(std::move(handle), std::move(message));
             });
 
-        _client.set_close_handler(
-            [&](WsCppWeakConnectPtr handle)
+        _tls_client->set_close_handler(
+            [&](ConnectionHandlePtr handle)
             {
                 this->_handle_close(std::move(handle));
             });
 
-        _client.set_open_handler(
-            [&](WsCppWeakConnectPtr handle)
+        _tls_client->set_open_handler(
+            [&](ConnectionHandlePtr handle)
             {
                 this->_handle_opening(std::move(handle));
             });
 
-        _client.set_fail_handler(
-            [&](WsCppWeakConnectPtr handle)
+        _tls_client->set_fail_handler(
+            [&](ConnectionHandlePtr handle)
             {
                 this->_handle_failed_connection(std::move(handle));
             });
 
-        _client.set_tls_init_handler(
-            [&](WsCppWeakConnectPtr /*handle*/) -> WsCppSslContextPtr
+        _tls_client->set_tls_init_handler(
+            [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
             {
                 return this->_context;
             });
 
-        _client.set_socket_init_handler(
-            [&](WsCppWeakConnectPtr handle, auto& /*sock*/)
+        _tls_client->set_socket_init_handler(
+            [&](ConnectionHandlePtr handle, auto& /*sock*/)
             {
                 this->_handle_socket_init(std::move(handle));
             });
 
         _client_thread = std::thread([&]()
                         {
-                            this->_client.run();
+                            this->_tls_client->run();
                         });
+    }
 
-        return true;
+    void initialize_tcp_client()
+    {
+        _tcp_client->clear_access_channels(
+            websocketpp::log::alevel::frame_header |
+            websocketpp::log::alevel::frame_payload);
+
+        _tcp_client->init_asio();
+        _tcp_client->start_perpetual();
+
+        _tcp_client->set_message_handler(
+            [&](ConnectionHandlePtr handle, TcpMessagePtr message)
+            {
+                this->_handle_tcp_message(std::move(handle), std::move(message));
+            });
+
+        _tcp_client->set_close_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_close(std::move(handle));
+            });
+
+        _tcp_client->set_open_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_opening(std::move(handle));
+            });
+
+        _tcp_client->set_fail_handler(
+            [&](ConnectionHandlePtr handle)
+            {
+                this->_handle_failed_connection(std::move(handle));
+            });
+
+        _tcp_client->set_tcp_init_handler(
+            [&](ConnectionHandlePtr /*handle*/) -> SslContextPtr
+            {
+                return this->_context;
+            });
+
+        _tcp_client->set_socket_init_handler(
+            [&](ConnectionHandlePtr handle, auto& /*sock*/)
+            {
+                this->_handle_socket_init(std::move(handle));
+            });
+
+        _client_thread = std::thread([&]()
+                        {
+                            this->_tcp_client->run();
+                        });
     }
 
     ~Client() override
     {
         _closing_down = true;
 
-        if (_connection && _connection->get_state() == websocketpp::session::state::open)
+        if (_use_security && _tls_connection && _tls_connection->get_state() == websocketpp::session::state::open)
         {
-            try
-            {
-                _connection->close(websocketpp::close::status::normal, "shutdown");
-            }
-            catch (websocketpp::exception& e)
-            {
-                std::cerr <<  "[soss::websocket::Client] Exception ocurred while closing connection" << std::endl;
-            }
+            _tls_connection->close(websocketpp::close::status::normal, "shutdown");
 
             // TODO(MXG) Make these timeout parameters something that can be
             // configured by users
             using namespace std::chrono_literals;
             const auto start_time = std::chrono::steady_clock::now();
-            while (_connection->get_state() != websocketpp::session::state::closed)
+            while (_tls_connection->get_state() != websocketpp::session::state::closed)
+            {
+                // Check for an update every 1/5 of a second
+                std::this_thread::sleep_for(200ms);
+
+                // Wait no more than 10 seconds total.
+                if (std::chrono::steady_clock::now() - start_time > 10s)
+                {
+                    std::cerr << "[soss::websocket::Client] Timed out while waiting for "
+                              << "the remote server to acknowledge the connection "
+                              << "shutdown request" << std::endl;
+                    break;
+                }
+            }
+        }
+        else if (!_use_security && _tcp_connection && _tcp_connection->get_state() == websocketpp::session::state::open)
+        {
+            _tcp_connection->close(websocketpp::close::status::normal, "shutdown");
+
+            // TODO(MXG) Make these timeout parameters something that can be
+            // configured by users
+            using namespace std::chrono_literals;
+            const auto start_time = std::chrono::steady_clock::now();
+            while (_tcp_connection->get_state() != websocketpp::session::state::closed)
             {
                 // Check for an update every 1/5 of a second
                 std::this_thread::sleep_for(200ms);
@@ -271,20 +382,31 @@ public:
 
         if (_client_thread.joinable())
         {
-            _client.stop();
+            if (_use_security)
+            {
+                _tls_client->stop_perpetual();
+                _tls_client->stop();
+            }
+            else
+            {
+                _tcp_client->stop_perpetual();
+                _tcp_client->stop();
+            }
             _client_thread.join();
         }
     }
 
     bool okay() const override
     {
-        return static_cast<bool>(_connection);
+        return (_use_security) ? (_tls_connection != nullptr) : (_tcp_connection != nullptr);
     }
 
     bool spin_once() override
     {
-        const bool attempt_reconnect = (!_connection ||
-                _connection->get_state() == websocketpp::session::state::closed)
+        const bool attempt_reconnect = ((_use_security && !_tls_connection) ||
+                (!_use_security && !_tcp_connection) || (_use_security &&
+                _tls_connection->get_state() == websocketpp::session::state::closed)
+                || (!_use_security && _tcp_connection->get_state() == websocketpp::session::state::closed))
                 && (std::chrono::steady_clock::now() - _last_connection_attempt > 2s);
 
         if (!_has_spun_once || attempt_reconnect)
@@ -292,7 +414,14 @@ public:
             _has_spun_once = true;
 
             websocketpp::lib::error_code ec;
-            _connection = _client.get_connection(_host_uri, ec);
+            if (_use_security)
+            {
+                _tls_connection = _tls_client->get_connection(_host_uri, ec);
+            }
+            else
+            {
+                _tcp_connection = _tcp_client->get_connection(_host_uri, ec);
+            }
             if (ec)
             {
                 std::cerr << "[soss::websocket::Client] Error creating connection "
@@ -300,7 +429,14 @@ public:
             }
             else
             {
-                _client.connect(_connection);
+                if (_use_security)
+                {
+                    _tls_client->connect(_tls_connection);
+                }
+                else
+                {
+                    _tcp_client->connect(_tcp_connection);
+                }
             }
 
             _last_connection_attempt = std::chrono::steady_clock::now();
@@ -308,7 +444,7 @@ public:
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        return static_cast<bool>(_connection);
+        return (_use_security) ? (_tls_connection != nullptr) : (_tcp_connection != nullptr);
     }
 
     void runtime_advertisement(
@@ -317,9 +453,15 @@ public:
             const std::string& id,
             const YAML::Node& configuration) override
     {
-        if (_connection)
+        if (_use_security && _tls_connection)
         {
-            _connection->send(
+            _tls_connection->send(
+                get_encoding().encode_advertise_msg(
+                    topic, message_type.name(), id, configuration));
+        }
+        else if (!_use_security && _tcp_connection)
+        {
+            _tcp_connection->send(
                 get_encoding().encode_advertise_msg(
                     topic, message_type.name(), id, configuration));
         }
@@ -327,75 +469,144 @@ public:
 
 private:
 
-    void _handle_message(
-            const WsCppWeakConnectPtr& handle,
-            const WsCppMessagePtr& message)
+    void _handle_tls_message(
+            const ConnectionHandlePtr& handle,
+            const TlsMessagePtr& message)
     {
-        auto incoming_handle = _client.get_con_from_hdl(handle);
-        if (incoming_handle != _connection)
+        auto incoming_handle = _tls_client->get_con_from_hdl(handle);
+        if (incoming_handle != _tls_connection)
         {
             std::cerr << "[soss::websocket::Client::_handle_message] Unexpected "
                       << "connection is sending messages: [" << incoming_handle.get()
-                      << "] vs [" << _connection.get() << "]" << std::endl;
+                      << "] vs [" << _tls_connection.get() << "]" << std::endl;
             return;
         }
 
         get_encoding().interpret_websocket_msg(
-            message->get_payload(), *this, _connection);
+            message->get_payload(), *this, _tls_connection);
     }
 
-    void _handle_close(
-            const WsCppWeakConnectPtr& handle)
+    void _handle_tcp_message(
+            const ConnectionHandlePtr& handle,
+            const TcpMessagePtr& message)
     {
-        auto closing_connection = _client.get_con_from_hdl(handle);
-
-        if (_closing_down)
+        auto incoming_handle = _tcp_client->get_con_from_hdl(handle);
+        if (incoming_handle != _tcp_connection)
         {
-            std::cout << "[soss::websocket::Client] closing connection to server."
-                      << std::endl;
-        }
-        else
-        {
-            std::cout << "[soss::websocket::Client::_handle_close] The connection to "
-                      << "the server is closing early. [code "
-                      << closing_connection->get_remote_close_code() << "] reason: "
-                      << closing_connection->get_remote_close_reason() << std::endl;
-        }
-
-        notify_connection_closed(closing_connection);
-    }
-
-    void _handle_opening(
-            const WsCppWeakConnectPtr& handle)
-    {
-        auto opened_connection = _client.get_con_from_hdl(handle);
-        if (opened_connection != _connection)
-        {
-            std::cerr << "[soss::websocket::Client::_handle_opening] Unexpected "
-                      << "connection opened: [" << opened_connection.get()
-                      << "] vs [" << _connection.get() << "]" << std::endl;
+            std::cerr << "[soss::websocket::Client::_handle_message] Unexpected "
+                      << "connection is sending messages: [" << incoming_handle.get()
+                      << "] vs [" << _tcp_connection.get() << "]" << std::endl;
             return;
         }
 
-        _connection_failed = false;
-        std::cout << "[soss::websocket::Client] Established connection to host ["
-                  << _host_uri << "]." << std::endl;
+        get_encoding().interpret_websocket_msg(
+            message->get_payload(), *this, _tcp_connection);
+    }
 
-        notify_connection_opened(opened_connection);
-
-        if (_jwt_token)
+    void _handle_close(
+            const ConnectionHandlePtr& handle)
+    {
+        if (_use_security)
         {
-            std::error_code ec;
-            opened_connection->add_subprotocol(*_jwt_token, ec);
-            if (ec)
+            auto closing_connection = _tls_client->get_con_from_hdl(handle);
+
+            if (_closing_down)
             {
-                std::cerr << "[soss::websocket::Client::_handle_opening]: " << ec.message();
+                std::cout << "[soss::websocket::Client] closing connection to server."
+                          << std::endl;
+            }
+            else
+            {
+                std::cout << "[soss::websocket::Client::_handle_close] The connection to "
+                          << "the server is closing early. [code "
+                          << closing_connection->get_remote_close_code() << "] reason: "
+                          << closing_connection->get_remote_close_reason() << std::endl;
+            }
+
+            notify_connection_closed(closing_connection);
+        }
+        else
+        {
+            auto closing_connection = _tcp_client->get_con_from_hdl(handle);
+
+            if (_closing_down)
+            {
+                std::cout << "[soss::websocket::Client] closing connection to server."
+                          << std::endl;
+            }
+            else
+            {
+                std::cout << "[soss::websocket::Client::_handle_close] The connection to "
+                          << "the server is closing early. [code "
+                          << closing_connection->get_remote_close_code() << "] reason: "
+                          << closing_connection->get_remote_close_reason() << std::endl;
+            }
+
+            notify_connection_closed(closing_connection);
+        }
+    }
+
+    void _handle_opening(
+            const ConnectionHandlePtr& handle)
+    {
+        if (_use_security)
+        {
+            auto opened_connection = _tls_client->get_con_from_hdl(handle);
+            if (opened_connection != _tls_connection)
+            {
+                std::cerr << "[soss::websocket::Client::_handle_opening] Unexpected "
+                          << "connection opened: [" << opened_connection.get()
+                          << "] vs [" << _tls_connection.get() << "]" << std::endl;
+                return;
+            }
+
+            _connection_failed = false;
+            std::cout << "[soss::websocket::Client] Established connection to host ["
+                      << _host_uri << "]." << std::endl;
+
+            notify_connection_opened(opened_connection);
+
+            if (_jwt_token)
+            {
+                std::error_code ec;
+                opened_connection->add_subprotocol(*_jwt_token, ec);
+                if (ec)
+                {
+                    std::cerr << "[soss::websocket::Client::_handle_opening]: " << ec.message();
+                }
+            }
+        }
+        else
+        {
+            auto opened_connection = _tcp_client->get_con_from_hdl(handle);
+            if (opened_connection != _tcp_connection)
+            {
+                std::cerr << "[soss::websocket::Client::_handle_opening] Unexpected "
+                          << "connection opened: [" << opened_connection.get()
+                          << "] vs [" << _tcp_connection.get() << "]" << std::endl;
+                return;
+            }
+
+            _connection_failed = false;
+            std::cout << "[soss::websocket::Client] Established connection to host ["
+                      << _host_uri << "]." << std::endl;
+
+            notify_connection_opened(opened_connection);
+
+            if (_jwt_token)
+            {
+                std::error_code ec;
+                opened_connection->add_subprotocol(*_jwt_token, ec);
+                if (ec)
+                {
+                    std::cerr << "[soss::websocket::Client::_handle_opening]: " << ec.message();
+                }
             }
         }
     }
 
     void _handle_failed_connection(
-            const WsCppWeakConnectPtr& /*handle*/)
+            const ConnectionHandlePtr& /*handle*/)
     {
         if (!_connection_failed)
         {
@@ -408,12 +619,20 @@ private:
     }
 
     void _handle_socket_init(
-            const WsCppWeakConnectPtr& handle)
+            const ConnectionHandlePtr& handle)
     {
         if (_jwt_token)
         {
-            auto connection = _client.get_con_from_hdl(handle);
-            connection->add_subprotocol(*_jwt_token);
+            if (_use_security)
+            {
+                auto connection = _tls_client->get_con_from_hdl(handle);
+                connection->add_subprotocol(*_jwt_token);
+            }
+            else
+            {
+                auto connection = _tcp_client->get_con_from_hdl(handle);
+                connection->add_subprotocol(*_jwt_token);
+            }
         }
     }
 
@@ -428,14 +647,17 @@ private:
     }
 
     std::string _host_uri;
-    WsCppConnectionPtr _connection;
-    WsCppClient _client;
+    TlsConnectionPtr _tls_connection;
+    TcpConnectionPtr _tcp_connection;
+    std::shared_ptr<TlsClient> _tls_client;
+    std::shared_ptr<TcpClient> _tcp_client;
+    bool _use_security;
     std::thread _client_thread;
     std::chrono::steady_clock::time_point _last_connection_attempt;
     bool _has_spun_once = false;
     std::atomic_bool _closing_down;
     std::atomic_bool _connection_failed;
-    WsCppSslContextPtr _context;
+    SslContextPtr _context;
     std::unique_ptr<std::string> _jwt_token;
 
 };

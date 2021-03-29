@@ -182,19 +182,28 @@ protected:
     const Encoding& get_encoding() const;
 
     void notify_connection_opened(
-            const WsCppConnectionPtr& connection_handle);
+            const TlsConnectionPtr& connection_handle);
+
+    void notify_connection_opened(
+            const TcpConnectionPtr& connection_handle);
 
     void notify_connection_closed(
             const std::shared_ptr<void>& connection_handle);
 
 private:
 
-    virtual WsCppEndpoint* configure_endpoint(
+    virtual TlsEndpoint* configure_tls_endpoint(
+            const RequiredTypes& types,
+            const YAML::Node& configuration) = 0;
+
+    virtual TcpEndpoint* configure_tcp_endpoint(
             const RequiredTypes& types,
             const YAML::Node& configuration) = 0;
 
     EncodingPtr _encoding;
-    WsCppEndpoint* _endpoint;
+    std::shared_ptr<TlsEndpoint> _tls_endpoint;
+    std::shared_ptr<TcpEndpoint> _tcp_endpoint;
+    bool _use_security;
 
     struct TopicSubscribeInfo
     {

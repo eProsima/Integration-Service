@@ -52,16 +52,18 @@ public:
             std::mutex* mutex,
             std::shared_ptr<std::promise<xtypes::DynamicData> > promise,
             const xtypes::DynamicType& req_type,
-            const xtypes::DynamicData& response)
+            const xtypes::DynamicData& response,
+            const std::string& yaml_file)
         : _mutex(mutex)
         , _promise(std::move(promise))
         , _req_type(req_type)
         , _response(response)
     {
-        YAML::Node configuration = YAML::LoadFile(WEBSOCKET__SERVICES__TEST_CONFIG);
+        YAML::Node configuration = YAML::LoadFile(yaml_file);
         // Gets the port from the websocket client defined on the yaml
         port = configuration["systems"]["ws_client"]["port"].as<int>();
-        if (configuration["security"] && configuration["security"].as<std::string>() == "none")
+        if (configuration["systems"]["ws_client"]["security"] && 
+            configuration["systems"]["ws_client"]["security"].as<std::string>() == "none")
         {
             std::cout << "[soss-websocket-test] Security Disabled -> Using TCP" << std::endl;
             security = false;
@@ -317,10 +319,11 @@ private:
 
 };
 
-TEST(WebSocket, Testing_Services)
+void test(
+    const std::string& yaml_file)
 {
-    // Creates the Mock and Websocket SOSS internal entities needed for the test
-    soss::InstanceHandle handle = soss::run_instance(WEBSOCKET__SERVICES__TEST_CONFIG);
+// Creates the Mock and Websocket SOSS internal entities needed for the test
+    soss::InstanceHandle handle = soss::run_instance(yaml_file);
     ASSERT_TRUE(handle);
 
     // The mock middleware will register both types (request and response) as
@@ -350,7 +353,7 @@ TEST(WebSocket, Testing_Services)
 
     std::thread server_thread([&]()
             {
-                server = new ServerTest(&mutex, server_promise, request_type, response_msg);
+                server = new ServerTest(&mutex, server_promise, request_type, response_msg, yaml_file);
             });
 
     // Wait to ensure that there is enough time for client and server matching
@@ -399,6 +402,18 @@ TEST(WebSocket, Testing_Services)
 
     server_thread.join();
 }
+
+TEST(WebSocket, Testing_Services_Security)
+{
+    test(WEBSOCKET__SERVICES__SECURITY__TEST_CONFIG);
+}
+
+
+TEST(WebSocket, Testing_Services_NoSecurity)
+{
+    test(WEBSOCKET__SERVICES__NOSECURITY__TEST_CONFIG);
+}
+
 
 int main(
         int argc,
