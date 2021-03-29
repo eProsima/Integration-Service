@@ -171,6 +171,8 @@ bool SystemHandle::configure(
         _context = std::make_shared<rclcpp::Context>();
         _context->init(1, context_argv, init_options);
 
+        _executor_options.context = _context;
+
         _node_options = std::make_shared<rclcpp::NodeOptions>();
         _node_options->context(_context);
 
@@ -199,9 +201,7 @@ bool SystemHandle::configure(
     }
 
     // TODO(MXG): Allow the type of executor to be specified by the configuration
-    rclcpp::ExecutorOptions executor_options;
-    executor_options.context = _context;
-    _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>(executor_options);
+    _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>(_executor_options);
 
     auto register_type = [&](const std::string& type_name) -> bool
             {

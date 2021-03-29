@@ -111,6 +111,8 @@ private:
     std::unique_ptr<rclcpp::Executor> _executor;
 #endif // SOSS_ROS2_ROSIDL_GENERATOR_CPP
 
+    rclcpp::ExecutorOptions _executor_options;
+
     std::vector<std::shared_ptr<void> > _subscriptions;
     std::vector<std::shared_ptr<ServiceClient> > _client_proxies;
 };
