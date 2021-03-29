@@ -82,6 +82,13 @@ set_property(
     "ROS2__ROSIDL__BUILD_DIR=\"${CMAKE_BINARY_DIR}/soss/rosidl/ros2/lib\""
   )
 
+find_program(NODERED_EXECUTABLE NAMES node-red node-red@ PATH_SUFFIXES bin)
+
+IF(NODERED_EXECUTABLE)
+    file(WRITE $ENV{HOME}/rosidl_msgs_path.txt "${CMAKE_INSTALL_PREFIX}/lib/soss/ros2/msg\n${CMAKE_INSTALL_PREFIX}/include/soss/rosidl/ros2")
+    message("${CMAKE_INSTALL_PREFIX}/lib/soss/ros2/msg")
+ENDIF()
+
 # Windows dll dependencies installation
 if(WIN32)
   find_file(MOCKDLL NAMES "soss-mock.dll" PATHS "${soss-mock_DIR}" PATH_SUFFIXES "lib" )
