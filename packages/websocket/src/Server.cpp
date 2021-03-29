@@ -452,7 +452,7 @@ public:
                     catch (websocketpp::exception& e)
                     {
                         std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" <<
-                                        std::endl;
+                            std::endl;
                     }
                 }
             }
@@ -491,7 +491,7 @@ public:
                     catch (websocketpp::exception& e)
                     {
                         std::cerr <<  "[soss::websocket::Server] Exception ocurred while closing connection" <<
-                                        std::endl;
+                            std::endl;
                     }
                 }
             }
@@ -695,12 +695,19 @@ private:
                 return false; // a valid soss client should always send exactly 1 subprotocols.
             }
 
-            std::string token = requested_sub_protos[0]; // the subprotocol is the jwt token
-            if (!_jwt_validator->verify(token))
+            const std::string token = requested_sub_protos[0]; // the subprotocol is the jwt token
+
+            try
             {
+                _jwt_validator->verify(token);
+            }
+            catch (const jwt::VerificationError& e)
+            {
+                std::cerr << "[soss::websocket::Server] " << e.what() << std::endl;
                 connection_ptr->set_status(websocketpp::http::status_code::unauthorized);
                 return false;
             }
+
             connection_ptr->select_subprotocol(token);
             return true;
         }
@@ -714,12 +721,19 @@ private:
                 return false; // a valid soss client should always send exactly 1 subprotocols.
             }
 
-            std::string token = requested_sub_protos[0]; // the subprotocol is the jwt token
-            if (!_jwt_validator->verify(token))
+            const std::string token = requested_sub_protos[0]; // the subprotocol is the jwt token
+
+            try
             {
+                _jwt_validator->verify(token);
+            }
+            catch (const jwt::VerificationError& e)
+            {
+                std::cerr << "[soss::websocket::Server] " << e.what() << std::endl;
                 connection_ptr->set_status(websocketpp::http::status_code::unauthorized);
                 return false;
             }
+
             connection_ptr->select_subprotocol(token);
             return true;
         }
