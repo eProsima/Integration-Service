@@ -171,6 +171,8 @@ bool SystemHandle::configure(
         _context = std::make_shared<rclcpp::Context>();
         _context->init(1, context_argv, init_options);
 
+        _executor_options.context = _context;
+
         _node_options = std::make_shared<rclcpp::NodeOptions>();
         _node_options->context(_context);
 
@@ -199,7 +201,7 @@ bool SystemHandle::configure(
     }
 
     // TODO(MXG): Allow the type of executor to be specified by the configuration
-    _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+    _executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>(_executor_options);
 
     auto register_type = [&](const std::string& type_name) -> bool
             {
@@ -273,7 +275,7 @@ bool SystemHandle::okay() const
 {
     if (_node)
     {
-        return rclcpp::ok();
+        return rclcpp::ok(_context);
     }
 
     return false;
@@ -283,7 +285,7 @@ bool SystemHandle::okay() const
 bool SystemHandle::spin_once()
 {
     _executor->spin_node_once(_node, std::chrono::milliseconds(100));
-    return rclcpp::ok();
+    return rclcpp::ok(_context);
 }
 
 //==============================================================================
@@ -292,7 +294,7 @@ SystemHandle::~SystemHandle()
     _subscriptions.clear();
     _client_proxies.clear();
 
-    rclcpp::shutdown();
+    rclcpp::shutdown(_context);
 }
 
 //==============================================================================
