@@ -4,8 +4,11 @@ include(CTest)
 include(${PROJECT_SOURCE_DIR}/../core/cmake/common/gtest.cmake)
 enable_testing()
 
+configure_file(paths.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/paths.cpp)
+
 add_executable(soss-websocket-unit-test
   websocket__jwt.cpp
+  paths.cpp
 )
 
 target_link_libraries(soss-websocket-unit-test

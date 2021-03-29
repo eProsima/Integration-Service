@@ -275,8 +275,8 @@ public:
                     catch (websocketpp::exception e)
                     {
                         std::cout << "[soss-websocket-test] Exception " << e.what() << std::endl;
-                        std::cout << "[soss-websocket-test] Connection status: " <<
-                            (connection->get_state() == websocketpp::session::state::closed) << std::endl;
+                        std::cout << "[soss-websocket-test] Connection status: "
+                                  << (connection->get_state() == websocketpp::session::state::closed) << std::endl;
                     }
                 }
             }
