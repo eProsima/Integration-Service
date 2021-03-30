@@ -17,6 +17,8 @@
 
 #include <is/utils/Log.hpp>
 
+#include <is/config.hpp>
+
 namespace eprosima {
 namespace is {
 namespace utils {
@@ -25,7 +27,11 @@ namespace utils {
 Logger::Logger(
         const std::string& header)
     : _header(header)
-    , _max_level(Level::INFO) // TODO (@jamoralp): make this configurable by the user and by CMAKE_BUILD_TYPE flag
+#ifdef IS_COMPILE_DEBUG
+    , _max_level(Level::DEBUG)
+#else
+    , _max_level(Level::INFO)     // TODO (@jamoralp): make this configurable by the user and by CMAKE_BUILD_TYPE flag
+#endif //  IS_COMPILE_DEBUG
     , _status(CurrentLevelStatus::NON_SPECIFIED)
 {
 }
@@ -176,7 +182,7 @@ std::ostream& Logger::red(
 std::ostream& Logger::green(
         std::ostream& os)
 {
-    return os << "\033[32m";
+    return os << "\033[38;5;28m";
 }
 
 //==============================================================================
