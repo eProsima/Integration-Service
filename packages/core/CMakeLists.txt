@@ -24,6 +24,16 @@ cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 # Build options
 # TODO (@jamoralp): Add here a IS_CORE_BUILD_TESTS option and a IS_CORE_BUILD_EXECUTABLE option.
 ###############################################################################
+option(IS_COMPILE_DEBUG "Compile the Integration Service project in debug mode." OFF)
+
+if(DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE_LOWERCASE ${CMAKE_BUILD_TYPE} CACHE STRING "Build type to lowercase")
+    string(TOLOWER ${CMAKE_BUILD_TYPE_LOWERCASE} CMAKE_BUILD_TYPE_LOWERCASE)
+
+    if(${CMAKE_BUILD_TYPE_LOWERCASE} STREQUAL "debug")
+        set(IS_COMPILE_DEBUG ON)
+    endif()
+endif()
 
 # TODO (@jamoralp): which version do we want to release?
 project(is-core VERSION "0.1.0" LANGUAGES CXX)
@@ -101,6 +111,11 @@ target_compile_options(${PROJECT_NAME}
 include(GNUInstallDirs)
 include(cmake/is_generate_export_header.cmake)
 is_generate_export_header(core)
+
+# Generate the config.hpp file
+configure_file(${PROJECT_SOURCE_DIR}/include/is/config.hpp.in
+  ${PROJECT_BINARY_DIR}/include/is/config.hpp
+  )
 
 # TODO (@jamoralp): check for Windows
 target_link_libraries(${PROJECT_NAME}
