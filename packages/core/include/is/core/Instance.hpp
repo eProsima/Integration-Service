@@ -252,13 +252,13 @@ public:
      * @brief Waits for the instance to stop running, or for the max time to
      *        be reached.
      *
-     * @param[in] max_time Time, in milliseconds, to wait for the instance to finish running.
+     * @param[in] max_time Time, in nanoseconds, to wait for the instance to finish running.
      *
      * @returns A reference to this instance handle, so that it can be chained
      *          with `quit()` or `wait()`.
      */
     InstanceHandle& wait_for(
-            const std::chrono::milliseconds& max_time);
+            const std::chrono::nanoseconds& max_time);
 
     /**
      * @brief Instructs the node handle to quit (this will not occur instantly).
