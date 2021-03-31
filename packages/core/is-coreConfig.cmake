@@ -38,6 +38,7 @@ set(IS_MIDDLEWARE_CONFIG_TEMPLATE "${IS_TEMPLATE_DIR}/middleware-config.cmake.in
 set(IS_IDL_MIDDLEWARE_MIX_CONFIG_TEMPLATE "${IS_TEMPLATE_DIR}/is-idl-middleware-mix-config.cmake.in")
 set(IS_IDL_PKG_MIX_CONFIG_TEMPLATE "${IS_TEMPLATE_DIR}/is-idl-pkg-mix-config.cmake.in")
 set(IS_IDL_MIDDLEWARE_MIX_EXTENSION_TEMPLATE "${IS_TEMPLATE_DIR}/is-idl-middleware-mix-extension.cmake.in")
+set(IS_GTEST_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake/common")
 
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/is_generate_export_header.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/is_install_middleware_plugin.cmake")
