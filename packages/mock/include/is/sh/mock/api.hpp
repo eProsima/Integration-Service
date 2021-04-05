@@ -43,6 +43,8 @@ bool IS_MOCK_API subscribe(
         const std::string& topic,
         MockSubscriptionCallback callback);
 
+// TODO (@jamoralp): mock documentation
+
 /// Request a service
 /// \param[in] retry
 ///     If a non-zero value is given for retry, the mock middleware will
