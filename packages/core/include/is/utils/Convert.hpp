@@ -30,15 +30,15 @@ namespace eprosima {
 namespace is {
 namespace utils {
 
-// TODO(@jamoralp) doxygen this
-
 //==============================================================================
-/// \brief A utility to help with converting data between generic DynamicData
-/// field objects and middleware-specific data structures.
-///
-/// This struct will work as-is on primitive types (a.k.a. arithmetic types or
-/// strings), but you should create a template specialization for converting to
-/// or from any complex class types.
+/**
+ * @brief A utility to help with converting data between generic DynamicData
+ *        field objects and middleware-specific data structures.
+ *
+ *        This struct will work as-is on primitive types (a.k.a. arithmetic types or
+ *        strings), but a template specialization for converting to
+ *        or from any complex class types should be created.
+ */
 template<typename Type>
 struct Convert
 {
@@ -49,20 +49,28 @@ struct Convert
             || std::is_same<std::string, Type>::value
             || std::is_same<std::basic_string<char16_t>, Type>::value;
 
-    /// \brief Move data from a xtype field to a native middleware
-    /// data structure
+    /**
+     * @brief Move data from a xTypes DynamicData field to a native middleware data structure.
+     *
+     * @param[in] from A readable reference to the DynamicData field to be transferred.
+     * @param[in] to The destination native middleware data structure.
+     */
     static void from_xtype_field(
-            const eprosima::xtypes::ReadableDynamicDataRef& from,
+            const xtypes::ReadableDynamicDataRef& from,
             native_type& to)
     {
         to = from.value<native_type>();
     }
 
-    /// \brief Move data from a native middleware data structure to a xtype
-    /// message field.
+    /**
+     * @brief Move data from a native middleware data structure to a xTypes DynamicData field.
+     *
+     * @param[in] from A readable reference to the middleware native data structure to be transferred.
+     * @param[in] to A writable reference to the target DynamicData field.
+     */
     static void to_xtype_field(
             const native_type& from,
-            eprosima::xtypes::WritableDynamicDataRef to)
+            xtypes::WritableDynamicDataRef to)
     {
         static_assert(type_is_primitive,
                 "The is::utils::Convert struct should be specialized for non-primitive types");
@@ -72,26 +80,31 @@ struct Convert
 };
 
 //==============================================================================
-/// \brief A class that helps create a Convert<> specialization for managing some
-/// char issues.
-///
-/// 'rosidl' parse 'char' types as 'signed' values from 'msg' files and
-/// parse as 'unsigned' from idl files. This create a mismatched between types.
-/// This patch solves this issue when the native type differs from the
-/// DynamicData type for this specific case.
-// NOTE: This specialization can be removed safety if rosidl modifies its behaviour.
+/**
+ * @brief A class that helps create a Convert<> specialization for managing some
+ *        char issues.
+ *
+ * @details 'rosidl' parse 'char' types as 'signed' values from 'msg' files and
+ *          parse as 'unsigned' from idl files. This create a mismatched between types.
+ *          This patch solves this issue when the native type differs from the
+ *          DynamicData type for this specific case.
+ *
+ * @note This specialization can be removed safety if rosidl modifies its behaviour.
+ */
 struct CharConvert
 {
     using native_type = char;
 
     static constexpr bool type_is_primitive = true;
 
-    // Documentation inherited from Convert
+    /**
+     * @brief Documentation inherited from Convert.
+     */
     static void from_xtype_field(
-            const eprosima::xtypes::ReadableDynamicDataRef& from,
+            const xtypes::ReadableDynamicDataRef& from,
             native_type& to)
     {
-        if (from.type().kind() == eprosima::xtypes::TypeKind::UINT_8_TYPE)
+        if (from.type().kind() == xtypes::TypeKind::UINT_8_TYPE)
         {
             to = static_cast<native_type>(from.value<uint8_t>());
         }
@@ -101,12 +114,14 @@ struct CharConvert
         }
     }
 
-    // Documentation inherited from Convert
+    /**
+     * @brief Documentation inherited from Convert.
+     */
     static void to_xtype_field(
             const native_type& from,
-            eprosima::xtypes::WritableDynamicDataRef to)
+            xtypes::WritableDynamicDataRef to)
     {
-        if (to.type().kind() == eprosima::xtypes::TypeKind::UINT_8_TYPE)
+        if (to.type().kind() == xtypes::TypeKind::UINT_8_TYPE)
         {
             to.value<uint8_t>(static_cast<uint8_t>(from));
         }
@@ -122,54 +137,60 @@ template<>
 struct Convert<char> : CharConvert { };
 
 //==============================================================================
-/// \brief A class that helps create a Convert<> specialization for compound
-/// message types.
-///
-/// To create a specialization for a native middleware message type, do the
-/// following:
-///
-/// \code
-/// namespace eprosima {
-/// namespace is {
-/// namespace utils {
-///
-/// template<>
-/// struct Convert<native::middleware::type>
-///   : eprosima::is::utils::MessageConvert<
-///        native::middleware::type,
-///       &native::middleware::convert_from_xtype_fnc,
-///       &native::middleware::convert_to_xtype_fnc
-///   > { };
-///
-/// } // namespace utils
-/// } // namespace is
-/// } // namespace eprosima
-/// \endcode
-///
-/// Make sure that this template specialization is put into the eprosima::is::utils
-/// namespace.
+/**
+ * @brief A class that helps create a Convert<> specialization for
+ *        compound message types.
+ *
+ * @details To create a specialization for a native middleware message type,
+ *          do the following:
+ *
+ * @code{.cpp}
+ * namespace eprosima {
+ * namespace is {
+ * namespace utils {
+ *
+ * template<>
+ * struct Convert<native::middleware::type>
+ *     : MessageConvert<
+ *         native::middleware::type,
+ *         &native::middleware::convert_from_xtype_fnc,
+ *         &native::middleware::convert_to_xtype_fnc
+ *     > { };
+ *
+ * } // namespace utils
+ * } // namespace is
+ * } // namespace eprosima
+ * @endcode
+ *
+ * @note Make sure that this template specialization is put into the
+ *       root Integration Service namespace.
+ */
 template<
     typename Type,
-    void (* _from_xtype)(const eprosima::xtypes::ReadableDynamicDataRef& from, Type& to),
-    void (* _to_xtype)(const Type& from, eprosima::xtypes::WritableDynamicDataRef to)>
+    void (* _from_xtype)(const xtypes::ReadableDynamicDataRef& from, Type& to),
+    void (* _to_xtype)(const Type& from, xtypes::WritableDynamicDataRef to)>
 struct MessageConvert
 {
     using native_type = Type;
 
     static constexpr bool type_is_primitive = false;
 
-    // Documentation inherited from Convert
+    /**
+     * @brief Documentation inherited from Convert.
+     */
     static void from_xtype_field(
-            const eprosima::xtypes::ReadableDynamicDataRef& from,
+            const xtypes::ReadableDynamicDataRef& from,
             native_type& to)
     {
         (*_from_xtype)(from, to);
     }
 
-    // Documentation inherited from Convert
+    /**
+     * @brief Documentation inherited from Convert.
+     */
     static void to_xtype_field(
             const native_type& from,
-            eprosima::xtypes::WritableDynamicDataRef to)
+            xtypes::WritableDynamicDataRef to)
     {
         (*_to_xtype)(from, to);
     }
@@ -177,74 +198,91 @@ struct MessageConvert
 };
 
 //==============================================================================
-/// \brief Convenience function for converting a bounded eprosima::xtypes::CollectionType
-/// into a bounded vector of middleware-specific messages.
-///
-/// To make the limit unbounded, set the UpperBound argument to
-/// std::numeric_limits<VectorType::size_type>::max()
+/**
+ * @brief A class that helps create a Convert<> specialization for
+ *        resizable unbounded container message types.
+ *
+ * @details To create a specialization for a native middleware message type,
+ *          do the following:
+ *
+ * @code{.cpp}
+ * namespace eprosima {
+ * namespace is {
+ * namespace utils {
+ *
+ * template<typename ElementType, typename Allocator>
+ * struct Convert<native::middleware::type<ElementType, Allocator> >
+ *     : ResizableUnboundedContainerConvert<
+ *         ElementType,
+ *         native::middleware::type,
+ *         Allocator,
+ *         size_t::upperbound::limit
+ *     > { };
+ *
+ * } // namespace utils
+ * } // namespace is
+ * } // namespace eprosima
+ * @endcode
+ *
+ * @note The UpperBound limit could tipically be calculated as
+ *       `std::numeric_limits<typename native::middleware::type<ElementType, Allocator>::size_type>::max()`.
+ */
 template<
     typename ElementType,
-    typename NativeType,
-    std::size_t UpperBound>
-struct ContainerConvert
+    template <typename, typename> class NativeType,
+    typename Allocator,
+    std::size_t UpperBound,
+    std::enable_if_t<std::is_base_of<std::vector<ElementType, Allocator>, NativeType<ElementType, Allocator> >::value,
+    bool> = true>
+struct ResizableUnboundedContainerConvert
 {
-    using native_type = NativeType;
+    using native_type = NativeType<ElementType, Allocator>;
 
     static constexpr bool type_is_primitive =
             Convert<ElementType>::type_is_primitive;
 
     static void from_xtype(
-            const eprosima::xtypes::ReadableDynamicDataRef& from,
+            const xtypes::ReadableDynamicDataRef& from,
             ElementType& to)
     {
         Convert<ElementType>::from_xtype_field(from, to);
     }
 
-    /// \brief This template specialization is needed to deal with the edge case
-    /// produced by vectors of bools. std::vector<bool> is specialized to be
-    /// implemented as a bitmap, and as a result its operator[] cannot return its
-    /// bool elements by reference. Instead it returns a "reference" proxy object.
+    /**
+     * @brief This template specialization is needed to deal with the edge case
+     *        produced by vectors of bools. std::vector<bool> is specialized to be
+     *        implemented as a bitmap, and as a result its operator[] cannot return its
+     *        bool elements by reference. Instead it returns a "reference" proxy object.
+     */
     static void from_xtype(
-            const eprosima::xtypes::ReadableDynamicDataRef& from,
+            const xtypes::ReadableDynamicDataRef& from,
             std::vector<bool>::reference to)
     {
         bool temp = from;
         to = temp;
     }
 
-    template<typename Container>
-    static void container_resize(
-            Container& vector,
-            std::size_t size)
-    {
-        vector.resize(size);
-    }
-
-    template<template <typename, std::size_t> class Array, typename T, std::size_t N>
-    static void container_resize(
-            Array<T, N>& /*array*/,
-            std::size_t /*size*/)
-    {
-        // Do nothing. Arrays don't need to be resized.
-    }
-
-    // Documentation inherited from Convert
+    /**
+     * @brief Documentation inherited from Convert.
+     */
     static void from_xtype_field(
-            const eprosima::xtypes::ReadableDynamicDataRef& from,
+            const xtypes::ReadableDynamicDataRef& from,
             native_type& to)
     {
-        const std::size_t N = std::min(from.size(), UpperBound);
-        container_resize(to, N);
+        std::size_t N = std::min(from.size(), UpperBound);
+        to.resize(N);
         for (std::size_t i = 0; i < N; ++i)
         {
             from_xtype(from[i], to[i]);
         }
     }
 
-    // Documentation inherited from Convert
+    /**
+     * @brief Documentation inherited from Convert.
+     */
     static void to_xtype_field(
             const native_type& from,
-            eprosima::xtypes::WritableDynamicDataRef to)
+            xtypes::WritableDynamicDataRef to)
     {
         const std::size_t N = std::min(from.size(), UpperBound);
         to.resize(N);
@@ -256,34 +294,195 @@ struct ContainerConvert
 
 };
 
-//==============================================================================
 template<typename ElementType, typename Allocator>
 struct Convert<std::vector<ElementType, Allocator> >
-    : ContainerConvert<
+    : ResizableUnboundedContainerConvert<
         ElementType,
-        std::vector<typename Convert<ElementType>::native_type, Allocator>,
-        std::numeric_limits<typename std::vector<ElementType, Allocator>::size_type>::max()> { };
+        std::vector,
+        Allocator,
+        std::numeric_limits<typename std::vector<ElementType, Allocator>::size_type>::max()>
+{
+};
 
 //==============================================================================
-template<template <typename, std::size_t> class Array, typename ElementType, std::size_t N>
-struct Convert<Array<ElementType, N> >
-    : ContainerConvert<
-        ElementType,
-        Array<typename Convert<ElementType>::native_type, N>,
-        N> { };
+/**
+ * @brief A class that helps create a Convert<> specialization for
+ *        resizable bounded container message types.
+ *
+ * @details To create a specialization for a native middleware message type,
+ *          do the following:
+ *
+ * @code{.cpp}
+ * namespace eprosima {
+ * namespace is {
+ * namespace utils {
+ *
+ * template<typename ElementType, std::size_t N, typename Allocator, template<typename, std::size_t, typename> class VectorImpl>
+ * struct Convert<VectorImpl<ElementType, N, Allocator> >
+ *     : ResizableBoundedContainerConvert<
+ *         ElementType,
+ *         VectorImpl,
+ *         Allocator,
+ *         N
+ *     > { };
+ *
+ * } // namespace utils
+ * } // namespace is
+ * } // namespace eprosima
+ * @endcode
+ */
+template<
+    typename ElementType,
+    template <typename, std::size_t, typename> class NativeType,
+    typename Allocator,
+    std::size_t UpperBound>
+struct ResizableBoundedContainerConvert
+{
+    using native_type = NativeType<ElementType, UpperBound, Allocator>;
 
-//==============================================================================
+    static constexpr bool type_is_primitive =
+            Convert<ElementType>::type_is_primitive;
+
+    static void from_xtype(
+            const xtypes::ReadableDynamicDataRef& from,
+            ElementType& to)
+    {
+        Convert<ElementType>::from_xtype_field(from, to);
+    }
+
+    /**
+     * @brief Documentation inherited from Convert.
+     */
+    static void from_xtype_field(
+            const xtypes::ReadableDynamicDataRef& from,
+            native_type& to)
+    {
+        std::size_t N = std::min(from.size(), UpperBound);
+        to.resize(N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            from_xtype(from[i], to[i]);
+        }
+    }
+
+    /**
+     * @brief Documentation inherited from Convert.
+     */
+    static void to_xtype_field(
+            const native_type& from,
+            xtypes::WritableDynamicDataRef to)
+    {
+        const std::size_t N = std::min(from.size(), UpperBound);
+        to.resize(N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            Convert<ElementType>::to_xtype_field(from[i], to[i]);
+        }
+    }
+
+};
+
 template<typename ElementType, std::size_t N, typename Allocator,
         template<typename, std::size_t, typename> class VectorImpl>
 struct Convert<VectorImpl<ElementType, N, Allocator> >
-    : ContainerConvert<
+    : ResizableBoundedContainerConvert<
         ElementType,
-        VectorImpl<typename Convert<ElementType>::native_type, N, Allocator>,
-        N> { };
+        VectorImpl,
+        Allocator,
+        N>
+{
+};
 
 //==============================================================================
-/// \brief A thread-safe repository for resources to avoid unnecessary
-/// allocations
+/**
+ * @brief A class that helps create a Convert<> specialization for
+ *        non resizable container message types.
+ *
+ * @details To create a specialization for a native middleware message type,
+ *          do the following:
+ *
+ * @code{.cpp}
+ * namespace eprosima {
+ * namespace is {
+ * namespace utils {
+ *
+ * template<template <typename, std::size_t> class Array, typename ElementType, std::size_t N>
+ * struct Convert<Array<ElementType, N> >
+ *     : NonResizableContainerConvert<
+ *         ElementType,
+ *         Array,
+ *         N
+ *     > { };
+ *
+ * } // namespace utils
+ * } // namespace is
+ * } // namespace eprosima
+ * @endcode
+ */
+template<
+    typename ElementType,
+    template <typename, std::size_t> class NativeType,
+    std::size_t UpperBound,
+    std::enable_if_t<std::is_base_of<std::array<ElementType, UpperBound>, NativeType<ElementType, UpperBound> >::value,
+    bool> = true>
+struct NonResizableContainerConvert
+{
+    using native_type = NativeType<ElementType, UpperBound>;
+
+    static constexpr bool type_is_primitive =
+            Convert<ElementType>::type_is_primitive;
+
+    static void from_xtype(
+            const xtypes::ReadableDynamicDataRef& from,
+            ElementType& to)
+    {
+        Convert<ElementType>::from_xtype_field(from, to);
+    }
+
+    /**
+     * @brief Documentation inherited from Convert.
+     */
+    static void from_xtype_field(
+            const xtypes::ReadableDynamicDataRef& from,
+            native_type& to)
+    {
+        std::size_t N = std::min(from.size(), UpperBound);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            from_xtype(from[i], to[i]);
+        }
+    }
+
+    /**
+     * @brief Documentation inherited from Convert.
+     */
+    static void to_xtype_field(
+            const native_type& from,
+            xtypes::WritableDynamicDataRef to)
+    {
+        const std::size_t N = std::min(from.size(), UpperBound);
+        to.resize(N);
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            Convert<ElementType>::to_xtype_field(from[i], to[i]);
+        }
+    }
+
+};
+
+template<template <typename, std::size_t> class Array, typename ElementType, std::size_t N>
+struct Convert<Array<ElementType, N> >
+    : NonResizableContainerConvert<
+        ElementType,
+        Array,
+        N>
+{
+};
+
+//==============================================================================
+/**
+ * @brief A thread-safe repository for resources to avoid unnecessary allocations.
+ */
 template<typename Resource, Resource(* initializerT)()>
 class ResourcePool
 {
