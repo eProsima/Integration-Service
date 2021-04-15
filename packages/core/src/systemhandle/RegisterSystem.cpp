@@ -77,13 +77,13 @@ void Register::insert(
     {
         logger << utils::Logger::Level::DEBUG
                << "A new middleware SystemHandle was added to the SystemHandle "
-               << "factory map: '" << middleware << "'." << std::endl;
+               << "factory map: '" << res.first->first << "'." << std::endl;
     }
     else
     {
         logger << utils::Logger::Level::WARN
                << "Some error occured while trying to add SystemHandle "
-               << "for middleware '" << middleware << "' into the "
+               << "for middleware '" << res.first->first << "' into the "
                << "SystemHandle factory map." << std::endl;
     }
 }
