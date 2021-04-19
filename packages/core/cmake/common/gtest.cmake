@@ -6,7 +6,9 @@ find_package(Threads REQUIRED)
 
 include(ExternalProject)
 
-find_package(GTest REQUIRED)
+find_package(GTest QUIET)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 if (NOT GTest_FOUND)
 
@@ -18,18 +20,20 @@ if (NOT GTest_FOUND)
 
     ExternalProject_Get_Property(gtest source_dir binary_dir)
 
+    add_library(libgtest IMPORTED STATIC GLOBAL)
+    add_dependencies(libgtest gtest)
+
+    set_target_properties(libgtest
+        PROPERTIES
+            "IMPORTED_LOCATION" "${binary_dir}/lib/libgtest.a"
+            "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
+        )
+
+    include_directories("${source_dir}/googletest/include")
+
+    set(IS_GTEST_EXTERNAL_PROJECT ON)
+
 endif()
-
-add_library(libgtest IMPORTED STATIC GLOBAL)
-add_dependencies(libgtest gtest)
-
-set_target_properties(libgtest
-    PROPERTIES
-        "IMPORTED_LOCATION" "${binary_dir}/lib/libgtest.a"
-        "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
-    )
-
-include_directories("${source_dir}/googletest/include")
 
 macro(add_gtest)
     # Parse arguments

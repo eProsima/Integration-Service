@@ -26,6 +26,8 @@
 #include <type_traits>
 #include <vector>
 
+#include <boost/array.hpp>
+
 namespace eprosima {
 namespace is {
 namespace utils {
@@ -423,7 +425,8 @@ template<
     typename ElementType,
     template <typename, std::size_t> class NativeType,
     std::size_t UpperBound,
-    std::enable_if_t<std::is_base_of<std::array<ElementType, UpperBound>, NativeType<ElementType, UpperBound> >::value,
+    std::enable_if_t<std::is_base_of<std::array<ElementType, UpperBound>, NativeType<ElementType, UpperBound> >::value
+    || std::is_base_of<boost::array<ElementType, UpperBound>, NativeType<ElementType, UpperBound> >::value,
     bool> = true>
 struct NonResizableContainerConvert
 {
