@@ -160,6 +160,20 @@ class Config
 public:
 
     /**
+     * @brief Signature for the container used to store the subscription callbacks for a certain
+     *        *Integration Service* instance.
+     */
+    using SubscriptionCallbacks =
+            std::vector<std::unique_ptr<is::TopicSubscriberSystem::SubscriptionCallback> >;
+
+    /**
+     * @brief Signature for the container used to store the service request callbacks for a certain
+     *        *Integration Service* instance.
+     */
+    using RequestCallbacks =
+            std::vector<std::unique_ptr<is::ServiceClientSystem::RequestCallback> >;
+
+    /**
      * @brief Constructor.
      *
      * @param[in] node Parsed representation of the `YAML` configuration file.
@@ -316,10 +330,14 @@ public:
      *            the information for each loaded SystemHandle, in terms of its instance,
      *            supported types and publish/subscribe or client/server capabilities.
      *
+     * @param[in] subscription_callbacks Reference to the map used to store all of the active
+     *            subscription callbacks for a certain SystemHandle instance.
+     *
      * @returns `true` if all the topics were successfully configured, `false` otherwise.
      */
     bool configure_topics(
-            const is::internal::SystemHandleInfoMap& info_map) const;
+            const is::internal::SystemHandleInfoMap& info_map,
+            SubscriptionCallbacks& subscription_callbacks) const;
 
     /**
      * @brief Configures services, according to the specified route, type and remapping
@@ -352,10 +370,14 @@ public:
      *            the information for each loaded SystemHandle, in terms of its instance,
      *            supported types and publish/subscribe and client/server capabilities.
      *
+     * @param[in] request_callbacks Reference to the map used to store all of the active
+     *            request callbacks for a certain SystemHandle instance.
+     *
      * @returns `true` if all the services were successfully configured, `false` otherwise.
      */
     bool configure_services(
-            const is::internal::SystemHandleInfoMap& info_map) const;
+            const is::internal::SystemHandleInfoMap& info_map,
+            RequestCallbacks& request_callbacks) const;
 
     /**
      * @brief Checks compatibility between the TopicInfo registered in the endpoints responsible

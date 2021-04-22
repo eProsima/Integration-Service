@@ -52,9 +52,9 @@ public:
     Channels clients;
     Channels services;
 
+    std::map <std::string, TopicSubscriberSystem::SubscriptionCallback*> is_subscription_callbacks;
 
-    std::map<std::string, TopicSubscriberSystem::SubscriptionCallback> is_subscription_callbacks;
-    std::map<std::string, ServiceClientSystem::RequestCallback> is_request_callbacks;
+    std::map<std::string, ServiceClientSystem::RequestCallback*> is_request_callbacks;
 
     std::map<std::string, std::vector<MockSubscriptionCallback> > mock_subscriptions;
     std::map<std::string, MockServiceCallback> mock_services;
@@ -191,11 +191,11 @@ public:
     bool subscribe(
             const std::string& topic_name,
             const eprosima::xtypes::DynamicType& message_type,
-            SubscriptionCallback callback,
+            TopicSubscriberSystem::SubscriptionCallback* callback,
             const YAML::Node& /*configuration*/) override
     {
         impl().subscriptions[topic_name].insert(message_type.name());
-        impl().is_subscription_callbacks[topic_name] = std::move(callback);
+        impl().is_subscription_callbacks[topic_name] = callback;
         return true;
     }
 
@@ -211,11 +211,11 @@ public:
     bool create_client_proxy(
             const std::string& service_name,
             const eprosima::xtypes::DynamicType& service_type,
-            RequestCallback callback,
+            RequestCallback* callback,
             const YAML::Node& /*configuration*/) override
     {
         impl().clients[service_name].insert(service_type.name());
-        impl().is_request_callbacks[service_name] = std::move(callback);
+        impl().is_request_callbacks[service_name] = callback;
         return true;
     }
 
@@ -248,7 +248,7 @@ bool publish_message(
         return false;
     }
 
-    cb->second(msg);
+    (*cb->second)(msg);
 
     return true;
 }
@@ -295,7 +295,7 @@ public:
                       + topic);
         }
 
-        it->second(request_msg, *this, shared_from_this());
+        (*it->second)(request_msg, *this, shared_from_this());
 
         auto future = promise.get_future().share();
 
@@ -313,7 +313,7 @@ public:
                                         break;
                                     }
 
-                                    it->second(request_msg, *this, shared_from_this());
+                                    (*it->second)(request_msg, *this, shared_from_this());
                                 }
                             });
         }

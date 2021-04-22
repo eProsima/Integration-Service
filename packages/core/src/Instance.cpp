@@ -99,14 +99,14 @@ public:
             return false;
         }
 
-        if (!_configuration.configure_topics(_info_map))
+        if (!_configuration.configure_topics(_info_map, subscription_callbacks_))
         {
             _logger << utils::Logger::Level::ERROR
                     << "Failed to configure topics!" << std::endl;
             return false;
         }
 
-        if (!_configuration.configure_services(_info_map))
+        if (!_configuration.configure_services(_info_map, request_callbacks_))
         {
             _logger << utils::Logger::Level::ERROR
                     << "Failed to configure services!" << std::endl;
@@ -266,6 +266,10 @@ private:
     internal::Config _configuration;
 
     is::internal::SystemHandleInfoMap _info_map;
+
+    internal::Config::SubscriptionCallbacks subscription_callbacks_;
+
+    internal::Config::RequestCallbacks request_callbacks_;
 
     std::atomic_bool _quit;
 

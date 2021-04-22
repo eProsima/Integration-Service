@@ -1205,7 +1205,8 @@ bool Config::load_middlewares(
 
 //==============================================================================
 bool Config::configure_topics(
-        const is::internal::SystemHandleInfoMap& info_map) const
+        const is::internal::SystemHandleInfoMap& info_map,
+        SubscriptionCallbacks& subscription_callbacks) const
 {
     bool valid = true;
 
@@ -1298,7 +1299,7 @@ bool Config::configure_topics(
             else
             {
                 logger << utils::Logger::Level::INFO
-                       << " [" << to << " SystemHandle] Produced a publisher "
+                       << "[" << to << " SystemHandle] Produced a publisher "
                        << "for the topic '" << topic_name << "', with message type '"
                        << topic_config.message_type << "'." << std::endl;
 
@@ -1375,35 +1376,40 @@ bool Config::configure_topics(
              * publish the data received through this subscriber over them.
              * This is the core of the `from/to` route communication process.
              */
-            TopicSubscriberSystem::SubscriptionCallback callback =
-                    [=](const eprosima::xtypes::DynamicData& message)
-                    {
-                        for (const Publication& publication : publications)
+
+            std::unique_ptr<TopicSubscriberSystem::SubscriptionCallback> unique_callback = nullptr;
+
+            unique_callback.reset(new TopicSubscriberSystem::SubscriptionCallback(
+                        [=](const eprosima::xtypes::DynamicData& message)
                         {
-                            if (publication.consistency == eprosima::xtypes::TypeConsistency::EQUALS)
+                            for (const Publication& publication : publications)
                             {
-                                publication.publisher->publish(message);
+                                if (publication.consistency == eprosima::xtypes::TypeConsistency::EQUALS)
+                                {
+                                    publication.publisher->publish(message);
+                                }
+                                else
+                                {
+                                    /**
+                                     * Previously ensured that TypeConsistency is not NONE,
+                                     * thanks to `check_topic_compatibility`.
+                                     */
+                                    eprosima::xtypes::DynamicData compatible_message(
+                                        message, publication.type);
+                                    publication.publisher->publish(compatible_message);
+                                }
                             }
-                            else
-                            {
-                                /**
-                                 * Previously ensured that TypeConsistency is not NONE,
-                                 * thanks to `check_topic_compatibility`.
-                                 */
-                                eprosima::xtypes::DynamicData compatible_message(
-                                    message, publication.type);
-                                publication.publisher->publish(compatible_message);
-                            }
-                        }
-                    };
+                        }));
 
             bool subscribed = it_from->second.topic_subscriber->subscribe(
                 topic_info.name,
                 (topic_info.type.find(".") == std::string::npos
                 ? *sub_type
                 : *_m_types.at(topic_info.type.substr(0, topic_info.type.find(".")))),
-                callback,
+                unique_callback.get(),
                 config_or_empty_node(from, topic_config.middleware_configs));
+
+            subscription_callbacks.emplace_back(std::move(unique_callback));
 
             if (subscribed)
             {
@@ -1429,7 +1435,8 @@ bool Config::configure_topics(
 
 //==============================================================================
 bool Config::configure_services(
-        const is::internal::SystemHandleInfoMap& info_map) const
+        const is::internal::SystemHandleInfoMap& info_map,
+        RequestCallbacks& request_callbacks) const
 {
     bool valid = true;
 
@@ -1579,21 +1586,24 @@ bool Config::configure_services(
              * Defines the RequestCallback that will perform the corresponding call to the service.
              */
             eprosima::xtypes::TypeConsistency consistency = client_type->is_compatible(*server_type);
-            ServiceClientSystem::RequestCallback callback =
-                    [=](const eprosima::xtypes::DynamicData& request,
+
+            std::unique_ptr<ServiceClientSystem::RequestCallback> unique_callback = nullptr;
+            unique_callback.reset(new ServiceClientSystem::RequestCallback(
+                        [=](
+                            const eprosima::xtypes::DynamicData& request,
                             ServiceClient& service_client,
                             const std::shared_ptr<void>& call_handle)
-                    {
-                        if (consistency == eprosima::xtypes::TypeConsistency::EQUALS)
                         {
-                            provider->call_service(request, service_client, call_handle);
-                        }
-                        else //previously ensured that TypeConsistency is not NONE
-                        {
-                            eprosima::xtypes::DynamicData compatible_request(request, *server_type);
-                            provider->call_service(compatible_request, service_client, call_handle);
-                        }
-                    };
+                            if (consistency == eprosima::xtypes::TypeConsistency::EQUALS)
+                            {
+                                provider->call_service(request, service_client, call_handle);
+                            }
+                            else //previously ensured that TypeConsistency is not NONE
+                            {
+                                eprosima::xtypes::DynamicData compatible_request(request, *server_type);
+                                provider->call_service(compatible_request, service_client, call_handle);
+                            }
+                        }));
 
             /**
              * Finally, creates the service client proxy, differentiating between the cases of
@@ -1609,7 +1619,7 @@ bool Config::configure_services(
                     (client_info.type.find(".") == std::string::npos
                     ? *client_type
                     : *_m_types.at(client_info.type.substr(0, client_info.type.find(".")))),
-                    callback,
+                    unique_callback.get(),
                     config_or_empty_node(client, service_config.middleware_configs));
             }
             else
@@ -1626,9 +1636,11 @@ bool Config::configure_services(
                     (client_info.reply_type.find(".") == std::string::npos
                     ? *client_reply_type
                     : *_m_types.at(client_info.reply_type.substr(0, client_info.reply_type.find(".")))),
-                    callback,
+                    unique_callback.get(),
                     config_or_empty_node(client, service_config.middleware_configs));
             }
+
+            request_callbacks.emplace_back(std::move(unique_callback));
 
             if (created_client_proxy)
             {

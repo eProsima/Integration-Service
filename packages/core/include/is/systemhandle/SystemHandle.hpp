@@ -212,7 +212,7 @@ public:
     virtual bool subscribe(
             const std::string& topic_name,
             const xtypes::DynamicType& message_type,
-            SubscriptionCallback callback,
+            SubscriptionCallback* callback,
             const YAML::Node& configuration) = 0;
 };
 
@@ -417,7 +417,7 @@ public:
     virtual bool create_client_proxy(
             const std::string& service_name,
             const xtypes::DynamicType& service_type,
-            RequestCallback callback,
+            RequestCallback* callback,
             const YAML::Node& configuration)
     {
         (void)service_name, (void)service_type, (void)callback, (void)configuration;
@@ -446,7 +446,7 @@ public:
             const std::string& service_name,
             const xtypes::DynamicType& request_type,
             const xtypes::DynamicType& reply_type,
-            RequestCallback callback,
+            RequestCallback* callback,
             const YAML::Node& configuration)
     {
         (void)reply_type;
