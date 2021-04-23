@@ -1414,7 +1414,7 @@ bool Config::configure_topics(
             if (subscribed)
             {
                 logger << utils::Logger::Level::INFO
-                       << " [" << from << " SystemHandle] Subscribed "
+                       << "[" << from << " SystemHandle] Subscribed "
                        << "to topic '" << topic_name << "', with message type '"
                        << topic_config.message_type << "'." << std::endl;
             }
