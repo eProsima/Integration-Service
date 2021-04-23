@@ -52,7 +52,7 @@ public:
     Channels clients;
     Channels services;
 
-    std::map <std::string, TopicSubscriberSystem::SubscriptionCallback*> is_subscription_callbacks;
+    std::map<std::string, TopicSubscriberSystem::SubscriptionCallback*> is_subscription_callbacks;
 
     std::map<std::string, ServiceClientSystem::RequestCallback*> is_request_callbacks;
 
