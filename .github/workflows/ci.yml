@@ -56,7 +56,35 @@ jobs:
           . /opt/ros/noetic/setup.sh
           colcon build --packages-up-to is-fastdds is-ros1-test is-ros2-test is-websocket-test --cmake-args -DBUILD_TESTING=ON --event-handlers console_direct+
 
-      - name: Test
+      - name: Test the Integration Service Core
         run: |
-          . /opt/ros/foxy/setup.sh && . /opt/ros/noetic/setup.sh && . install/local_setup.sh && colcon test --packages-select is-core is-fastdds is-ros1-test is-ros2-test is-websocket-test --event-handlers console_direct+
+          . install/local_setup.sh
+          colcon test --packages-select is-core --event-handlers console_direct+
+          colcon test-result
+
+      - name: Test the Integration Service Fast DDS SystemHandle
+        run: |
+          . /opt/ros/foxy/setup.sh
+          . install/local_setup.sh
+          colcon test --packages-select is-fastdds --event-handlers console_direct+
+          colcon test-result
+
+      - name: Test the Integration Service ROS 1 SystemHandle
+        run: |
+          . /opt/ros/noetic/setup.sh
+          . install/local_setup.sh
+          roscore & colcon test --packages-select is-ros1 is-ros1-test --event-handlers console_direct+
+          colcon test-result
+
+      - name: Test the Integration Service ROS 2 SystemHandle
+        run: |
+          . /opt/ros/foxy/setup.sh
+          . install/local_setup.sh
+          colcon test --packages-select is-ros2 is-ros2-test --event-handlers console_direct+
+          colcon test-result
+
+      - name: Test the Integration Service WebSocket SystemHandle
+        run: |
+          . install/local_setup.sh
+          colcon test --packages-select is-websocket is-websocket-test --event-handlers console_direct+
           colcon test-result
