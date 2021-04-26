@@ -1,5 +1,0 @@
-{
-    "name": "soss-ros2-test",
-    "type": "ros.cmake",
-    "dependencies": ["xtypes", "soss-core", "soss-rosidl", "soss-mock", "soss-ros2", "geometry_msgs", "nav_msgs", "soss_ros2_test_msg"]
-}

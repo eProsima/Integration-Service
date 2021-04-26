@@ -1,0 +1,14 @@
+systems:
+    ros2: { type: ros2 }
+    dds:
+      type: fastdds
+      types-from: ros2
+      participant:
+        file_path: "wan_config.xml"
+        profile_name: is_profile_client
+
+routes:
+    ros2_to_dds: { from: ros2, to: dds }
+
+topics:
+    "turtle1/cmd_vel": { type: "geometry_msgs/Twist", route: ros2_to_dds, remap: { dds: { type: "geometry_msgs/Twist", topic: HelloWorldTopicC } } }

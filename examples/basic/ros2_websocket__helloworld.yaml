@@ -1,0 +1,10 @@
+systems:
+  ros2: { type: ros2 }
+  websocket: { type: websocket_server, host: localhost, port: 80, types-from: ros2 }
+
+routes:
+  websocket_to_ros2: { from: websocket, to: ros2 }
+  ros2_to_websocket: { from: ros2, to: websocket }
+
+topics:
+  helloworld: { type: "std_msgs/String", route: websocket_to_ros2 }

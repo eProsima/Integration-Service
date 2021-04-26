@@ -1,0 +1,18 @@
+types:
+    idls:
+        - >
+            struct HelloWorld {
+                string data;
+            };
+
+systems:
+    dds: { type: fastdds }
+    fiware: { type: fiware, host: "localhost", port: 1026 }
+
+routes:
+    dds_to_fiware: { from: dds, to: fiware }
+    fiware_to_dds: { from: fiware, to: dds }
+
+topics:
+    hello_fiware: { type: "HelloWorld", route: dds_to_fiware, remap: {dds: {topic: HelloWorldTopic}} }
+    hello_dds: { type: "HelloWorld", route: fiware_to_dds, remap: {dds: {topic: HelloWorldTopic}} }

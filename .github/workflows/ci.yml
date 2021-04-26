@@ -36,7 +36,7 @@ jobs:
 
       - name: Download the Integration Service Fast DDS SystemHandle
         run: |
-          git clone https://github.com/eProsima/FastDDS-SH.git -b feature/soss-to-is-migration src/fastdds-sh
+          git clone https://github.com/eProsima/FastDDS-SH.git src/fastdds-sh
 
       - name: Download the Integration Service ROS 1 SystemHandle
         run: |

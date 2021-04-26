@@ -1,0 +1,26 @@
+types:
+    idls:
+        - >
+            struct HelloWorld
+            {
+                string data;
+            };
+
+systems:
+    dds_3:
+        type: fastdds
+        participant:
+            domain_id: 3
+
+    dds_5:
+        type: fastdds
+        participant:
+            domain_id: 5
+
+routes:
+    domain_3_to_5: { from: dds_3, to: dds_5 }
+    domain_5_to_3: { from: dds_5, to: dds_3 }
+
+topics:
+    hello_domain_5: { type: "HelloWorld", route: domain_3_to_5 }
+    hello_domain_3: { type: "HelloWorld", route: domain_5_to_3 }

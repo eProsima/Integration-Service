@@ -1,0 +1,36 @@
+# To test this example in DDS, you should compile and execute the provided HelloWorld
+# example in Fast DDS: https://fast-dds.docs.eprosima.com/en/latest/fastdds/getting_started/simple_app/simple_app.html
+
+types:
+    idls:
+        - >
+            struct HelloWorld
+            {
+                string data;
+            };
+systems:
+    dds: { type: fastdds }
+    ros1: { type: ros1 }
+
+routes:
+    ros1_to_dds: { from: ros1, to: dds }
+    dds_to_ros1: { from: dds, to: ros1 }
+
+topics:
+    hello_dds: {
+        type: "std_msgs/String",
+        route: ros1_to_dds,
+        remap: {
+            dds: { type: HelloWorld, topic: HelloWorldTopic },
+            ros1: { topic: "chatter" }
+        }
+    }
+
+    hello_ros: {
+        type: "std_msgs/String",
+        route: dds_to_ros1,
+        remap: {
+            dds: { type: HelloWorld, topic: HelloWorldTopic },
+            ros1: { topic: "listener" }
+        }
+    }

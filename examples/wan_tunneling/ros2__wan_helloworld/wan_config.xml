@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<profiles>
+    <transport_descriptors>
+        <transport_descriptor>
+            <transport_id>tcp_transport_server</transport_id>
+            <type>TCPv4</type>
+            <listening_ports>
+                <port>5100</port>
+            </listening_ports>
+            <wan_addr>80.80.99.45</wan_addr>
+        </transport_descriptor>
+    </transport_descriptors>
+
+    <transport_descriptors>
+        <transport_descriptor>
+            <transport_id>tcp_transport_client</transport_id>
+            <type>TCPv4</type>
+        </transport_descriptor>
+    </transport_descriptors>
+
+    <participant profile_name="is_profile_server">
+        <rtps>
+            <userTransports>
+                <transport_id>tcp_transport_server</transport_id>
+            </userTransports>
+            <builtin>
+                <discovery_config>
+                    <leaseAnnouncement>
+                        <sec>1</sec>
+                    </leaseAnnouncement>
+                </discovery_config>
+            </builtin>
+            <useBuiltinTransports>false</useBuiltinTransports>
+        </rtps>
+    </participant>
+
+    <participant profile_name="is_profile_client">
+        <rtps>
+            <userTransports>
+                <transport_id>tcp_transport_client</transport_id>
+            </userTransports>
+            <builtin>
+                <initialPeersList>
+                    <locator>
+                        <tcpv4>
+                            <physical_port>5100</physical_port>
+                            <address>80.80.99.45</address>
+                        </tcpv4>
+                    </locator>
+                </initialPeersList>
+                <discovery_config>
+                    <leaseAnnouncement>
+                        <sec>1</sec>
+                    </leaseAnnouncement>
+                </discovery_config>
+            </builtin>
+            <useBuiltinTransports>false</useBuiltinTransports>
+        </rtps>
+    </participant>
+
+</profiles>
