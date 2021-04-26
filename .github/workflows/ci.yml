@@ -1,0 +1,62 @@
+name: CI for eProsima Integration Service
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  integration-service_CI:
+    runs-on: ubuntu-20.04
+    container: ros:foxy
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: src/integration-service
+
+      - name: Download required dependencies
+        run: |
+          apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev
+
+      - name: Download and install ROS 1 Noetic
+        run: |
+          echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
+          apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+          curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
+          apt update && apt install -y ros-noetic-ros-base
+
+      - name: Download xTypes
+        run: |
+          git clone --recursive https://github.com/eProsima/xtypes.git src/xtypes
+
+      - name: Download the Integration Service Fast DDS SystemHandle
+        run: |
+          git clone https://github.com/eProsima/FastDDS-SH.git -b feature/soss-to-is-migration src/fastdds-sh
+
+      - name: Download the Integration Service ROS 1 SystemHandle
+        run: |
+          git clone https://github.com/eProsima/ROS1-SH.git src/ros1-sh
+
+      - name: Download the Integration Service ROS 2 SystemHandle
+        run: |
+          git clone https://github.com/eProsima/ROS2-SH.git src/ros2-sh
+
+      - name: Download the Integration Service WebSocket SystemHandle
+        run: |
+          git clone https://github.com/eProsima/WebSocket-SH.git src/websocket-sh
+
+      - name: Build
+        run: |
+          . /opt/ros/foxy/setup.sh
+          . /opt/ros/noetic/setup.sh
+          colcon build --packages-up-to is-fastdds is-ros1-test is-ros2-test is-websocket-test --cmake-args -DBUILD_TESTING=ON --event-handlers console_direct+
+
+      - name: Test
+        run: |
+          . install/local_setup.sh && colcon test --packages-select is-core is-fastdds is-ros1-test is-ros2-test is-websocket-test --event-handlers console_direct+
+          colcon test-result
