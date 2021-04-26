@@ -1,0 +1,26 @@
+
+set(_@middleware@_${package}_use_templates TRUE)
+
+set(_base_@middleware@_msg_cpp @MESSAGE_SOURCES_BASE@)
+set(_base_@middleware@_msg_hpp @MESSAGE_HEADERS_BASE@)
+set(_base_@middleware@_srv_cpp @SERVICE_SOURCES_BASE@)
+set(_base_@middleware@_srv_hpp @SERVICE_HEADERS_BASE@)
+
+# Add the template directory prefix to the template filenames
+foreach(transport_type msg srv)
+  foreach(file_type cpp hpp)
+
+    set(_@middleware@_${package}_${transport_type}_${file_type})
+
+    foreach(base ${_base_@middleware@_${transport_type}_${file_type}})
+
+      list(
+        APPEND
+        _@middleware@_${package}_${transport_type}_${file_type}
+        "${IS_@_ARG_IDL_TYPE@_@middleware@_TEMPLATE_DIR}/${base}"
+      )
+
+    endforeach()
+
+  endforeach()
+endforeach()

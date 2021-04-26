@@ -1,0 +1,11 @@
+systems:
+  ros1: {type: ros1}
+  ros2: {type: ros2}
+
+routes:
+  ros1_to_ros2: { from: ros1, to: ros2 }
+  ros2_to_ros1: { from: ros2, to: ros1 }
+
+topics:
+  hello_ros2: { type: "std_msgs/String", route: ros1_to_ros2 }
+  hello_ros1: { type: "std_msgs/String", route: ros2_to_ros1, ros1 : { queue_size: 10, latch: false } }

@@ -1,0 +1,13 @@
+systems:
+    ros2_domain0: { type: ros2, domain: 0, node_name: "node_0" }
+    ros2_domain5: { type: ros2, domain: 5, node_name: "node_5" }
+
+routes:
+    domain_0_to_5: { from: ros2_domain0, to: ros2_domain5 }
+
+topics:
+    "turtle1/cmd_vel":
+    {
+        type: "geometry_msgs/Twist",
+        route: domain_0_to_5,
+    }

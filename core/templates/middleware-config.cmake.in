@@ -1,0 +1,34 @@
+# - Config file for the is-@middleware@ package
+#
+# This package helps is middleware interface extensions to link against
+
+cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
+
+if(is-@middleware@_CONFIG_INCLUDED)
+  return()
+endif()
+set(is-@middleware@_CONFIG_INCLUDED TRUE)
+
+if(NOT TARGET is::@plugin_library_target@)
+  include("${CMAKE_CURRENT_LIST_DIR}/@plugin_library_target@-target.cmake")
+endif()
+
+if(NOT TARGET is::@middleware@)
+  add_library(is::@middleware@ INTERFACE IMPORTED)
+  set_target_properties(is::@middleware@ PROPERTIES
+    INTERFACE_LINK_LIBRARIES is::@plugin_library_target@
+  )
+endif()
+
+include(CMakeFindDependencyMacro)
+find_dependency(is-core)
+
+foreach(extension @extensions@)
+  include(${CMAKE_CURRENT_LIST_DIR}/extensions/${extension})
+endforeach()
+
+foreach(dep @_ARG_DEPENDENCIES@)
+  find_package(${dep} REQUIRED)
+endforeach()
+
+set(is-@middleware@_FOUND TRUE)

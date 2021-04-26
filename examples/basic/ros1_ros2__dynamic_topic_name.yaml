@@ -1,0 +1,18 @@
+systems:
+  ros1: {type: ros1}
+  ros2: {type: ros2}
+
+routes:
+  ros1_to_ros2: { from: ros1, to: ros2 }
+  ros2_to_ros1: { from: ros2, to: ros1 }
+
+topics:
+  dynamic_topic_name_ros1:
+    type: "std_msgs/String"
+    route: ros2_to_ros1
+    remap: { ros1: "dynamic/{message.data}" }
+
+  dynamic_topic_name_ros2:
+    type: "std_msgs/String"
+    route: ros1_to_ros2
+    remap: { ros2: "dynamic/{message.data}" }
