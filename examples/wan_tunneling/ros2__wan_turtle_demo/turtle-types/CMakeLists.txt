@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(is_ros2_turtle_types)
 
+if (NOT BUILD_TURTLE_DEMO)
+    return()
+endif()
+
 find_package(ament_cmake REQUIRED)
 find_package(is-core REQUIRED)
 find_package(is-ros2 REQUIRED)
