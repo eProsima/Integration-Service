@@ -27,10 +27,10 @@ cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 option(IS_COMPILE_DEBUG "Compile the Integration Service project in debug mode." OFF)
 
 if(DEFINED CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE_LOWERCASE ${CMAKE_BUILD_TYPE} CACHE STRING "Build type to lowercase")
-    string(TOLOWER ${CMAKE_BUILD_TYPE_LOWERCASE} CMAKE_BUILD_TYPE_LOWERCASE)
+    set(CMAKE_BUILD_TYPE_LOWERCASE "" CACHE STRING "Build type to lowercase")
+    string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWERCASE)
 
-    if(${CMAKE_BUILD_TYPE_LOWERCASE} STREQUAL "debug")
+    if("${CMAKE_BUILD_TYPE_LOWERCASE}" STREQUAL "debug")
         set(IS_COMPILE_DEBUG ON)
     endif()
 endif()
