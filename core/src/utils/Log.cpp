@@ -48,7 +48,7 @@ Logger& Logger::operator <<(
             {
                 std::cout << bold_on
                           << red
-                          << "[Integration Service][ERROR]"
+                          << "[Integration Service][ERROR] "
                           << reset;
                 break;
             }
@@ -71,7 +71,7 @@ Logger& Logger::operator <<(
             {
                 std::cout << bold_on
                           << green
-                          << "[Integration Service][DEBUG]"
+                          << "[Integration Service][DEBUG] "
                           << reset;
                 break;
             }
