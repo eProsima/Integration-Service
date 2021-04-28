@@ -246,5 +246,4 @@ install(
 ###############################################################################
 # Add the Integration Service Core testing subdirectory
 ###############################################################################
-#TODO (@jamoralp): test compilation conditioned to future option IS_BUILD_TESTS
 add_subdirectory(test)
