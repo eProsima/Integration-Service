@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
 ###############################################################################
 # Build options
-# TODO (@jamoralp): Add here a IS_CORE_BUILD_TESTS option and a IS_CORE_BUILD_EXECUTABLE option.
+# TODO (@jamoralp): Add BUILD_EXECUTABLE option.
 ###############################################################################
 option(IS_COMPILE_DEBUG "Compile the Integration Service project in debug mode." OFF)
 
@@ -246,5 +246,5 @@ install(
 ###############################################################################
 # Add the Integration Service Core testing subdirectory
 ###############################################################################
-#TODO (@jamoralp): test compilation conditioned to future option IS_BUILD_TESTS
+include(CTest)
 add_subdirectory(test)
