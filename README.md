@@ -1,9 +1,14 @@
 <a href="http://www.eprosima.com"><img src="docs/images/logo.png" hspace="8" vspace="2" height="100" ></a>
 
+
 # Introduction
+[![Integration Service CI Status](https://github.com/eProsima/Integration-Service/actions/workflows/ci.yml/badge.svg)](https://github.com/eProsima/Integration-Service/actions)
 
 The *eProsima Integration Service* is a tool that enables communication among
 an arbitrary number of protocols that speak different languages.
+
+This project was born as a conjoint effort between [Open Robotics](https://www.openrobotics.org/)
+and [eProsima](https://eprosima.com), which nowadays is in charge of maintaining it.
 
 ![Integration Service general architecture](docs/images/general-architecture.png)
 
@@ -52,7 +57,7 @@ while others are optional. Both of them are listed and reviewed here:
 * `systems`: Specifies which middlewares will be involved in the communication process, allowing
   to configure them individually.
 
-  Some configuration parameters are common for all the supported middlewares within the
+  Some configuration parameters are common for all of the supported middlewares within the
   *Integration Service* ecosystem; while others are specific of each middleware. To see which
   parameters can be tuned for a certain middleware, please refer to its dedicated *README* section
   in its corresponding GitHub repository, under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
@@ -101,8 +106,8 @@ while others are optional. Both of them are listed and reviewed here:
   publication-subscription paradigm. The topics must be specified in the form of a YAML dictionary,
   meaning that two topics can never have the same name.
 
-  For each topic, some configuration parameters are common for all the supported middlewares within the
-  *Integration Service* ecosystem; while others are specific of each middleware. To see which
+  For each topic, some configuration parameters are common for all of the supported middlewares within the
+  *Integration Service* ecosystem; while others are specific of each middleware. To see which topic
   parameters can be tuned for a certain middleware, please refer to its dedicated *README* section
   in its corresponding GitHub repository, under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
 
@@ -127,16 +132,68 @@ while others are optional. Both of them are listed and reviewed here:
   * `route`: Communication bridge to be used for this topic. The route must be defined in the
     `routes` section described above.
 
-  * `remap`: Allows to establish equivalences between the **topic** name and its **type**,
+  * `remap` *(optional):* Allows to establish equivalences between the **topic** name and its **type**,
     for any of the middlewares defined in the used route. This means that the topic name and
     type name may vary in each user application endpoint that is desired to be bridged, but,
     as long as the type definition is equivalent, the communication will still be possible.
 
+* `services`: Allows to define which services will the *Integration Service* be in charge of
+  bridging, according to the service `routes` listed above for the client/server paradigm.
+  The services must be specified in the form of a YAML dictionary, meaning that two services can
+  never have the same name.
+
+  For each service, some configuration parameters are common for all of the supported middlewares
+  within the *Integration Service* ecosystem; while others are specific of each middleware.
+  To see which parameters can be tuned for a certain middleware in the context of a service
+  definition, please refer to its dedicated *README* section in its corresponding GitHub repository,
+  under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
+
+  ```yaml
+  services:
+    serve_foo:
+      request_type: FooRequest
+      reply_type: FooReply
+      route: foo_server
+    serve_bar:
+      request_type: BarRequest
+      reply_type: BarReply
+      route: bar_server
+      remap: { foo: { request_type: bar_req, reply_type: bar_repl, topic: ServeBar } }
+  ```
+
+  <details>
+  <summary>Regarding the common parameters, they differ slightly from the `topics` section: <i>(click to expand)</i></summary>
+
+  * `type` *(optional):* The service type. As services usually are composed of a request and a reply, this field
+    only makes sense for those services which consist solely of a request action with no reply.
+    Usually, within the `services` context, it is not used at all.
+
+  * `request_type`: The service request type. This type must be defined in the `types` section of the YAML
+    configuration file, or must be loaded by means of a `Middleware Interface Extension` file
+    by any of the middleware plugins involved in the communication process.
+
+  * `reply_type`: The service reply type. This type must be defined in the `types` section of the YAML
+    configuration file, or must be loaded by means of a `Middleware Interface Extension` file
+    by any of the middleware plugins involved in the communication process.
+
+  * `route`: Communication bridge to be used for this service. The route must be defined in the
+    `routes` section described above and must be a route composed of a *server* and one or more *clients*.
+
+  * `remap` *(optional):* Allows to establish equivalences between the **service** name (*topic* field) and its
+    **request and reply type**, for any of the middlewares defined in the used route.
+    This means that the service name and types names may vary in each user application endpoint
+    that is desired to be bridged, but, as long as the type definition is equivalent, the communication will still be possible.
+
+Finally, it is important to remark that both the `services` and `topics` sections are not mandatory,
+meaning that an *Integration Service* instance can be launched only for publication/subscription
+bridging, or solely to perform service bridging communications. However, they are not exclusive,
+and can coexist under the same YAML configuration file.
 # Supported middlewares and protocols
 
+All of the currently protocols are integrated within the *Integration Service*
+by means of dedicated plugins or *System Handles*.
 
-These protocols are integrated within the *Integration Service* by means of dedicated plugins or *System Handles*.
-Currently, we support the following protocols:
+The complete *System Handle* set for the *Integration Service* is currently composed of the following protocols:
 
 * [Fast DDS System Handle](https://github.com/eProsima/FastDDS-SH)
 
@@ -146,5 +203,26 @@ Currently, we support the following protocols:
 
 * [WebSocket System Handle](https://github.com/eProsima/WebSocket-SH)
 
-For more information, please refer to the [official documentation](https://integration-service.docs.eprosima.com/en/latest/).
+Additionally, creating a *System Handle* is a relatively easy task and allows to integrate a new
+protocol to the *Integration System* infrastructure, meaning that this new protocol will automatically
+be granted with communication capabilities with all of the middlewares and protocols aforementioned above.
 
+For more information, please refer to the [System Handle creation tutorial](<!-- TODO: ADD LINK TO SH CREATION TUTORIAL -->) available in the official documentation.
+
+# Documentation
+
+The official documentation for the *eProsima Integration Service* is hosted on Read the Docs,
+and composed of the following sections:
+
+* [Index](<!-- TODO: ADD LINK -->)
+* [Installation manual](<!-- TODO: ADD LINK -->)
+* [User manual](<!-- TODO: ADD LINK -->)
+* [User manual](<!-- TODO: ADD LINK -->)
+
+# License
+
+This repository is open-sourced under the *Apache-2.0* license. See the [LICENSE](LICENSE) file for more details.
+
+# Getting help
+
+If you need support you can reach us by mail at `support@eProsima.com` or by phone at `+34 91 804 34 48`.
