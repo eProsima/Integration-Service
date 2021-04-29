@@ -1,4 +1,4 @@
-<a href="http://www.eprosima.com"><img src="docs/images/logo.png" hspace="8" vspace="2" height="150" ></a>
+<a href="http://www.eprosima.com"><img src="docs/images/logo.png" hspace="8" vspace="2" height="100" ></a>
 ## Introduction
 
 The *eProsima Integration Service* is a tool that enables communication among
