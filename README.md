@@ -268,7 +268,7 @@ and composed of the following sections:
 * [Index](<!-- TODO: ADD LINK -->)
 * [Installation manual](<!-- TODO: ADD LINK -->)
 * [User manual](<!-- TODO: ADD LINK -->)
-* [User manual](<!-- TODO: ADD LINK -->)
+* [Use cases and examples](<!-- TODO: ADD LINK -->)
 
 # License
 
