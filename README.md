@@ -43,9 +43,9 @@ while others are optional. Both of them are listed and reviewed here:
   <details>
   <summary>Several parameters can be configured within this section: <i>(click to expand)</i></summary>
     
-    * `idls`: List of IDL type definitions which can be directly embedded within the configuration file. If the *types* section is defined, this subsection is mandatory.
+    * `idls`: List of IDL type definitions which can be directly embedded within the configuration file. If the *types* section is defined, this subsection is mandatory. The type can be entirely defined within the YAML file, or can be included from a preexisting IDL file; for the latter, the system path containing where the IDL file is stored must be placed into the `paths` section.
 
-    * `paths` *(optional):* Using this parameter, an existing IDL type written in a separate file can be included within the *Integration Service* types set definition.
+    * `paths` *(optional):* Using this parameter, an existing IDL type written in a separate file can be included within the *Integration Service* types section. If the IDL path is not listed here, the `#include` preprocessor directive will fail. 
 
   </details>
 
