@@ -27,15 +27,14 @@ while others are optional. Both of them are listed and reviewed here:
   Handles* already include static type definitions and its corresponding transformation libraries
   (*Middleware Interface Extenion* or *mix* files).
 
-  Several parameters can be configured within this section:
-    <div style="background-color: #ebd791; border-radius: 8px;">
-    <ul style="padding-top: 10px; padding-bottom: 10px;">
-    <li style="color: black;"><p style="color: black"><b>idls: </b>List of IDL type definitions which can be directly embedded within the configuration file. If the <i>types</i> section is defined, this subsection is mandatory.</p>
-    </li>
-    <li style="color: black;"><p style="color: black"><b>paths</b> <i>(optional):</i>  Using this parameter, an existing IDL type written in a separate file can be included within the <i>Integration Service</i> types set definition.</p>
-    </li>
-    </ul>
-    </div>
+  <details>
+  <summary>Several parameters can be configured within this section:</summary>
+    
+    * `idls`: List of IDL type definitions which can be directly embedded within the configuration file. If the *types* section is defined, this subsection is mandatory.
+
+    * `paths` *(optional):* Using this parameter, an existing IDL type written in a separate file can be included within the *Integration Service* types set definition.
+
+  </details>
 
 * `systems`: Specifies which middlewares will be involved in the communication process, allowing
   to configure them individually.
