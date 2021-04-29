@@ -26,9 +26,22 @@ while others are optional. Both of them are listed and reviewed here:
   This field can be omitted for certain *Integration Service* instances where one or more *System
   Handles* already include static type definitions and its corresponding transformation libraries
   (*Middleware Interface Extenion* or *mix* files).
+  
+  ```yaml
+    types:
+      idls:
+        - >
+          #include <GoodbyeWorld.idl>
+          struct HelloWorld
+          {
+            string data;
+            GoodbyeWorld bye;
+          };
+      paths: [ "/home/idl_files/goodbyeworld/" ]
+  ```
 
   <details>
-  <summary>Several parameters can be configured within this section:</summary>
+  <summary>Several parameters can be configured within this section: <i>(click to expand)</i></summary>
     
     * `idls`: List of IDL type definitions which can be directly embedded within the configuration file. If the *types* section is defined, this subsection is mandatory.
 
