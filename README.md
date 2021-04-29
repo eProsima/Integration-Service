@@ -67,7 +67,7 @@ while others are optional. Both of them are listed and reviewed here:
   ```
 
   <details>
-  <summary>In relation to the common parameters, their behaviour is explained in the following section: <i>(click to expand)</i></summary>:
+  <summary>In relation to the common parameters, their behaviour is explained in the following section: <i>(click to expand)</i></summary>
 
     * `type`: Middleware or protocol kind. Up to this time, supported middlewares are: *Fast DDS*, *ROS1*, *ROS2* and *WebSocket*.
 
