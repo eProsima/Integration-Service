@@ -26,7 +26,7 @@ while others are optional. Both of them are listed and reviewed here:
   This field can be omitted for certain *Integration Service* instances where one or more *System
   Handles* already include static type definitions and its corresponding transformation libraries
   (*Middleware Interface Extenion* or *mix* files).
-  
+
   ```yaml
     types:
       idls:
@@ -42,10 +42,10 @@ while others are optional. Both of them are listed and reviewed here:
 
   <details>
   <summary>Several parameters can be configured within this section: <i>(click to expand)</i></summary>
-    
+
     * `idls`: List of IDL type definitions which can be directly embedded within the configuration file. If the *types* section is defined, this subsection is mandatory. The type can be entirely defined within the YAML file, or can be included from a preexisting IDL file; for the latter, the system path containing where the IDL file is stored must be placed into the `paths` section.
 
-    * `paths` *(optional):* Using this parameter, an existing IDL type written in a separate file can be included within the *Integration Service* types section. If the IDL path is not listed here, the `#include` preprocessor directive will fail. 
+    * `paths` *(optional):* Using this parameter, an existing IDL type written in a separate file can be included within the *Integration Service* types section. If the IDL path is not listed here, the `#include` preprocessor directive will fail.
 
   </details>
 
@@ -56,14 +56,11 @@ while others are optional. Both of them are listed and reviewed here:
   *Integration Service* ecosystem; while others are specific of each middleware. To see which
   parameters can be tuned for a certain middleware, please refer to its dedicated *README* section
   in its corresponding GitHub repository, under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
-  
+
   ```yaml
     systems:
-      foo:
-        type: foo
-      bar:
-        type: bar
-        types-from: foo
+      foo: { type: foo }
+      bar: { type: bar, types-from: foo }
   ```
 
   <details>
@@ -81,8 +78,17 @@ while others are optional. Both of them are listed and reviewed here:
 
   At least one route is required; otherwise, running the *Integration Service* would be useless.
 
-  There are two kinds of routes, corresponding to publication/subscription paradigm and
-  server/client paradigm:
+  ```yaml
+    routes:
+      foo_to_bar: { from: foo, to: bar }
+      bar_to_foo: { from: bar, to: foo }
+      foo_server: { server: foo, clients: bar }
+      bar_server: { server: bar, clients: foo }
+  ```
+
+  <details>
+  <summary>There are two kinds of routes, corresponding to publication/subscription paradigm and
+  server/client paradigm: <i>(click to expand)</i></summary>
 
   * `from` - `to`: Define a route **from** one (or several) system(s) **to** one (or several) system(s).
     A `from` system expects to connect a publisher user application with a `to` system subscription user application.
@@ -100,7 +106,19 @@ while others are optional. Both of them are listed and reviewed here:
   parameters can be tuned for a certain middleware, please refer to its dedicated *README* section
   in its corresponding GitHub repository, under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
 
-  In relation to the common parameters, their behaviour is explained below:
+  ```yaml
+    topics:
+      hello_foo:
+        type: HelloWorld
+        route: bar_to_foo
+      hello_bar:
+        type: HelloWorld
+        route: foo_to_bar
+        remap: { bar: { topic: HelloBar } }
+  ```
+
+  <details>
+  <summary>In relation to the common parameters, their behaviour is explained below: <i>(click to expand)</i></summary>
 
   * `type`: The topic type name. This type must be defined in the `types` section of the YAML
     configuration file, or must be loaded by means of a `Middleware Interface Extension` file
