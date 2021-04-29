@@ -1,5 +1,5 @@
 <a href="http://www.eprosima.com"><img src="docs/images/logo.png" hspace="8" vspace="2" height="100" ></a>
-## Introduction
+# Introduction
 
 The *eProsima Integration Service* is a tool that enables communication among
 an arbitrary number of protocols that speak different languages.
@@ -11,7 +11,7 @@ These languages are translated to a common representation language which follows
 (**xTypes**) standard by the [OMG](https://www.omg.org/); specifically, the *Integration Service*
 bases its intercommunication abilities on eProsima's open source implementation
 for the *xTypes* protocol, that is, [eProsima xTypes](https://github.com/eProsima/xtypes).
-## Configuration
+# Configuration
 
 The *Integration Service* can be configured during runtime by means of a dedicated **YAML** file.
 This YAML configuration file must follow a specific syntax, this meaning that several sections
@@ -28,10 +28,10 @@ while others are optional. Both of them are listed and reviewed here:
 
   Several parameters can be configured within this section:
 
-  * `idls`: List of IDL type definitions which can be directly embedded within the configuration file.
+  * > `idls`: List of IDL type definitions which can be directly embedded within the configuration file.
     If the `types` section is defined, this subsection is mandatory.
 
-  * `paths` *(optional)*: Using this parameter, an existing IDL type written in a separate file
+  * > `paths` *(optional)*: Using this parameter, an existing IDL type written in a separate file
     can be included within the *Integration Service* types set definition.
 
 * `systems`: Specifies which middlewares will be involved in the communication process, allowing
@@ -86,12 +86,12 @@ while others are optional. Both of them are listed and reviewed here:
   * `route`: Communication bridge to be used for this topic. The route must be defined in the
     `routes` section described above.
 
-  * remap: Allows to establish equivalences between the **topic** name and its **type**,
+  * `remap`: Allows to establish equivalences between the **topic** name and its **type**,
     for any of the middlewares defined in the used route. This means that the topic name and
     type name may vary in each user application endpoint that is desired to be bridged, but,
     as long as the type definition is equivalent, the communication will still be possible.
 
-## Supported middlewares and protocols
+# Supported middlewares and protocols
 
 
 These protocols are integrated within the *Integration Service* by means of dedicated plugins or *System Handles*.
