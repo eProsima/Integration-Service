@@ -1,4 +1,5 @@
 <a href="http://www.eprosima.com"><img src="docs/images/logo.png" hspace="8" vspace="2" height="100" ></a>
+
 # Introduction
 
 The *eProsima Integration Service* is a tool that enables communication among
@@ -12,6 +13,14 @@ These languages are translated to a common representation language which follows
 bases its intercommunication abilities on eProsima's open source implementation
 for the *xTypes* protocol, that is, [eProsima xTypes](https://github.com/eProsima/xtypes).
 # Configuration
+
+<style>
+.yamlparam {
+    border: 2px solid red;
+    background-color: grey;
+    text-align: left;
+}
+</style>
 
 The *Integration Service* can be configured during runtime by means of a dedicated **YAML** file.
 This YAML configuration file must follow a specific syntax, this meaning that several sections
@@ -27,12 +36,14 @@ while others are optional. Both of them are listed and reviewed here:
   (*Middleware Interface Extenion* or *mix* files).
 
   Several parameters can be configured within this section:
-
-  * > `idls`: List of IDL type definitions which can be directly embedded within the configuration file.
-    If the `types` section is defined, this subsection is mandatory.
-
-  * > `paths` *(optional)*: Using this parameter, an existing IDL type written in a separate file
-    can be included within the *Integration Service* types set definition.
+    <div style="background-color: #ebd791; border-radius: 8px;">
+    <ul style="padding-top: 10px; padding-bottom: 10px;">
+    <li style="color: black;"><p style="color: black"><b>idls: </b>List of IDL type definitions which can be directly embedded within the configuration file. If the <i>types</i> section is defined, this subsection is mandatory.</p>
+    </li>
+    <li style="color: black;"><p style="color: black"><b>paths</b> <i>(optional):</i>  Using this parameter, an existing IDL type written in a separate file can be included within the <i>Integration Service</i> types set definition.</p>
+    </li>
+    </ul>
+    </div>
 
 * `systems`: Specifies which middlewares will be involved in the communication process, allowing
   to configure them individually.
