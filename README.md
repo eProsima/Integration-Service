@@ -237,7 +237,9 @@ There are several CMake flags, which can be tuned during the configuration step:
   ```
 
 * `BUILD_EXAMPLES`: Allows to compile utilities that can be used for the several provided
-  usage examples for the *Integration Service*, located under the [examples](examples/) folder:
+  usage examples for the *Integration Service*, located under the [examples/utils](examples/utils/) folder.
+  This applications can be used to test the *Integration Service* with some of the provided YAML configuration
+  files, which are located under the [examples/basic](examples/basic) directory:
 
   ```bash
   ~/is_ws$ colcon build --cmake-args -DBUILD_EXAMPLES=ON
