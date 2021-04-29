@@ -14,14 +14,6 @@ bases its intercommunication abilities on eProsima's open source implementation
 for the *xTypes* protocol, that is, [eProsima xTypes](https://github.com/eProsima/xtypes).
 # Configuration
 
-<style>
-.yamlparam {
-    border: 2px solid red;
-    background-color: grey;
-    text-align: left;
-}
-</style>
-
 The *Integration Service* can be configured during runtime by means of a dedicated **YAML** file.
 This YAML configuration file must follow a specific syntax, this meaning that several sections
 are required for it to sucessfully configure and launch an *Integration Service* instance;
