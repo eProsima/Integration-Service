@@ -56,16 +56,24 @@ while others are optional. Both of them are listed and reviewed here:
   *Integration Service* ecosystem; while others are specific of each middleware. To see which
   parameters can be tuned for a certain middleware, please refer to its dedicated *README* section
   in its corresponding GitHub repository, under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
+  
+  ```yaml
+    systems:
+      foo:
+        type: foo
+      bar:
+        type: bar
+        types-from: foo
+  ```
 
-  In relation to the common parameters, their behaviour is explained below:
+  <details>
+  <summary>In relation to the common parameters, their behaviour is explained in the following section: <i>(click to expand)</i></summary>:
 
-  * `type`: Middleware or protocol kind. Up to this time, supported middlewares are:
-    *Fast DDS*, *ROS1*, *ROS2* and *WebSocket*.
+    * `type`: Middleware or protocol kind. Up to this time, supported middlewares are: *Fast DDS*, *ROS1*, *ROS2* and *WebSocket*.
 
-  * `types-from` *(optional)*: Allows certain system to inherit types from another system.
-    This allows to use types defined within *Middleware Interface Extension* files for a certain
-    middleware onto another middleware, without the need of duplicating them or writing an
-    equivalent IDL type for the rest of systems.
+    * `types-from` *(optional)*: Allows certain system to inherit types from another system. This allows to use types defined within *Middleware Interface Extension* files for a certain middleware onto another middleware, without the need of duplicating them or writing an equivalent IDL type for the rest of systems.
+
+  </details>
 
 * `routes`: In this section, a list must be introduced, corresponding to which bridges the
   *Integration Service* needs to create in order to fulfill the intercommunication requirements
