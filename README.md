@@ -4,7 +4,7 @@
 # Introduction
 [![Integration Service CI Status](https://github.com/eProsima/Integration-Service/actions/workflows/ci.yml/badge.svg)](https://github.com/eProsima/Integration-Service/actions)
 
-The *eProsima Integration Service* is a tool that enables communication among
+The *eProsima Integration Service* is a **Linux** tool that enables communication among
 an arbitrary number of protocols that speak different languages.
 
 This project was born as a conjoint effort between [Open Robotics](https://www.openrobotics.org/)
@@ -17,6 +17,17 @@ These languages are translated to a common representation language which follows
 (**xTypes**) standard by the [OMG](https://www.omg.org/); specifically, the *Integration Service*
 bases its intercommunication abilities on eProsima's open source implementation
 for the *xTypes* protocol, that is, [eProsima xTypes](https://github.com/eProsima/xtypes).
+
+The *Integration Service* can be launched using the command line, as follows:
+
+```
+~/is_ws$ integration-service <filename>.yaml
+```
+
+It is recommended to use [colcon](https://colcon.readthedocs.io/en/released/) to build and install the
+*Integration Service* executable and its associated middleware plugins; for more information, please refer to
+the `Installation manual` section in the [documentation](#documentation) chapter of this document.
+
 # Configuration
 
 The *Integration Service* can be configured during runtime by means of a dedicated **YAML** file.
@@ -101,6 +112,7 @@ while others are optional. Both of them are listed and reviewed here:
   * `server` - `clients`: Define a request/reply architecture in which there are one or several
     **clients** which forward request petitions and listen to responses coming from a **server**,
     which must be unique for each service route.
+  </details>
 
 * `topics`: Specifies the topics exchanged over the `routes` listed above corresponding to the
   publication-subscription paradigm. The topics must be specified in the form of a YAML dictionary,
@@ -136,6 +148,7 @@ while others are optional. Both of them are listed and reviewed here:
     for any of the middlewares defined in the used route. This means that the topic name and
     type name may vary in each user application endpoint that is desired to be bridged, but,
     as long as the type definition is equivalent, the communication will still be possible.
+  </details>
 
 * `services`: Allows to define which services will the *Integration Service* be in charge of
   bridging, according to the service `routes` listed above for the client/server paradigm.
@@ -183,6 +196,7 @@ while others are optional. Both of them are listed and reviewed here:
     **request and reply type**, for any of the middlewares defined in the used route.
     This means that the service name and types names may vary in each user application endpoint
     that is desired to be bridged, but, as long as the type definition is equivalent, the communication will still be possible.
+  </details>
 
 Finally, it is important to remark that both the `services` and `topics` sections are not mandatory,
 meaning that an *Integration Service* instance can be launched only for publication/subscription
@@ -208,6 +222,43 @@ protocol to the *Integration System* infrastructure, meaning that this new proto
 be granted with communication capabilities with all of the middlewares and protocols aforementioned above.
 
 For more information, please refer to the [System Handle creation tutorial](<!-- TODO: ADD LINK TO SH CREATION TUTORIAL -->) available in the official documentation.
+
+# Compilation flags
+
+The *Integration Service* uses `CMake` for building and packaging the project.
+There are several CMake flags, which can be tuned during the configuration step:
+
+* `BUILD_TESTS`: When compiling the *Integration Service*, use the `-DBUILD_TESTS=ON` CMake option
+  to compile both the unitary tests for the [Integration Service Core](core/) and the unitary
+  and integration tests for all of the *System Handles* present in the *colcon* workspace:
+
+  ```bash
+  ~/is_ws$ colcon build --cmake-args -DBUILD_TESTS=ON
+  ```
+
+* `BUILD_EXAMPLES`: Allows to compile utilities that can be used for the several provided
+  usage examples for the *Integration Service*, located under the [examples](examples/) folder:
+
+  ```bash
+  ~/is_ws$ colcon build --cmake-args -DBUILD_EXAMPLES=ON
+  ```
+  <details>
+  <summary>Up to this time, the following user application examples are available: <i>(click to expand)</i></summary>
+
+  * `DDSHelloWorld`: A simple publisher/subscriber application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
+    It publishes or subscribes to a simple string topic, named *HelloWorldTopic*. To compile it,
+    besides using colcon, the following commands can be executed:
+
+    ```bash
+    ~/is_ws$ cd examples/utils/DDSHelloWorld
+    ~/is_ws/examples/utils/DDSHelloWorld$ mkdir build
+    ~/is_ws/examples/utils/DDSHelloWorld$ cd build
+    ~/is_ws/examples/utils/DDSHelloWorld/build$ cmake ..
+    ~/is_ws/examples/utils/DDSHelloWorld$ make
+    ```
+    The resulting executable will be located within the `build` folder, and named `DDSHelloWorld`.
+
+  </details>
 
 # Documentation
 
