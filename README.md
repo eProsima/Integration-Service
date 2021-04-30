@@ -41,7 +41,7 @@ while others are optional. Both of them are listed and reviewed here:
 
   This field can be omitted for certain *Integration Service* instances where one or more *System
   Handles* already include static type definitions and its corresponding transformation libraries
-  (*Middleware Interface Extenion* or *mix* files).
+  (*Middleware Interface Extension* or *mix* files).
 
   ```yaml
     types:
@@ -59,9 +59,9 @@ while others are optional. Both of them are listed and reviewed here:
   <details>
   <summary>Several parameters can be configured within this section: <i>(click to expand)</i></summary>
 
-    * `idls`: List of IDL type definitions which can be directly embedded within the configuration file. If the *types* section is defined, this subsection is mandatory. The type can be entirely defined within the YAML file, or can be included from a preexisting IDL file; for the latter, the system path containing where the IDL file is stored must be placed into the `paths` section.
+    * `idls`: List of IDL type definitions that can be directly embedded within the configuration file. If the *types* section is defined, this subsection is mandatory. The type can be entirely defined within the YAML file, or can be included from a preexisting IDL file; for the latter, the system path containing where the IDL file is stored must be placed into the `paths` section.
 
-    * `paths` *(optional):* Using this parameter, an existing IDL type written in a separate file can be included within the *Integration Service* types section. If the IDL path is not listed here, the `#include` preprocessor directive will fail.
+    * `paths` *(optional):* Using this parameter, an existing IDL type written in a separate file can be included within the *Integration Service* types section. If the IDL path is not listed here, the previous subsection `#include` preprocessor directive will fail.
 
   </details>
 
@@ -82,7 +82,8 @@ while others are optional. Both of them are listed and reviewed here:
   <details>
   <summary>In relation to the common parameters, their behaviour is explained in the following section: <i>(click to expand)</i></summary>
 
-    * `type`: Middleware or protocol kind. Up to this time, supported middlewares are: *Fast DDS*, *ROS1*, *ROS2* and *WebSocket*.
+    * `type`: Middleware or protocol kind. Up to this time, supported middlewares are: *fastdds*, *ros1*, *ros2*, *websocket_server* and *websocket_client*. There is also a *mock* option, mostly used
+    for testing purposes.
 
     * `types-from` *(optional)*: Allows certain system to inherit types from another system. This allows to use types defined within *Middleware Interface Extension* files for a certain middleware onto another middleware, without the need of duplicating them or writing an equivalent IDL type for the rest of systems.
 
