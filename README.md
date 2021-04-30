@@ -259,8 +259,8 @@ There are several CMake flags, which can be tuned during the configuration step:
   <summary>Up to this time, the following user application examples are available: <i>(click to expand)</i></summary>
 
   * `DDSHelloWorld`: A simple publisher/subscriber application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
-    It publishes or subscribes to a simple string topic, named *HelloWorldTopic*. To compile it,
-    besides the `colcon` option, the following commands could be executed as an alternative:
+    It publishes or subscribes to a simple string topic, named *HelloWorldTopic*.
+    As an alternative to `colcon`, in order to compile the `DDSHelloWorld` example, the following commands can be executed:
 
     ```bash
     ~/is_ws$ cd examples/utils/DDSHelloWorld
