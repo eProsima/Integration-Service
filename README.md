@@ -4,21 +4,31 @@
 # Introduction
 [![Integration Service CI Status](https://github.com/eProsima/Integration-Service/actions/workflows/ci.yml/badge.svg)](https://github.com/eProsima/Integration-Service/actions)
 
-The *eProsima Integration Service* is a **Linux** tool that enables communication among
+*eProsima Integration Service* is a **Linux** tool that enables communication among
 an arbitrary number of protocols that speak different languages.
 
-This project was born as a conjoint effort between [Open Robotics](https://www.openrobotics.org/)
+This project was born as a joint effort between [Open Robotics](https://www.openrobotics.org/)
 and [eProsima](https://eprosima.com), which nowadays is in charge of maintaining it.
 
 ![Integration Service general architecture](docs/images/general-architecture.png)
 
-These languages are translated to a common representation language which follows the
+It works by translating the languages of the systems involved to a common representation language that follows the
 [Extensible and Dynamic Topic Types for DDS](https://www.omg.org/spec/DDS-XTypes/About-DDS-XTypes/)
-(**xTypes**) standard by the [OMG](https://www.omg.org/); specifically, the *Integration Service*
+(**xTypes**) standard by the [OMG](https://www.omg.org/); specifically, *Integration Service*
 bases its intercommunication abilities on eProsima's open source implementation
 for the *xTypes* protocol, that is, [eProsima xTypes](https://github.com/eProsima/xtypes).
 
-The *Integration Service* can be launched using the command line, as follows:
+The translation is mediated by system-specific plugins, or **System Handles**,
+allowing to communicate the middlewares involved with the **core**, that speaks the common *xTypes* representation language.
+This is carried out by interfacing each entity in the user application with a complimentary
+"mirror" proxy in the *System Handle* (SH), able to communicate with the former according to either a pub/sub or service pattern. Namely:
+
+* A subscriber in the SH for a publisher in the user app.
+* A publisher in the SH for a subscriber in the user app.
+* A client in the SH for a server in the user app.
+* A server in the SH for a client in the user app.
+
+*Integration Service* can be launched using the command line, as follows:
 
 ```
 ~/is_ws$ integration-service <filename>.yaml
@@ -31,16 +41,16 @@ the `Installation manual` section in the [documentation](#documentation) chapter
 # Configuration
 
 The *Integration Service* can be configured during runtime by means of a dedicated **YAML** file.
-This YAML configuration file must follow a specific syntax, this meaning that several sections
-are required for it to sucessfully configure and launch an *Integration Service* instance;
-while others are optional. Both of them are listed and reviewed here:
+This configuration file must follow a specific syntax, meaning that it is required that a number
+of compulsory section are opportunely filled for it to successfully configure and launch an *Integration Service* instance,
+while others are optional. Both kinds are listed and reviewed below:
 
 * `types` *(optional)*: It allows to list the [IDL](https://www.omg.org/spec/IDL/4.2/About-IDL/)
   types used by the *Integration Service* to later define the topics and services types which will
   take part in the communication process.
 
   This field can be omitted for certain *Integration Service* instances where one or more *System
-  Handles* already include static type definitions and its corresponding transformation libraries
+  Handles* already include(s) static type definitions and their corresponding transformation libraries
   (*Middleware Interface Extension* or *mix* files).
 
   ```yaml
@@ -59,7 +69,7 @@ while others are optional. Both of them are listed and reviewed here:
   <details>
   <summary>Several parameters can be configured within this section: <i>(click to expand)</i></summary>
 
-    * `idls`: List of IDL type definitions that can be directly embedded within the configuration file. If the *types* section is defined, this subsection is mandatory. The type can be entirely defined within the YAML file, or can be included from a preexisting IDL file; for the latter, the system path containing where the IDL file is stored must be placed into the `paths` section.
+    * `idls`: List of IDL type definitions that can be directly embedded within the configuration file. If the `types` section is defined, this subsection is mandatory. The type can be entirely defined within the YAML file, or can be included from a preexisting IDL file; for the latter, the system path containing where the IDL file is stored must be placed into the `paths` section described below.
 
     * `paths` *(optional):* Using this parameter, an existing IDL type written in a separate file can be included within the *Integration Service* types section. If the IDL path is not listed here, the previous subsection `#include` preprocessor directive will fail.
 
@@ -68,9 +78,9 @@ while others are optional. Both of them are listed and reviewed here:
 * `systems`: Specifies which middlewares will be involved in the communication process, allowing
   to configure them individually.
 
-  Some configuration parameters are common for all of the supported middlewares within the
+  Some configuration parameters are common for all the supported middlewares within the
   *Integration Service* ecosystem; while others are specific of each middleware. To see which
-  parameters can be tuned for a certain middleware, please refer to its dedicated *README* section
+  parameters are relevant for a certain middleware, please refer to its dedicated *README* section
   in its corresponding GitHub repository, under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
 
   ```yaml
@@ -82,18 +92,18 @@ while others are optional. Both of them are listed and reviewed here:
   <details>
   <summary>In relation to the common parameters, their behaviour is explained in the following section: <i>(click to expand)</i></summary>
 
-    * `type`: Middleware or protocol kind. Up to this time, supported middlewares are: *fastdds*, *ros1*, *ros2*, *websocket_server* and *websocket_client*. There is also a *mock* option, mostly used
+    * `type`: Middleware or protocol kind. To date, the supported middlewares are: *fastdds*, *ros1*, *ros2*, *websocket_server* and *websocket_client*. There is also a *mock* option, mostly used
     for testing purposes.
 
-    * `types-from` *(optional)*: Allows certain system to inherit types from another system. This allows to use types defined within *Middleware Interface Extension* files for a certain middleware onto another middleware, without the need of duplicating them or writing an equivalent IDL type for the rest of systems.
+    * `types-from` *(optional)*: Configures the types inheritance from a given system to another. This allows to use types defined within *Middleware Interface Extension* files for a certain middleware into another middleware, without the need of duplicating them or writing an equivalent IDL type for the rest of systems.
 
   </details>
 
-* `routes`: In this section, a list must be introduced, corresponding to which bridges the
-  *Integration Service* needs to create in order to fulfill the intercommunication requirements
+* `routes`: In this section, a list must be introduced, corresponding to which bridges are needed by
+  *Integration Service* in order to fulfill the intercommunication requirements
   for a specific use case.
 
-  At least one route is required; otherwise, running the *Integration Service* would be useless.
+  At least one route is required; otherwise, running *Integration Service* would be useless.
 
   ```yaml
     routes:
@@ -104,13 +114,13 @@ while others are optional. Both of them are listed and reviewed here:
   ```
 
   <details>
-  <summary>There are two kinds of routes, corresponding to publication/subscription paradigm and
+  <summary>There are two kinds of routes, corresponding to either a publication/subscription paradigm or a
   server/client paradigm: <i>(click to expand)</i></summary>
 
-  * `from` - `to`: Define a route **from** one (or several) system(s) **to** one (or several) system(s).
-    A `from` system expects to connect a publisher user application with a `to` system subscription user application.
+  * `from` - `to`: Defines a route **from** one (or several) system(s) **to** one (or several) system(s).
+    A `from` system expects to connect a publisher user application with a subscriber user application in the `to` system.
 
-  * `server` - `clients`: Define a request/reply architecture in which there are one or several
+  * `server` - `clients`: Defines a route for a request/reply architecture in which there are one or several
     **clients** which forward request petitions and listen to responses coming from a **server**,
     which must be unique for each service route.
   </details>
@@ -119,9 +129,9 @@ while others are optional. Both of them are listed and reviewed here:
   publication-subscription paradigm. The topics must be specified in the form of a YAML dictionary,
   meaning that two topics can never have the same name.
 
-  For each topic, some configuration parameters are common for all of the supported middlewares within the
+  For each topic, some configuration parameters are common for all the supported middlewares within the
   *Integration Service* ecosystem; while others are specific of each middleware. To see which topic
-  parameters can be tuned for a certain middleware, please refer to its dedicated *README* section
+  parameters must/can be configured for a certain middleware, please refer to its dedicated *README* section
   in its corresponding GitHub repository, under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
 
   ```yaml
@@ -139,26 +149,26 @@ while others are optional. Both of them are listed and reviewed here:
   <summary>In relation to the common parameters, their behaviour is explained below: <i>(click to expand)</i></summary>
 
   * `type`: The topic type name. This type must be defined in the `types` section of the YAML
-    configuration file, or must be loaded by means of a `Middleware Interface Extension` file
-    by any of the middleware plugins involved in the communication process.
+    configuration file, or it must be loaded by means of a `Middleware Interface Extension` file
+    by any of the middleware plugins or *System Handles* involved in the communication process.
 
-  * `route`: Communication bridge to be used for this topic. The route must be defined in the
+  * `route`: Communication bridge to be used for this topic. The route must be one among those defined in the
     `routes` section described above.
 
   * `remap` *(optional):* Allows to establish equivalences between the **topic** name and its **type**,
     for any of the middlewares defined in the used route. This means that the topic name and
-    type name may vary in each user application endpoint that is desired to be bridged, but,
+    type name may vary in each user application endpoint that is being bridged, but,
     as long as the type definition is equivalent, the communication will still be possible.
   </details>
 
-* `services`: Allows to define which services will the *Integration Service* be in charge of
+* `services`: Allows to define the services that *Integration Service* will be in charge of
   bridging, according to the service `routes` listed above for the client/server paradigm.
   The services must be specified in the form of a YAML dictionary, meaning that two services can
   never have the same name.
 
   For each service, some configuration parameters are common for all of the supported middlewares
   within the *Integration Service* ecosystem; while others are specific of each middleware.
-  To see which parameters can be tuned for a certain middleware in the context of a service
+  To see which parameters must/can be configured for a certain middleware in the context of a service
   definition, please refer to its dedicated *README* section in its corresponding GitHub repository,
   under the name of `https://github.com/eProsima/<MW_NAME>-SH`.
 
@@ -184,31 +194,31 @@ while others are optional. Both of them are listed and reviewed here:
 
   * `request_type`: The service request type. This type must be defined in the `types` section of the YAML
     configuration file, or must be loaded by means of a `Middleware Interface Extension` file
-    by any of the middleware plugins involved in the communication process.
+    by any of the middleware plugins, or *System Handles*, involved in the communication process.
 
   * `reply_type`: The service reply type. This type must be defined in the `types` section of the YAML
     configuration file, or must be loaded by means of a `Middleware Interface Extension` file
-    by any of the middleware plugins involved in the communication process.
+    by any of the middleware plugins, or *System Handles*, involved in the communication process.
 
-  * `route`: Communication bridge to be used for this service. The route must be defined in the
+  * `route`: Communication bridge to be used for this service. The route must be one among those defined in the
     `routes` section described above and must be a route composed of a *server* and one or more *clients*.
 
   * `remap` *(optional):* Allows to establish equivalences between the **service** name (*topic* field) and its
     **request and reply type**, for any of the middlewares defined in the used route.
     This means that the service name and types names may vary in each user application endpoint
-    that is desired to be bridged, but, as long as the type definition is equivalent, the communication will still be possible.
+    that is being bridged, but, as long as the type definition is equivalent, the communication will still be possible.
   </details>
 
 Finally, it is important to remark that both the `services` and `topics` sections are not mandatory,
 meaning that an *Integration Service* instance can be launched only for publication/subscription
-bridging, or solely to perform service bridging communications. However, they are not exclusive,
+bridging, or solely to perform service type communications. However, they are not exclusive,
 and can coexist under the same YAML configuration file.
 # Supported middlewares and protocols
 
-All of the currently protocols are integrated within the *Integration Service*
-by means of dedicated plugins or *System Handles*.
+All of the currently protocols are integrated within *Integration Service*
+by means of dedicated plugins or **System Handles**.
 
-The complete *System Handle* set for the *Integration Service* is currently composed of the following protocols:
+The complete *System Handles* set for the *Integration Service* is currently composed of the following protocols:
 
 * [Fast DDS System Handle](https://github.com/eProsima/FastDDS-SH)
 
@@ -219,27 +229,27 @@ The complete *System Handle* set for the *Integration Service* is currently comp
 * [WebSocket System Handle](https://github.com/eProsima/WebSocket-SH)
 
 Additionally, creating a *System Handle* is a relatively easy task and allows to integrate a new
-protocol to the *Integration System* infrastructure, meaning that this new protocol will automatically
-be granted with communication capabilities with all of the middlewares and protocols aforementioned above.
+protocol to the *Integration System* infrastructure, which automatically provides the new protocol
+with communication capabilities towards all of the aforementioned middlewares and protocols.
 
 For more information, please refer to the [System Handle creation tutorial](<!-- TODO: ADD LINK TO SH CREATION TUTORIAL -->) available in the official documentation.
 
 # Compilation flags
 
-The *Integration Service* uses `CMake` for building and packaging the project.
+*Integration Service* uses `CMake` for building and packaging the project.
 There are several CMake flags, which can be tuned during the configuration step:
 
-* `BUILD_TESTS`: When compiling the *Integration Service*, use the `-DBUILD_TESTS=ON` CMake option
+* `BUILD_TESTS`: When compiling *Integration Service*, use the `-DBUILD_TESTS=ON` CMake option
   to compile both the unitary tests for the [Integration Service Core](core/) and the unitary
-  and integration tests for all of the *System Handles* present in the *colcon* workspace:
+  and integration tests for all the *System Handles* present in the `colcon` workspace:
 
   ```bash
   ~/is_ws$ colcon build --cmake-args -DBUILD_TESTS=ON
   ```
 
 * `BUILD_EXAMPLES`: Allows to compile utilities that can be used for the several provided
-  usage examples for the *Integration Service*, located under the [examples/utils](examples/utils/) folder.
-  This applications can be used to test the *Integration Service* with some of the provided YAML configuration
+  usage examples for *Integration Service*, located under the [examples/utils](examples/utils/) folder.
+  These applications can be used to test the *Integration Service* with some of the provided YAML configuration
   files, which are located under the [examples/basic](examples/basic) directory:
 
   ```bash
@@ -250,7 +260,7 @@ There are several CMake flags, which can be tuned during the configuration step:
 
   * `DDSHelloWorld`: A simple publisher/subscriber application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
     It publishes or subscribes to a simple string topic, named *HelloWorldTopic*. To compile it,
-    besides using colcon, the following commands can be executed:
+    besides the `colcon` option, the following commands could be executed as an alternative:
 
     ```bash
     ~/is_ws$ cd examples/utils/DDSHelloWorld
@@ -259,14 +269,14 @@ There are several CMake flags, which can be tuned during the configuration step:
     ~/is_ws/examples/utils/DDSHelloWorld/build$ cmake ..
     ~/is_ws/examples/utils/DDSHelloWorld$ make
     ```
-    The resulting executable will be located within the `build` folder, and named `DDSHelloWorld`.
+    The resulting executable will be located inside the `build` folder, and named `DDSHelloWorld`.
 
   </details>
 
 # Documentation
 
-The official documentation for the *eProsima Integration Service* is hosted on Read the Docs,
-and composed of the following sections:
+The official documentation for *eProsima Integration Service* is hosted by Read the Docs,
+and comprises the following sections:
 
 * [Index](<!-- TODO: ADD LINK -->)
 * [Installation manual](<!-- TODO: ADD LINK -->)
