@@ -73,7 +73,11 @@ T get_json_float(
             return -std::numeric_limits<T>::quiet_NaN();
         }
     }
-    throw false;
+
+    std::ostringstream err;
+    err << "[json_to_xtypes] Calling 'get_json_float' for a non-float value: '"
+        << json_node << "'" << std::endl;
+    throw std::exception(err.str());
 }
 
 bool json_to_xtypes(
@@ -158,7 +162,9 @@ bool json_to_xtypes(
                     json_stack.top())));
                     break;
                 default:
-                    throw false;
+                    std::ostringstream err;
+                    err << "[json_to_xtypes] Unsupported type: '" << xtypes_node.type().name() << "'";
+                    throw std::exception(err.str());
             }
         });
 }
@@ -271,7 +277,9 @@ bool xtypes_to_json(
                     add_json_float<double>(xtypes_node, json_stack.top());
                     break;
                 default:
-                    throw false;
+                    std::ostringstream err;
+                    err << "[xtypes_to_json] Unsupported type: '" << xtypes_node.type().name() << "'";
+                    throw std::exception(err.str());
             }
         });
 }
