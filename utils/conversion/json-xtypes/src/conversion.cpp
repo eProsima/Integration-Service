@@ -26,6 +26,30 @@ namespace eprosima {
 namespace is {
 namespace json_xtypes {
 
+class UnsupportedType : public std::exception
+{
+public:
+
+    UnsupportedType(
+            const std::string& type_name)
+        : std::exception()
+        , type_name_(type_name)
+    {
+    }
+
+    const char* what() const noexcept
+    {
+        std::ostringstream err;
+        err << "[json-xtypes] Unsupported type '" << type_name_ << "'";
+        return err.str().c_str();
+    }
+
+private:
+
+    const std::string type_name_;
+
+};
+
 Json::const_reference access_json_value(
         const xtypes::DynamicData::ReadableNode& xtypes_node,
         Json::const_pointer json_node)
@@ -75,9 +99,9 @@ T get_json_float(
     }
 
     std::ostringstream err;
-    err << "[json_to_xtypes] Calling 'get_json_float' for a non-float value: '"
-        << json_node << "'" << std::endl;
-    throw std::exception(err.str());
+    err << "Calling 'get_json_float' for a non-float value: '"
+        << json_node << "'";
+    throw UnsupportedType(err.str());
 }
 
 bool json_to_xtypes(
@@ -162,9 +186,7 @@ bool json_to_xtypes(
                     json_stack.top())));
                     break;
                 default:
-                    std::ostringstream err;
-                    err << "[json_to_xtypes] Unsupported type: '" << xtypes_node.type().name() << "'";
-                    throw std::exception(err.str());
+                    throw UnsupportedType(xtypes_node.type().name());
             }
         });
 }
@@ -277,9 +299,7 @@ bool xtypes_to_json(
                     add_json_float<double>(xtypes_node, json_stack.top());
                     break;
                 default:
-                    std::ostringstream err;
-                    err << "[xtypes_to_json] Unsupported type: '" << xtypes_node.type().name() << "'";
-                    throw std::exception(err.str());
+                    throw UnsupportedType(xtypes_node.type().name());
             }
         });
 }
