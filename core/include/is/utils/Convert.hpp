@@ -464,7 +464,6 @@ struct NonResizableContainerConvert
             xtypes::WritableDynamicDataRef to)
     {
         const std::size_t N = std::min(from.size(), UpperBound);
-        to.resize(N);
         for (std::size_t i = 0; i < N; ++i)
         {
             Convert<ElementType>::to_xtype_field(from[i], to[i]);
