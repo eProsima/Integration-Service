@@ -165,4 +165,3 @@ bool HelloWorldPubSubType::getKey(
     }
     return true;
 }
-
