@@ -33,10 +33,11 @@ using eprosima::fastdds::dds::Log;
 
 static struct option options[] =
 {
-    { "mode",   required_argument, 0, 'm' },
-    { "domain", required_argument, 0, 'd' },
-    { "count",  required_argument, 0, 'c' },
-    { "help",   no_argument, 0, 'h' }
+    { "mode",       required_argument, 0, 'm' },
+    { "domain",     required_argument, 0, 'd' },
+    { "count",      required_argument, 0, 'c' },
+    { "topic_name", required_argument, 0, 'n'},
+    { "help",       no_argument, 0, 'h' }
 };
 
 enum class OperationMode
@@ -53,7 +54,8 @@ const std::string usage()
     help << "Usage: DDSHelloWorld ";
     help << "-m/--mode <publisher/subscriber> ";
     help << "-d/--domain <UNSIGNED_INTEGER> ";
-    help << "-c/--count <UNSIGNED_INTEGER>";
+    help << "-c/--count <UNSIGNED_INTEGER> ";
+    help << "-n/--topic_name <STRING>";
     return help.str();
 }
 
@@ -69,13 +71,14 @@ int main(
 
     OperationMode mode(OperationMode::INVALID);
     uint32_t count = 10;
+    std::string topic_name("DDSHelloWorld");
     const uint32_t sleep = 100;
     eprosima::fastdds::dds::DomainId_t domain_id(0);
 
     while (true)
     {
         int option_index = 0;
-        auto opt = getopt_long(argc, argv, "m:d:c:h", options, &option_index);
+        auto opt = getopt_long(argc, argv, "m:d:c:n:h", options, &option_index);
 
         if (-1 == opt)
         {
@@ -124,12 +127,19 @@ int main(
                 count = static_cast<uint32_t>(raw_count);
                 break;
             }
+            case 'n':
+            {
+                topic_name.assign(optarg);
+                break;
+            }
             case 'h':
+            {
                 std::cout << usage() << std::endl;
                 std::cout << "\t-m/--mode\tChoose between 'publisher' or 'subscriber'" << std::endl;
                 std::cout << "\t-d/--domain\t(optional) Set a custom Domain ID (default: 0)" << std::endl;
                 std::cout << "\t-c/--count\t(optional) Publish a specific number of messages (default: 10)" << std::endl;
                 return 0;
+            }
             default:
             {
                 std::cout << usage() << std::endl;
@@ -148,7 +158,7 @@ int main(
         case OperationMode::PUBLISH:
         {
             HelloWorldPublisher mypub;
-            if (mypub.init(domain_id))
+            if (mypub.init(domain_id, topic_name))
             {
                 mypub.run(count, sleep);
             }
@@ -157,7 +167,7 @@ int main(
         case OperationMode::SUBSCRIBE:
         {
             HelloWorldSubscriber mysub;
-            if (mysub.init(domain_id))
+            if (mysub.init(domain_id, topic_name))
             {
                 mysub.run();
             }

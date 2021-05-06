@@ -37,7 +37,8 @@ public:
 
     //!Initialize the subscriber
     bool init(
-            const eprosima::fastdds::dds::DomainId_t domain_id);
+            const eprosima::fastdds::dds::DomainId_t domain_id,
+            const std::string& topic_name);
 
     //!RUN the subscriber
     void run();

@@ -38,7 +38,8 @@ HelloWorldSubscriber::HelloWorldSubscriber()
 }
 
 bool HelloWorldSubscriber::init(
-        const eprosima::fastdds::dds::DomainId_t domain_id)
+        const eprosima::fastdds::dds::DomainId_t domain_id,
+        const std::string& topic_name)
 {
     DomainParticipantQos pqos;
     pqos.name("Participant_sub");
@@ -62,7 +63,7 @@ bool HelloWorldSubscriber::init(
 
     //CREATE THE TOPIC
     topic_ = participant_->create_topic(
-        "HelloWorldTopic",
+        topic_name,
         "HelloWorld",
         TOPIC_QOS_DEFAULT);
 

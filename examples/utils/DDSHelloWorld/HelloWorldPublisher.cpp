@@ -40,7 +40,8 @@ HelloWorldPublisher::HelloWorldPublisher()
 }
 
 bool HelloWorldPublisher::init(
-        const eprosima::fastdds::dds::DomainId_t domain_id)
+        const eprosima::fastdds::dds::DomainId_t domain_id,
+        const std::string& topic_name)
 {
     hello_.data("HelloWorld");
     DomainParticipantQos pqos;
@@ -63,7 +64,7 @@ bool HelloWorldPublisher::init(
         return false;
     }
 
-    topic_ = participant_->create_topic("HelloWorldTopic", "HelloWorld", TOPIC_QOS_DEFAULT);
+    topic_ = participant_->create_topic(topic_name, "HelloWorld", TOPIC_QOS_DEFAULT);
 
     if (topic_ == nullptr)
     {

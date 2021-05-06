@@ -36,7 +36,8 @@ public:
 
     //!Initialize
     bool init(
-            const eprosima::fastdds::dds::DomainId_t domain_id);
+            const eprosima::fastdds::dds::DomainId_t domain_id,
+            const std::string& topic_name);
 
     //!Publish a sample
     bool publish(
