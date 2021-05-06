@@ -71,7 +71,7 @@ int main(
 
     OperationMode mode(OperationMode::INVALID);
     uint32_t count = 10;
-    std::string topic_name("DDSHelloWorld");
+    std::string topic_name("HelloWorldTopic");
     const uint32_t sleep = 100;
     eprosima::fastdds::dds::DomainId_t domain_id(0);
 
