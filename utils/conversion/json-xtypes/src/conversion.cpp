@@ -26,43 +26,22 @@ namespace eprosima {
 namespace is {
 namespace json_xtypes {
 
-class UnsupportedType : public std::exception
-{
-public:
-
-    UnsupportedType(
-            const std::string& type_name)
-        : std::exception()
-        , type_name_(type_name)
-    {
-    }
-
-    const char* what() const noexcept
-    {
-        std::ostringstream err;
-        err << "[json-xtypes] Unsupported type '" << type_name_ << "'";
-        return err.str().c_str();
-    }
-
-private:
-
-    const std::string type_name_;
-
-};
-
 Json::const_reference access_json_value(
         const xtypes::DynamicData::ReadableNode& xtypes_node,
-        Json::const_pointer json_node)
+        Json::const_pointer json_node,
+        const std::string submember)
 {
     if (xtypes_node.parent().type().is_collection_type())
     {
         size_t index = xtypes_node.from_index();
-        return json_node->operator [](index);
+        return submember.empty() ? json_node->operator [](index)
+               : json_node->operator [](index)[submember];
     }
     if (xtypes_node.parent().type().is_aggregation_type())
     {
         const std::string& member_name = xtypes_node.from_member()->name();
-        return json_node->operator [](member_name);
+        return submember.empty() ? json_node->operator [](member_name)
+               : json_node->operator [](member_name)[submember];
     }
     static Json none;
     return none;
@@ -106,7 +85,8 @@ T get_json_float(
 
 bool json_to_xtypes(
         const Json& json_message,
-        xtypes::DynamicData& xtypes_message)
+        xtypes::DynamicData& xtypes_message,
+        const std::string submember)
 {
     std::stack<Json::const_pointer> json_stack;
     json_stack.push(&json_message);
@@ -127,63 +107,63 @@ bool json_to_xtypes(
             switch (xtypes_node.type().kind())
             {
                 case xtypes::TypeKind::STRUCTURE_TYPE:
-                    json_stack.push(&access_json_value(xtypes_node, json_stack.top()));
+                    json_stack.push(&access_json_value(xtypes_node, json_stack.top(), submember));
                     break;
                 case xtypes::TypeKind::SEQUENCE_TYPE:
-                    json_stack.push(&access_json_value(xtypes_node, json_stack.top()));
+                    json_stack.push(&access_json_value(xtypes_node, json_stack.top(), submember));
                     xtypes_node.data().resize(json_stack.top()->size());
                     break;
                 case xtypes::TypeKind::ARRAY_TYPE:
-                    json_stack.push(&access_json_value(xtypes_node, json_stack.top()));
+                    json_stack.push(&access_json_value(xtypes_node, json_stack.top(), submember));
                     break;
                 case xtypes::TypeKind::STRING_TYPE:
                     xtypes_node.data().value(access_json_value(xtypes_node,
-                    json_stack.top()).get<std::string>());
+                    json_stack.top(), submember).get<std::string>());
                     break;
                 case xtypes::TypeKind::BOOLEAN_TYPE:
-                    xtypes_node.data().value(access_json_value(xtypes_node, json_stack.top()).get<bool>());
+                    xtypes_node.data().value(access_json_value(xtypes_node, json_stack.top(), submember).get<bool>());
                     break;
                 case xtypes::TypeKind::CHAR_8_TYPE:
-                    xtypes_node.data().value(access_json_value(xtypes_node, json_stack.top()).get<char>());
+                    xtypes_node.data().value(access_json_value(xtypes_node, json_stack.top(), submember).get<char>());
                     break;
                 case xtypes::TypeKind::INT_8_TYPE:
-                    xtypes_node.data().value(access_json_value(xtypes_node, json_stack.top()).get<int8_t>());
+                    xtypes_node.data().value(access_json_value(xtypes_node, json_stack.top(), submember).get<int8_t>());
                     break;
                 case xtypes::TypeKind::UINT_8_TYPE:
                     xtypes_node.data().value(access_json_value(xtypes_node,
-                    json_stack.top()).get<uint8_t>());
+                    json_stack.top(), submember).get<uint8_t>());
                     break;
                 case xtypes::TypeKind::INT_16_TYPE:
                     xtypes_node.data().value(access_json_value(xtypes_node,
-                    json_stack.top()).get<int16_t>());
+                    json_stack.top(), submember).get<int16_t>());
                     break;
                 case xtypes::TypeKind::UINT_16_TYPE:
                     xtypes_node.data().value(access_json_value(xtypes_node,
-                    json_stack.top()).get<uint16_t>());
+                    json_stack.top(), submember).get<uint16_t>());
                     break;
                 case xtypes::TypeKind::INT_32_TYPE:
                     xtypes_node.data().value(access_json_value(xtypes_node,
-                    json_stack.top()).get<int32_t>());
+                    json_stack.top(), submember).get<int32_t>());
                     break;
                 case xtypes::TypeKind::UINT_32_TYPE:
                     xtypes_node.data().value(access_json_value(xtypes_node,
-                    json_stack.top()).get<uint32_t>());
+                    json_stack.top(), submember).get<uint32_t>());
                     break;
                 case xtypes::TypeKind::INT_64_TYPE:
                     xtypes_node.data().value(access_json_value(xtypes_node,
-                    json_stack.top()).get<int64_t>());
+                    json_stack.top(), submember).get<int64_t>());
                     break;
                 case xtypes::TypeKind::UINT_64_TYPE:
                     xtypes_node.data().value(access_json_value(xtypes_node,
-                    json_stack.top()).get<uint64_t>());
+                    json_stack.top(), submember).get<uint64_t>());
                     break;
                 case xtypes::TypeKind::FLOAT_32_TYPE:
                     xtypes_node.data().value(get_json_float<float>(access_json_value(xtypes_node,
-                    json_stack.top())));
+                    json_stack.top(), submember)));
                     break;
                 case xtypes::TypeKind::FLOAT_64_TYPE:
                     xtypes_node.data().value(get_json_float<double>(access_json_value(xtypes_node,
-                    json_stack.top())));
+                    json_stack.top(), submember)));
                     break;
                 default:
                     throw UnsupportedType(xtypes_node.type().name());
@@ -193,19 +173,26 @@ bool json_to_xtypes(
 
 Json::reference add_json_node(
         const xtypes::DynamicData::ReadableNode& xtypes_node,
-        Json::pointer json_node)
+        Json::pointer json_node,
+        const std::string submember)
 {
     if (xtypes_node.parent().type().is_collection_type())
     {
         size_t index = xtypes_node.from_index();
-        json_node->operator [](index) = {};
-        return json_node->operator [](index);
+        Json::reference member = submember.empty()
+                ? json_node->operator [](index)
+                : json_node->operator [](index)[submember];
+        member = {};
+        return member;
     }
     if (xtypes_node.parent().type().is_aggregation_type())
     {
         const std::string& member_name = xtypes_node.from_member()->name();
-        json_node->operator [](member_name) = {};
-        return json_node->operator [](member_name);
+        Json::reference member = submember.empty()
+                ? json_node->operator [](member_name)
+                : json_node->operator [](member_name)[submember];
+        member = {};
+        return member;
     }
     static Json none;
     return none;
@@ -214,23 +201,25 @@ Json::reference add_json_node(
 template <typename T>
 void add_json_float(
         const xtypes::DynamicData::ReadableNode& xtypes_node,
-        Json::pointer json_node)
+        Json::pointer json_node,
+        const std::string submember)
 {
     T value = xtypes_node.data().value<T>();
 
     if (std::isnormal(value))
     {
-        add_json_node(xtypes_node, json_node) = value;
+        add_json_node(xtypes_node, json_node, submember) = value;
     }
     else
     {
-        add_json_node(xtypes_node, json_node) = std::to_string(value);
+        add_json_node(xtypes_node, json_node, submember) = std::to_string(value);
     }
 }
 
 bool xtypes_to_json(
         const xtypes::DynamicData& xtypes_message,
-        Json& json_message)
+        Json& json_message,
+        const std::string submember)
 {
     std::stack<Json::pointer> json_stack;
     json_stack.push(&json_message);
@@ -251,52 +240,52 @@ bool xtypes_to_json(
             switch (xtypes_node.type().kind())
             {
                 case xtypes::TypeKind::STRUCTURE_TYPE:
-                    json_stack.push(&add_json_node(xtypes_node, json_stack.top()));
+                    json_stack.push(&add_json_node(xtypes_node, json_stack.top(), submember));
                     break;
                 case xtypes::TypeKind::SEQUENCE_TYPE:
-                    json_stack.push(&add_json_node(xtypes_node, json_stack.top()));
+                    json_stack.push(&add_json_node(xtypes_node, json_stack.top(), submember));
                     break;
                 case xtypes::TypeKind::ARRAY_TYPE:
-                    json_stack.push(&add_json_node(xtypes_node, json_stack.top()));
+                    json_stack.push(&add_json_node(xtypes_node, json_stack.top(), submember));
                     break;
                 case xtypes::TypeKind::STRING_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<std::string>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<std::string>();
                     break;
                 case xtypes::TypeKind::BOOLEAN_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<bool>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<bool>();
                     break;
                 case xtypes::TypeKind::CHAR_8_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<char>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<char>();
                     break;
                 case xtypes::TypeKind::INT_8_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<int8_t>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<int8_t>();
                     break;
                 case xtypes::TypeKind::UINT_8_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<uint8_t>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<uint8_t>();
                     break;
                 case xtypes::TypeKind::INT_16_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<int16_t>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<int16_t>();
                     break;
                 case xtypes::TypeKind::UINT_16_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<uint16_t>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<uint16_t>();
                     break;
                 case xtypes::TypeKind::INT_32_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<int32_t>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<int32_t>();
                     break;
                 case xtypes::TypeKind::UINT_32_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<uint32_t>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<uint32_t>();
                     break;
                 case xtypes::TypeKind::INT_64_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<int64_t>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<int64_t>();
                     break;
                 case xtypes::TypeKind::UINT_64_TYPE:
-                    add_json_node(xtypes_node, json_stack.top()) = xtypes_node.data().value<uint64_t>();
+                    add_json_node(xtypes_node, json_stack.top(), submember) = xtypes_node.data().value<uint64_t>();
                     break;
                 case xtypes::TypeKind::FLOAT_32_TYPE:
-                    add_json_float<float>(xtypes_node, json_stack.top());
+                    add_json_float<float>(xtypes_node, json_stack.top(), submember);
                     break;
                 case xtypes::TypeKind::FLOAT_64_TYPE:
-                    add_json_float<double>(xtypes_node, json_stack.top());
+                    add_json_float<double>(xtypes_node, json_stack.top(), submember);
                     break;
                 default:
                     throw UnsupportedType(xtypes_node.type().name());
@@ -306,20 +295,22 @@ bool xtypes_to_json(
 
 //==============================================================================
 Json convert(
-        const xtypes::DynamicData& xtypes_message)
+        const xtypes::DynamicData& xtypes_message,
+        const std::string submember)
 {
     Json json_message;
-    xtypes_to_json(xtypes_message, json_message);
+    xtypes_to_json(xtypes_message, json_message, submember);
     return json_message;
 }
 
 //==============================================================================
 xtypes::DynamicData convert(
         const xtypes::DynamicType& type,
-        const Json& json_message)
+        const Json& json_message,
+        const std::string submember)
 {
     xtypes::DynamicData xtypes_message(type);
-    json_to_xtypes(json_message, xtypes_message);
+    json_to_xtypes(json_message, xtypes_message, submember);
     return xtypes_message;
 }
 

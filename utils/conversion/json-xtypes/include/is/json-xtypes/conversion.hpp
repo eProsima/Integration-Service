@@ -32,15 +32,48 @@ namespace json_xtypes {
 using Json = nlohmann::json;
 
 /**
+ * @class UnsupportedType
+ *        Exception to be thrown when a type not yet supported by the `json-xtypes` library
+ *        is attempted to be converted.
+ */
+class UnsupportedType : public std::exception
+{
+public:
+
+    UnsupportedType(
+            const std::string& type_name)
+        : std::exception()
+        , type_name_(type_name)
+    {
+    }
+
+    const char* what() const noexcept
+    {
+        std::ostringstream err;
+        err << "[json-xtypes] Unsupported type '" << type_name_ << "'";
+        return err.str().c_str();
+    }
+
+private:
+
+    const std::string type_name_;
+
+};
+
+/**
  * @brief Convert a DynamicData instance into an equivalent JSON format representation
  *        of the very same data instance.
  *
  * @param[in] input The xTypes DynamicData to be converted to JSON format.
  *
+ * @param[in] submember The submember of the Json data where the converted field will be inserted.
+ *            Defaults to empty.
+ *
  * @returns A Json object representing the converted data.
  */
 Json IS_JSON_XTYPES_API convert(
-        const xtypes::DynamicData& input);
+        const xtypes::DynamicData& input,
+        const std::string submember = "");
 
 /**
  * @brief Convert a Json data representation into its equivalent xTypes DynamicData instance.
@@ -49,11 +82,14 @@ Json IS_JSON_XTYPES_API convert(
  *
  * @param[in] input The Json to be converted to a DynamicData.
  *
+ * @param[in] submember The submember of the Json value to be converted to xTypes. By default, it is empty.
+ *
  * @returns The resulting DynamicData converted data instance.
  */
 xtypes::DynamicData IS_JSON_XTYPES_API convert(
         const xtypes::DynamicType& type,
-        const Json& input);
+        const Json& input,
+        const std::string submember = "");
 
 } //  namespace json_xtypes
 } //  namespace is
