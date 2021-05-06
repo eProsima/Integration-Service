@@ -85,8 +85,7 @@ private:
         int matched_;
 
         uint32_t samples_;
-    }
-    listener_;
+    } listener_;
 };
 
 #endif /* HELLOWORLDSUBSCRIBER_H_ */

@@ -83,8 +83,7 @@ private:
         int matched_;
 
         bool firstConnected_;
-    }
-    listener_;
+    } listener_;
 
     void runThread(
             const uint32_t number,

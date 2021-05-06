@@ -138,6 +138,7 @@ int main(
                 std::cout << "\t-m/--mode\tChoose between 'publisher' or 'subscriber'" << std::endl;
                 std::cout << "\t-d/--domain\t(optional) Set a custom Domain ID (default: 0)" << std::endl;
                 std::cout << "\t-c/--count\t(optional) Publish a specific number of messages (default: 10)" << std::endl;
+                std::cout << "\t-n/--topic_name\t(optional) Publish or subscribe to a specific topic (default: HelloWorldTopic)" << std::endl;
                 return 0;
             }
             default:
