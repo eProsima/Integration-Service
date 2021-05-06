@@ -50,6 +50,10 @@ jobs:
         run: |
           git clone https://github.com/eProsima/WebSocket-SH.git src/websocket-sh
 
+      - name: Download the Integration Service FIWARE SystemHandle
+        run: |
+          git clone https://github.com/eProsima/FIWARE-SH.git src/fiware-sh
+
       - name: Build
         run: |
           . /opt/ros/foxy/setup.sh
@@ -88,3 +92,9 @@ jobs:
           . install/local_setup.sh
           colcon test --packages-select is-websocket --event-handlers console_direct+
           colcon test-result
+
+      #- name: Test the Integration Service FIWARE SystemHandle
+      #  run: |
+      #    . install/local_setup.sh
+      #    colcon test --packages-select is-fiware --event-handlers console_direct+
+      #    colcon test-result
