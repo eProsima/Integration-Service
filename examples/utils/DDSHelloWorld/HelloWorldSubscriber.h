@@ -36,7 +36,8 @@ public:
     virtual ~HelloWorldSubscriber();
 
     //!Initialize the subscriber
-    bool init();
+    bool init(
+            const eprosima::fastdds::dds::DomainId_t domain_id);
 
     //!RUN the subscriber
     void run();
@@ -59,7 +60,7 @@ private:
 
     class SubListener : public eprosima::fastdds::dds::DataReaderListener
     {
-public:
+    public:
 
         SubListener()
             : matched_(0)
@@ -83,7 +84,8 @@ public:
         int matched_;
 
         uint32_t samples_;
-    } listener_;
+    }
+    listener_;
 };
 
 #endif /* HELLOWORLDSUBSCRIBER_H_ */

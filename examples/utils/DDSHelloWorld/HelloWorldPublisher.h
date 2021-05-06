@@ -35,7 +35,8 @@ public:
     virtual ~HelloWorldPublisher();
 
     //!Initialize
-    bool init();
+    bool init(
+            const eprosima::fastdds::dds::DomainId_t domain_id);
 
     //!Publish a sample
     bool publish(
@@ -43,8 +44,8 @@ public:
 
     //!Run for number samples
     void run(
-            uint32_t number,
-            uint32_t sleep);
+            const uint32_t number,
+            const uint32_t sleep);
 
 private:
 
@@ -62,7 +63,7 @@ private:
 
     class PubListener : public eprosima::fastdds::dds::DataWriterListener
     {
-public:
+    public:
 
         PubListener()
             : matched_(0)
@@ -81,11 +82,12 @@ public:
         int matched_;
 
         bool firstConnected_;
-    } listener_;
+    }
+    listener_;
 
     void runThread(
-            uint32_t number,
-            uint32_t sleep);
+            const uint32_t number,
+            const uint32_t sleep);
 
     eprosima::fastdds::dds::TypeSupport type_;
 };

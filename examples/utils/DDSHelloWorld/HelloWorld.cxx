@@ -37,7 +37,7 @@ using namespace eprosima::fastcdr::exception;
 HelloWorld::HelloWorld()
 {
     // m_data com.eprosima.idl.parser.typecode.StringTypeCode@eafc191
-    m_data ="";
+    m_data = "";
 
 }
 
@@ -171,5 +171,5 @@ void HelloWorld::serializeKey(
         eprosima::fastcdr::Cdr& scdr) const
 {
     (void) scdr;
-     
+
 }

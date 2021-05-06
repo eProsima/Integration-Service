@@ -39,12 +39,13 @@ HelloWorldPublisher::HelloWorldPublisher()
 {
 }
 
-bool HelloWorldPublisher::init()
+bool HelloWorldPublisher::init(
+        const eprosima::fastdds::dds::DomainId_t domain_id)
 {
     hello_.data("HelloWorld");
     DomainParticipantQos pqos;
     pqos.name("Participant_pub");
-    participant_ = DomainParticipantFactory::get_instance()->create_participant(0, pqos);
+    participant_ = DomainParticipantFactory::get_instance()->create_participant(domain_id, pqos);
 
     if (participant_ == nullptr)
     {
@@ -76,6 +77,8 @@ bool HelloWorldPublisher::init()
     {
         return false;
     }
+
+    std::cout << "DDSHelloWorldPublisher running under DDS Domain ID: " << domain_id << std::endl;
     return true;
 }
 
@@ -119,8 +122,8 @@ void HelloWorldPublisher::PubListener::on_publication_matched(
 }
 
 void HelloWorldPublisher::runThread(
-        uint32_t samples,
-        uint32_t sleep)
+        const uint32_t samples,
+        const uint32_t sleep)
 {
     if (samples == 0)
     {
@@ -153,8 +156,8 @@ void HelloWorldPublisher::runThread(
 }
 
 void HelloWorldPublisher::run(
-        uint32_t samples,
-        uint32_t sleep)
+        const uint32_t samples,
+        const uint32_t sleep)
 {
     stop_ = false;
     std::thread thread(&HelloWorldPublisher::runThread, this, samples, sleep);

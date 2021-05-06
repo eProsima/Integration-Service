@@ -37,11 +37,12 @@ HelloWorldSubscriber::HelloWorldSubscriber()
 {
 }
 
-bool HelloWorldSubscriber::init()
+bool HelloWorldSubscriber::init(
+        const eprosima::fastdds::dds::DomainId_t domain_id)
 {
     DomainParticipantQos pqos;
     pqos.name("Participant_sub");
-    participant_ = DomainParticipantFactory::get_instance()->create_participant(0, pqos);
+    participant_ = DomainParticipantFactory::get_instance()->create_participant(domain_id, pqos);
 
     if (participant_ == nullptr)
     {
@@ -80,6 +81,7 @@ bool HelloWorldSubscriber::init()
         return false;
     }
 
+    std::cout << "DDSHelloWorldSubscriber running under DDS Domain ID: " << domain_id << std::endl;
     return true;
 }
 

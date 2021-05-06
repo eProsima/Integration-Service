@@ -24,62 +24,145 @@
 
 #include <fastrtps/log/Log.h>
 
+#include <stdexcept>
+
+#include <unistd.h>
+#include <getopt.h>
+
 using eprosima::fastdds::dds::Log;
+
+static struct option options[] =
+{
+    { "mode",   required_argument, 0, 'm' },
+    { "domain", required_argument, 0, 'd' },
+    { "count",  required_argument, 0, 'c' },
+    { "help",   no_argument, 0, 'h' }
+};
+
+enum class OperationMode
+{
+    INVALID,
+    PUBLISH,
+    SUBSCRIBE
+};
+
+const std::string usage()
+{
+    std::ostringstream help;
+
+    help << "Usage: DDSHelloWorld ";
+    help << "-m/--mode <publisher/subscriber> ";
+    help << "-d/--domain <UNSIGNED_INTEGER> ";
+    help << "-c/--count <UNSIGNED_INTEGER>";
+    return help.str();
+}
 
 int main(
         int argc,
         char** argv)
 {
-    std::cout << "Starting " << std::endl;
-    int type = 1;
-    int count = 10;
-    int sleep = 100;
-    if (argc > 1)
+    if (argc < 2)
     {
-        if (strcmp(argv[1], "publisher") == 0)
-        {
-            type = 1;
-            if (argc >= 3)
-            {
-                count = atoi(argv[2]);
-                if (argc == 4)
-                {
-                    sleep = atoi(argv[3]);
-                }
-            }
-        }
-        else if (strcmp(argv[1], "subscriber") == 0)
-        {
-            type = 2;
-        }
-    }
-    else
-    {
-        std::cout << "publisher OR subscriber argument needed" << std::endl;
-        Log::Reset();
-        return 0;
+        std::cout << usage() << std::endl;
+        return 1;
     }
 
-    switch(type)
+    OperationMode mode(OperationMode::INVALID);
+    uint32_t count = 10;
+    const uint32_t sleep = 100;
+    eprosima::fastdds::dds::DomainId_t domain_id(0);
+
+    while (true)
     {
-        case 1:
+        int option_index = 0;
+        auto opt = getopt_long(argc, argv, "m:d:c:h", options, &option_index);
+
+        if (-1 == opt)
+        {
+            // Reached last argument. Finish loop
+            break;
+        }
+
+        switch (opt)
+        {
+            case 'm':
             {
-                HelloWorldPublisher mypub;
-                if(mypub.init())
+                if (0 == strcmp("publisher", optarg))
                 {
-                    mypub.run(static_cast<uint32_t>(count), static_cast<uint32_t>(sleep));
+                    mode = OperationMode::PUBLISH;
+                }
+                else if (0 == strcmp("subscriber", optarg))
+                {
+                    mode = OperationMode::SUBSCRIBE;
+                }
+
+                if (OperationMode::INVALID == mode)
+                {
+                    throw std::invalid_argument("Invalid mode: please choose between 'publisher' or 'subscriber'");
                 }
                 break;
             }
-        case 2:
+            case 'd':
             {
-                HelloWorldSubscriber mysub;
-                if(mysub.init())
+                int raw_domain = atoi(optarg);
+                if (raw_domain < 0)
                 {
-                    mysub.run();
+                    throw std::invalid_argument("Error while parsing provided arguments: Domain ID must be >= 0");
                 }
+
+                domain_id = static_cast<eprosima::fastdds::dds::DomainId_t>(raw_domain);
                 break;
             }
+            case 'c':
+            {
+                int raw_count = atoi(optarg);
+                if (raw_count <= 0)
+                {
+                    throw std::invalid_argument("Topic publish count parameter must be a positive value");
+                }
+
+                count = static_cast<uint32_t>(raw_count);
+                break;
+            }
+            case 'h':
+                std::cout << usage() << std::endl;
+                std::cout << "\t-m/--mode\tChoose between 'publisher' or 'subscriber'" << std::endl;
+                std::cout << "\t-d/--domain\t(optional) Set a custom Domain ID (default: 0)" << std::endl;
+                std::cout << "\t-c/--count\t(optional) Publish a specific number of messages (default: 10)" << std::endl;
+                return 0;
+            default:
+            {
+                std::cout << usage() << std::endl;
+                return 1;
+            }
+        }
+    }
+
+    switch (mode)
+    {
+        case OperationMode::INVALID:
+        {
+            std::cout << usage() << std::endl;
+            return 1;
+        }
+        case OperationMode::PUBLISH:
+        {
+            HelloWorldPublisher mypub;
+            if (mypub.init(domain_id))
+            {
+                mypub.run(count, sleep);
+            }
+            break;
+        }
+        case OperationMode::SUBSCRIBE:
+        {
+            HelloWorldSubscriber mysub;
+            if (mysub.init(domain_id))
+            {
+                mysub.run();
+            }
+            break;
+        }
     }
     Log::Reset();
     return 0;
