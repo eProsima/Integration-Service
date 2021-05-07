@@ -1,6 +1,6 @@
 systems:
   ros2: { type: ros2 }
-  websocket: { type: websocket_server, security: none, host: localhost, port: 80, types-from: ros2 }
+  websocket: { type: websocket_server, security: none, port: 80, types-from: ros2 }
 
 routes:
   websocket_to_ros2: { from: websocket, to: ros2 }
