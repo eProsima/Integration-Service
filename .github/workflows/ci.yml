@@ -4,9 +4,20 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'examples/basic/*'
+      - 'examples/wan_tunneling/*'
+      - 'docs/**'
+
   pull_request:
     branches:
       - '**'
+    paths-ignore:
+      - '**.md'
+      - 'examples/basic/*'
+      - 'examples/wan_tunneling/*'
+      - 'docs/**'
 
 jobs:
   integration-service_CI:
