@@ -256,7 +256,7 @@ There are several CMake flags, which can be tuned during the configuration step:
   ~/is_ws$ colcon build --cmake-args -DBUILD_EXAMPLES=ON
   ```
   <details>
-  <summary>Up to this time, the following user application examples are available: <i>(click to expand)</i></summary>
+  <summary>To date, the following user application examples are available: <i>(click to expand)</i></summary>
 
   * `DDSHelloWorld`: A simple publisher/subscriber application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
     It publishes or subscribes to a simple string topic, named *HelloWorldTopic*.
