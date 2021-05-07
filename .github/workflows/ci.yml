@@ -21,7 +21,7 @@ jobs:
       - name: Download required dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev
+          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev libcurlpp-dev libasio-dev libcurl4-openssl-dev
 
       - name: Download and install ROS 1 Noetic
         run: |
