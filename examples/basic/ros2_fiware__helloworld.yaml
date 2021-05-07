@@ -1,0 +1,18 @@
+types:
+    idls:
+        - >
+            struct HelloWorld {
+                string data;
+            };
+
+systems:
+    ros2: { type: ros2 }
+    fiware: { type: fiware, host: "172.17.0.1", port: 1026, types-from: ros2 }
+
+routes:
+    ros2_to_fiware: { from: ros2, to: fiware }
+    fiware_to_ros2: { from: fiware, to: ros2 }
+
+topics:
+    hello_fiware: { type: "std_msgs/String", route: ros2_to_fiware, remap: {fiware: {type: HelloWorld}} }
+    hello_ros2: { type: "std_msgs/String", route: fiware_to_ros2, remap: {fiware: {type: HelloWorld}} }
