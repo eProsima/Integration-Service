@@ -1,6 +1,5 @@
 <a href="https://integration-service.docs.eprosima.com"><img src="docs/images/logo.png" hspace="8" vspace="2" height="100" ></a>
 
-
 # Introduction
 [![Integration Service CI Status](https://github.com/eProsima/Integration-Service/actions/workflows/ci.yml/badge.svg)](https://github.com/eProsima/Integration-Service/actions)
 
