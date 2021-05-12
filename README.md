@@ -92,7 +92,7 @@ while others are optional. Both kinds are listed and reviewed below:
   <details>
   <summary>In relation to the common parameters, their behaviour is explained in the following section: <i>(click to expand)</i></summary>
 
-    * `type`: Middleware or protocol kind. To date, the supported middlewares are: *fastdds*, *ros1*, *ros2*, *websocket_server* and *websocket_client*. There is also a *mock* option, mostly used
+    * `type`: Middleware or protocol kind. To date, the supported middlewares are: *fastdds*, *fiware*, *ros1*, *ros2*, *websocket_client* and *websocket_server*. There is also a *mock* option, mostly used
     for testing purposes.
 
     * `types-from` *(optional)*: Configures the types inheritance from a given system to another. This allows to use types defined within *Middleware Interface Extension* files for a certain middleware into another middleware, without the need of duplicating them or writing an equivalent IDL type for the rest of systems.
@@ -221,6 +221,8 @@ by means of dedicated plugins or **System Handles**.
 The complete *System Handles* set for the *Integration Service* is currently composed of the following protocols:
 
 * [Fast DDS System Handle](https://github.com/eProsima/FastDDS-SH)
+
+* [FIWARE System Handle](https://github.com/eProsima/FIWARE-SH)
 
 * [ROS 1 System Handle](https://github.com/eProsima/ROS1-SH)
 
