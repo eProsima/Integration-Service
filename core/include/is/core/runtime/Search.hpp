@@ -32,14 +32,15 @@ namespace is {
 namespace core {
 /**
  * @class Search
+ * @brief
  *        This class searches for *Integration Service* message/service plugin
- *        resource files, called MiddlewareInterfaceExtension *(.mix)* files.
+ *        resource files, called MiddlewareInterfaceExtension (.mix) files.
  *
  *        These files will be searched based on a fixed lookup scheme.
  *        This lookup scheme comprises two phases:
  *
- *        1. Search based on the middleware prefixes `mw_prefix`.
- *        2. Search based on the *Integration Service* prefixes `<is_prefix>`.
+ *        -# Look based on the middleware prefixes `mw_prefix`.
+ *        -# Look based on the *Integration Service* prefixes `<is_prefix>`.
  *
  *        The middleware prefixes and *Integration Service* prefixes can be
  *        passed in as command line arguments or set as environment variables.
@@ -64,12 +65,12 @@ namespace core {
  *        while services use `srv`; when searching for things other than messages or services,
  *        a custom string can be substituted for *.
  *
- *        1. `<mw_prefix>/<msg|srv|*>/<type>.mix`
- *        2. `<mw_prefix>/<type>.mix`
- *        3. `<is_prefix>/<middleware>/<msg|srv|*>/<type>.mix`
- *        4. `<is_prefix>/<middleware>/<type>.mix`
- *        5. `<is_prefix>/is/<middleware>/<msg|srv|*>/<type>.mix`
- *        6. `<is_prefix>/is/<middleware>/<type>.mix`
+ *        * `<mw_prefix>/<msg|srv|*>/<type>.mix`
+ *        * `<mw_prefix>/<type>.mix`
+ *        * `<is_prefix>/<middleware>/<msg|srv|*>/<type>.mix`
+ *        * `<is_prefix>/<middleware>/<type>.mix`
+ *        * `<is_prefix>/is/<middleware>/<msg|srv|*>/<type>.mix`
+ *        * `<is_prefix>/is/<middleware>/<type>.mix`
  *
  *        The `type` value will usually look like *package_name/MessageType*. Any
  *        slashes within the `type` name will be used as a directory delimiters while searching.
@@ -77,10 +78,10 @@ namespace core {
  *        Similarly, the search pattern for the base *Integration Service* middleware interface
  *        extension file `(<middleware>.mix)` will be:
  *
- *        1. `<mw_prefix>/<middleware>.mix`
- *        2. `<is_prefix>/<middleware>.mix`
- *        3. `<is_prefix>/is/<middleware>.mix`
- *        4. `<is_prefix>/is/<middleware>/<middleware>.mix`
+ *        * `<mw_prefix>/<middleware>.mix`
+ *        * `<is_prefix>/<middleware>.mix`
+ *        * `<is_prefix>/is/<middleware>.mix`
+ *        * `<is_prefix>/is/<middleware>/<middleware>.mix`
  */
 class IS_CORE_API Search
 {
@@ -166,7 +167,12 @@ public:
             const std::string& path);
 
 
-
+    /**
+     * @brief Adds priority to the specified path. The paths given here will be used as 
+     *        the first option during the search.
+     * 
+     * @param[in] path The path to prioritize.
+     */
     void add_priority_middleware_prefix(
             const std::string& path);
 

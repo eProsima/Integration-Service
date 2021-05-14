@@ -90,11 +90,11 @@ public:
      *
      * @param[in] is_prefixes Global prefix paths for *Integration Service* to search
      *            for configuration files or `mix` files.
-     *
+     *            \n
      *            These act as a complement to the already existing environment variables
      *            created during compilation/installation steps by CMake.
      *
-     * @param[in] middleware_prefix Prefix paths specific to a certain middleware.
+     * @param[in] middleware_prefixes Prefix paths specific to a certain middleware.
      *            Used when loading a middleware's plugin, that is, its SystemHandle implementation.
      */
     Instance(
@@ -114,11 +114,11 @@ public:
      *
      * @param[in] is_prefixes Global prefix paths for *Integration Service* to search
      *            for configuration files or `mix` files.
-     *
+     *            \n
      *            These act as a complement to the already existing environment variables
      *            created during compilation/installation steps by CMake.
      *
-     * @param[in] middleware_prefix Prefix paths specific to a certain middleware.
+     * @param[in] middleware_prefixes Prefix paths specific to a certain middleware.
      *            Used when loading a middleware's plugin, that is, its SystemHandle implementation.
      */
     Instance(
@@ -134,8 +134,9 @@ public:
     /**
      * @brief Runs the *Integration Service* instance in its own thread.
      *
-     * @details The handle allows to wait on that thread or instruct it to quit.
-     *
+     * @details 
+     *          The handle allows to wait on that thread or instruct it to quit.
+     * 
      *          The handle uses RAII, so the instance will stop running automatically
      *          if the InstanceHandle dies.
      *
@@ -345,11 +346,11 @@ IS_CORE_API core::InstanceHandle run_instance(
  *
  * @param[in] is_prefixes Global prefix paths for *Integration Service* to search
  *            for configuration files or `mix` files.
- *
+ *            \n
  *            These act as a complement to the already existing environment variables
  *            created during compilation/installation steps by CMake.
  *
- * @param[in] middleware_prefix Prefix paths specific to a certain middleware.
+ * @param[in] middleware_prefixes Prefix paths specific to a certain middleware.
  *            Used when loading a middleware's plugin, that is, its SystemHandle implementation.
  *
  * @returns An InstanceHandle to manage the running *Integration Service* instance.
@@ -370,11 +371,11 @@ IS_CORE_API core::InstanceHandle run_instance(
  *
  * @param[in] is_prefixes Global prefix paths for *Integration Service* to search
  *            for configuration files or `mix` files.
- *
+ *            \n
  *            These act as a complement to the already existing environment variables
  *            created during compilation/installation steps by CMake.
  *
- * @param[in] middleware_prefix Prefix paths specific to a certain middleware.
+ * @param[in] middleware_prefixes Prefix paths specific to a certain middleware.
  *            Used when loading a middleware's plugin, that is, its SystemHandle implementation.
  *
  * @returns An InstanceHandle to manage the running *Integration Service* instance.

@@ -30,6 +30,7 @@ namespace internal {
 
 /**
  * @class SystemHandleInfo
+ * @brief
  *        Storage class that holds all the information relative to a certain
  *        SystemHandle instance.
  *
@@ -69,6 +70,9 @@ public:
     SystemHandleInfo(
             SystemHandleInfo&& other);
 
+    /**
+     * @brief Destructor.
+     */
     ~SystemHandleInfo() = default;
 
     /**

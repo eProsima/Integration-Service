@@ -43,6 +43,13 @@ public:
      *        than the configured maximum level will not be displayed.
      *        This level is configurable via CMake parameters and can
      *        also be set using the provided `set_logging_level` method API.
+     * 
+     *        * **Values**:
+     * 
+     *          * Level::**ERROR** 
+     *          * Level::**WARN**
+     *          * Level::**INFO**
+     *          * Level::**DEBUG**
      */
     enum class Level : uint8_t
     {
@@ -56,6 +63,12 @@ public:
      * @class CurrentLevelStatus
      *        Enumeration class which stores all the possible statuses
      *        for the current operation in the logger.
+     *
+     *        * **Values**:
+     * 
+     *          * CurrentLevelStatus::**NON_SPECIFIED**
+     *          * CurrentLevelStatus::**SPECIFIED**
+     *          * CurrentLevelStatus::**SPECIFIED_BUT_HIDDEN**
      */
     enum class CurrentLevelStatus : uint8_t
     {
