@@ -1,0 +1,43 @@
+types:
+    idls:
+        - >
+            struct AddTwoInts_Request
+            {
+                int64 a;
+                int64 b;
+            };
+
+            struct AddTwoInts_Response
+            {
+                int64 sum;
+            };
+systems:
+    dds: { type: fastdds }
+    ros2: { type: ros2 }
+    ros1: { type: ros1 }
+
+routes:
+    dds_server:
+        server: dds
+        clients: 
+          - ros1
+          - ros2
+services:
+    add_two_ints: {
+        request_type: AddTwoInts_Request,
+        reply_type: AddTwoInts_Response,
+        route: dds_server,
+        remap: {
+            dds: {
+                topic: AddTwoIntsService,
+            },
+            ros2: {
+                request_type: "example_interfaces/AddTwoInts:request",
+                reply_type: "example_interfaces/AddTwoInts:response"
+            },
+            ros1: {
+                request_type: "is_examples/AddTwoInts:request",
+                reply_type: "is_examples/AddTwoInts:response"
+            }
+        }
+    }
