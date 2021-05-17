@@ -77,18 +77,52 @@ std::unique_ptr<TopicRoute> parse_topic_route(
     valid &= scalar_or_list_node_to_set(
         node["to"], route->to, "to", "topic");
 
+    std::ostringstream from_list;
+    if (node["from"].IsSequence())
+    {
+        from_list << "[ ";
+
+        for (const auto& from : node["from"])
+        {
+            from_list << from.as<std::string>() << " ";
+        }
+
+        from_list << "]";
+    }
+    else
+    {
+        from_list << node["from"].as<std::string>();
+    }
+
+    std::ostringstream to_list;
+    if (node["to"].IsSequence())
+    {
+        to_list << "[ ";
+
+        for (const auto& to : node["to"])
+        {
+            to_list << to.as<std::string>() << " ";
+        }
+
+        to_list << "]";
+    }
+    else
+    {
+        to_list << node["to"].as<std::string>();
+    }
+
     if (!valid)
     {
         Config::logger << utils::Logger::Level::ERROR
-                       << "Topic route { from: '" << node["from"].as<std::string>()
-                       << "', to: '" << node["to"].as<std::string>()
+                       << "Topic route { from: '" << from_list.str()
+                       << "', to: '" << to_list.str()
                        << "' } is invalid." << std::endl;
         return nullptr;
     }
 
     Config::logger << utils::Logger::Level::DEBUG
-                   << "Topic route { from: '" << node["from"].as<std::string>()
-                   << "', to: '" << node["to"].as<std::string>()
+                   << "Topic route { from: '" << from_list.str()
+                   << "', to: '" << to_list.str()
                    << "' } is correct." << std::endl;
 
     return route;
@@ -126,19 +160,35 @@ std::unique_ptr<ServiceRoute> parse_service_route(
     valid &= scalar_or_list_node_to_set(
         node["clients"], route->clients, "clients", "service");
 
+    std::ostringstream client_list;
+    if (node["clients"].IsSequence())
+    {
+        client_list << "[ ";
+
+        for (const auto& client : node["clients"])
+        {
+            client_list << client.as<std::string>() << " ";
+        }
+
+        client_list << "]";
+    }
+    else
+    {
+        client_list << node["clients"].as<std::string>();
+    }
+
     if (!valid)
     {
         Config::logger << utils::Logger::Level::ERROR
                        << "Service route { server: '" << node["server"].as<std::string>()
-                       << "', clients: '" << node["clients"].as<std::string>()
-                       << "' is invalid." << std::endl;
+                       << "', clients: '" << client_list.str() << "' is invalid." << std::endl;
+
         return nullptr;
     }
 
     Config::logger << utils::Logger::Level::DEBUG
                    << "Service route { server: '" << node["server"].as<std::string>()
-                   << "', clients: '" << node["clients"].as<std::string>()
-                   << "' is correct." << std::endl;
+                   << "', clients: '" << client_list.str() << "' is correct." << std::endl;
 
     return route;
 }
@@ -1502,6 +1552,10 @@ bool Config::configure_services(
         }
         else
         {
+            logger << utils::Logger::Level::DEBUG
+                   << "[" << server << " SystemHandle] The requested service server for the service '"
+                   << service_name << "' does not have a reply type" << std::endl;
+
             provider =
                     it_server->second.service_provider->create_service_proxy(
                 server_info.name,
@@ -1613,6 +1667,10 @@ bool Config::configure_services(
 
             if (client_info.reply_type.empty())
             {
+                logger << utils::Logger::Level::DEBUG
+                       << "[" << client << " SystemHandle] The requested service client for the service '"
+                       << service_name << "' does not have a reply type" << std::endl;
+
                 created_client_proxy = it_client->second.service_client->create_client_proxy(
                     client_info.name,
                     //*client_type,
@@ -1645,7 +1703,7 @@ bool Config::configure_services(
             if (created_client_proxy)
             {
                 logger << utils::Logger::Level::INFO
-                       << " [" << client << " SystemHandle] Produced a service client "
+                       << "[" << client << " SystemHandle] Produced a service client "
                        << "for the service '" << service_name << "', with request type '"
                        << service_config.request_type << "'";
 

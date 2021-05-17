@@ -15,13 +15,13 @@ systems:
     dds: { type: fastdds }
     ros2: { type: ros2 }
     ros1: { type: ros1 }
+    websocket: { type: websocket_server, security: none, port: 80 }
 
 routes:
     dds_server:
         server: dds
-        clients: 
-          - ros1
-          - ros2
+        clients: [ros1, ros2, websocket]
+
 services:
     add_two_ints: {
         request_type: AddTwoInts_Request,
@@ -36,8 +36,8 @@ services:
                 reply_type: "example_interfaces/AddTwoInts:response"
             },
             ros1: {
-                request_type: "is_examples/AddTwoInts:request",
-                reply_type: "is_examples/AddTwoInts:response"
+                request_type: "example_interfaces/AddTwoInts:request",
+                reply_type: "example_interfaces/AddTwoInts:response"
             }
         }
     }
