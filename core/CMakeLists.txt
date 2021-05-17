@@ -248,3 +248,16 @@ install(
 ###############################################################################
 include(CTest)
 add_subdirectory(test)
+
+
+###############################################################################
+# Integration Service Core API Reference
+###############################################################################
+if(BUILD_API_REFERENCE)
+  install(
+    FILES
+      ${PROJECT_SOURCE_DIR}/../utils/api_reference/doxygen-config.in
+    DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}
+  )
+endif()
