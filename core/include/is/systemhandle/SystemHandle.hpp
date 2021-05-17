@@ -35,9 +35,16 @@ namespace is {
 namespace core {
 
 /**
+ * @struct RequiredTypes
  * @brief Contains the set of topics and services types required in order
  *        to successfully create an *Integration Service* instance, based on the
  *        configuration provided.
+ * 
+ * @var RequiredTypes::messages
+ *      @brief Set of topic types stated within the configuration file.
+ * 
+ * @var RequiredTypes::services
+ *      @brief Set of service types stated within the configuration file.
  */
 struct RequiredTypes
 {
@@ -131,13 +138,11 @@ public:
      *
      * @param[in] types The set of types (messages and services)
      *            that this middleware needs to support.
-     *
      *            The SystemHandle must register this type into the TypeRegistry,
-     *            using for that the storage class SystemHandleInfo.
-     *
+     *            using for that the storage class SystemHandleInfo.    
+     * 
      * @param[in] configuration The configuration specific for this SystemHandle,
      *            as described in the user-provided `YAML` input file.
-     *
      *            See the specific SystemHandle implementation documentation for
      *            a list of accepted configuration parameters for each middleware.
      *
@@ -183,6 +188,9 @@ class TopicSubscriberSystem : public virtual SystemHandle
 {
 public:
 
+    /**
+     * @brief Signature of the callback that gets triggered when a subscriber receives some data.
+     */
     using SubscriptionCallback = std::function<void (const xtypes::DynamicData& message)>;
 
     /**
@@ -246,8 +254,6 @@ public:
     /**
      * @brief Publishes to a topic.
      *
-     * @param[in] topic_name Name of the topic into which to publish.
-     *
      * @param[in] message DynamicData that is being published.
      *
      * @returns `true` if the data was correctly published, `false` otherwise.
@@ -295,7 +301,7 @@ public:
 };
 
 /**
- * @class TopicSystem.
+ * @class TopicSystem
  *        It is the conjunction of TopicPublisherSystem and TopicSubscriberSystem.
  *        It allows to create a middleware library for *Integration Service*
  *        fully compatible with the publish/subscribe paradigm.
@@ -352,14 +358,12 @@ public:
      *
      * @attention Services are assumed to all be asynchronous (non-blocking), so
      *            this function may be called by multiple threads at once.
-     *
      *            ServiceClient implementers must make sure that they can handle
      *            multiple simultaneous calls to this function.
      *
      * @param[in] call_handle The handle that was given to the call by this ServiceClient.
      *            The usage of the handle is determined by the ServiceClient
      *            implementation.
-     *
      *            Typically, `receive_response` will cast this handle into
      *            a useful object type that contains information on where to send the
      *            service response message.
@@ -494,7 +498,6 @@ public:
      * @brief Call a service.
      *
      * @attention It is important that this function:
-     *
      *            1. Is **non-blocking**.
      *            2. Calls `client.receive_response()` when the service finishes.
      *
@@ -503,7 +506,6 @@ public:
      * @param[in,out] client The proxy for the client that is making the request.
      *
      * @param[in] call_handle A handle for the call.
-     *
      *            The usage of this handle is determined by the ServiceClient implementation.
      *            The ServiceProvider should not attempt to cast or modify it in any way;
      *            it should only be passed back to the ServiceClient later on,
@@ -586,7 +588,7 @@ public:
 };
 
 /**
- * @class ServiceSystem.
+ * @class ServiceSystem
  *        It is the conjunction of ServiceProviderSystem and ServiceClientSystem.
  *        Allows to create a middleware library for *Integration Service*
  *        fully compatible with the request/reply paradigm.

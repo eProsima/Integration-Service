@@ -44,8 +44,14 @@ namespace utils {
 template<typename Type>
 struct Convert
 {
+    /**
+     * @brief Alias for the Type.
+     */
     using native_type = Type;
 
+    /**
+     * @brief Const expression to check if the type is primitive or not.
+     */
     static constexpr bool type_is_primitive =
             std::is_arithmetic<Type>::value
             || std::is_same<std::string, Type>::value
@@ -95,6 +101,9 @@ struct Convert
  */
 struct CharConvert
 {
+    /**
+     * @brief Alias for the Type.
+     */
     using native_type = char;
 
     static constexpr bool type_is_primitive = true;
@@ -227,7 +236,9 @@ struct MessageConvert
  * @endcode
  *
  * @note The UpperBound limit could tipically be calculated as
- *       `std::numeric_limits<typename native::middleware::type<ElementType, Allocator>::size_type>::max()`.
+ *       @code{.cpp}
+ *       std::numeric_limits<typename native::middleware::type<ElementType, Allocator>::size_type>::max()
+ *       @endcode
  */
 template<
     typename ElementType,

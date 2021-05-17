@@ -32,6 +32,9 @@ class SystemHandle;
 
 namespace detail {
 
+/**
+ * @brief Signature of the function that gets triggered when a new SystemHandle instance is created.
+ */
 using SystemHandleFactoryBuilder = std::function<std::unique_ptr<SystemHandle>()>;
 
 /**

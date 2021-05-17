@@ -48,13 +48,12 @@ public:
      *
      * @param[in] template_string A string that describes the desired template.
      *            Varying components of the string must be wrapped in curly braces `{}`.
-     *
      *            Currently only `{message.<field>}` variables are supported.
      *            The varying components of the string will be replaced by the value of the
      *            requested field when `compute_string()` is called.
      *
      * @param[in] usage_details A string that describes how this StringTemplate is being used.
-     *
+     *            \n
      *            Ideally, this should contain information like:
      *            1. Which *middleware* is using the template?
      *            2. What message + topic pair is using the conversion?

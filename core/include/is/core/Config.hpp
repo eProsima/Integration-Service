@@ -40,7 +40,17 @@ struct RequiredTypes;
 namespace internal {
 
 /**
+ * @struct MiddlewareConfig
  * @brief Holds information relative to each middleware configuration.
+ * 
+ * @var MiddlewareConfig::type 
+ *      @brief The name of the middleware.
+ * 
+ * @var MiddlewareConfig::types_from
+ *      @brief The name of middleware whose types want to be used.
+ * 
+ * @var MiddlewareConfig::config_node
+ *      @brief YAML configuration associated with the specific middleware.
  */
 struct MiddlewareConfig
 {
@@ -50,10 +60,14 @@ struct MiddlewareConfig
 };
 
 /**
+ * @struct TopicRoute
  * @brief Stores information relative to topic routes:
  *
- *        1. Source middleware endpoint (from).
- *        2. Destination middleware endpoint (to).
+ * @var TopicRoute::from 
+ *      @brief Source middleware endpoint.
+ * 
+ * @var TopicRoute::to
+ *      @brief Destination middleware endpoint.
  */
 struct TopicRoute
 {
@@ -75,10 +89,14 @@ struct TopicRoute
 };
 
 /**
+ * @struct ServiceRoute
  * @brief Stores information relative to service routes:
  *
- *        1. Server endpoint (server).
- *        2. Client endpoints (clients).
+ * @var ServiceRoute::server
+ *     @brief Server endpoint.
+ * 
+ * @var ServiceRoute::clients
+ *      @brief Client endpoints.
  */
 struct ServiceRoute
 {
@@ -100,7 +118,15 @@ struct ServiceRoute
 };
 
 /**
+ * @struct TopicInfo
  * @brief Struct containing information about a certain topic.
+ * 
+ * @var TopicInfo::name
+ *      @brief The name of the topic.
+ * 
+ * @var TopicInfo::type
+ *      @brief The name of the type for the specific topic.
+ * 
  */
 struct TopicInfo
 {
@@ -121,10 +147,35 @@ struct TopicInfo
     std::string reply_type; //  Only used for Services with reply_type.
 };
 
+/**
+ * @brief Struct containing information about a certain service. 
+ *
+ *      * **std::string name** \n
+ *        The name of the service.
+ * 
+ *      * **std::string type** \n
+ *        The name of the request type for the specific service.
+ * 
+ *      * **std::string reply_type** \n
+ *        The name of the reply type for the specific service.
+ */
 using ServiceInfo = TopicInfo;
 
 /**
+ * @struct TopicConfig
  * @brief Holds the configuration provided for a certain topic.
+ * 
+ * @var TopicConfig::message_type
+ *      @brief The name of the type for the specific topic.
+ * 
+ * @var TopicConfig::route
+ *      @brief The route followed by the specific topic.
+ * 
+ * @var TopicConfig::remap
+ *      @brief A map with the remaps needed for the specific topic.
+ * 
+ * @var TopicConfig::middleware_configs
+ *      @brief A map with the YAML configuration for the specific topic.
  */
 struct TopicConfig
 {
@@ -137,7 +188,23 @@ struct TopicConfig
 };
 
 /**
+ * @struct ServiceConfig
  * @brief This struct stores the configuration provided for a certain service.
+ * 
+ * @var ServiceConfig::request_type
+ *      @brief The name of the request type for the specific service.
+ * 
+ * @var ServiceConfig::reply_type
+ *      @brief The name of the reply type for the specific service.
+ * 
+ * @var ServiceConfig::route
+ *      @brief The route followed by the specific service.
+ * 
+ * @var ServiceConfig::remap
+ *      @brief A map with the remaps needed for the specific service.
+ * 
+ * @var ServiceConfig::middleware_configs
+ *      @brief A map with the YAML configuration for the specific service.
  */
 struct ServiceConfig
 {
@@ -198,7 +265,6 @@ public:
      *        scheme defined for *Integration Service*.
      *
      * @details Configuration files typically contain the following sections:
-     *
      *          1. `types`: Specifies the `IDL` types used by *Integration Service*
      *             to transmit messages. These `IDL` definitions will be parsed using
      *             `eprosima::xtypes` parser for `IDL` files, and the resulting
@@ -207,6 +273,7 @@ public:
      *             The following subsections are permitted:
      *
      *             1.1. `idl`: IDL content.
+     * 
      *             1.2. `paths`: includes paths containing IDL definitions that will
      *                  also be parsed and added to the types database.
      *
@@ -217,9 +284,11 @@ public:
      *
      *             2.1. `type`: to be selected among the middlewares supported by
      *                  *Integration Service*: `ros2`, `dds`, `websocket`, `ros1`...
+     * 
      *             2.2. `types-from`: allows to inherit type definitions from one
      *                  system to another. In this way, users do not have to redefine
      *                  types for each system.
+     * 
      *             2.3. Custom configuration parameters, such as `domain_id` (for ROS 2).
      *                  Each SystemHandle may define its own configuration fields,
      *                  please refer to their documentation for more details.
@@ -230,6 +299,7 @@ public:
      *             The following subsections are permitted:
      *
      *             3.1. `from/to`: publisher/subscriber communication.
+     * 
      *             3.2. `server/clients`: server/client communication.
      *
      *          4. `topics/services`: Allows to configure the topics exchanged over the `routes`
@@ -242,10 +312,13 @@ public:
      *             4.1. `type`: Type involved in the communication. It can be a built-in
      *                   type, usually coming from a `mix` library; or a custom user-defined
      *                   type, by means of an IDL definition.
+     * 
      *             4.2. `route`: Communication bridge, of the ones defined above, that must
      *                  perform the communication.
+     * 
      *             4.3. `remap`: allows to establish equivalences between `topic` names and
      *                           `types` for each system involved in the communication.
+     * 
      *             4.4. Custom configuration parameters, which are specific for each middleware.
      *                  Please refer to the specific SystemHandle documentation.
      *
@@ -436,22 +509,22 @@ public:
     /**
      * @brief This function allows to retrieve a type member from an externally defined type containing
      *        it, to use it as the type for a certain configuration.
+     *        
+     *        The used syntax when retrieving the inner type must be `<outer_type>.<type_member_name>`.
+     * 
+     *        For example, if a type is defined like this in an *IDL*:
      *
-     * @details The used syntax when retrieving the inner type must be `<outer_type>.<type_member_name>`.
-     *
-     *          For example, if a type is defined like this in an IDL:
-     *
-     *          ```
-     *          union MyUnion (switch uint8)
-     *          {
+     *        @code{.cpp}
+     *        union MyUnion (switch uint8)
+     *        {
      *              case 0: int32 _zero;
      *              case 1: int64 _one;
      *              default: int128 _default;
-     *          };
-     *          ```
-     *
-     *          You can define the following topic:
-     *          `ExampleTopic: { route: "a_to_b", type: MyUnion._zero }`
+     *        };
+     *        @endcode
+     *        
+     *        You can define the following topic: \n
+     *        `ExampleTopic: { route: "a_to_b", type: MyUnion._zero }`
      *
      * @param[in] types TypeRegistry containing all the available types where the search
      *            of the parent type will be performed.
