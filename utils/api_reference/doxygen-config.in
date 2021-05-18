@@ -62,10 +62,10 @@ LOOKUP_CACHE_SIZE      = 0
 # Build related configuration options
 #---------------------------------------------------------------------------
 EXTRACT_ALL            = YES
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 EXTRACT_PACKAGE        = NO
 EXTRACT_STATIC         = YES
-EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_CLASSES  = NO
 EXTRACT_LOCAL_METHODS  = YES
 EXTRACT_ANON_NSPACES   = NO
 HIDE_UNDOC_MEMBERS     = NO
@@ -112,7 +112,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = "@DOXYGEN_INPUT_DIR@"
+INPUT                  = @DOXYGEN_INPUT_DIR@
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \
@@ -321,7 +321,8 @@ SEARCH_INCLUDES        = YES
 INCLUDE_PATH           =
 INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = "DOXYGEN_DOCUMENTATION=1" \
-                         IS_CORE_API=
+                         IS_CORE_API= \
+                         DOXYGEN_SHOULD_SKIP_THIS
 EXPAND_AS_DEFINED      = YES
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
