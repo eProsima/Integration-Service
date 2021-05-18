@@ -294,9 +294,9 @@ if(BUILD_API_REFERENCE)
   install(DIRECTORY ${PROJECT_BINARY_DIR}/doxygen/xml
       DESTINATION doxygen
       COMPONENT doxygen)
-  set(CPACK_COMPONENT_EXAMPLES_DISPLAY_NAME "Fast DDS System Handle doxygen")
+  set(CPACK_COMPONENT_EXAMPLES_DISPLAY_NAME "Integration Service Core doxygen")
   set(CPACK_COMPONENT_EXAMPLES_DESCRIPTION
-      "eProsima Fast DDS System Handle doxygen documentation")
+      "eProsima Integration Service Core doxygen documentation")
   set(CPACK_COMPONENTS_ALL ${CPACK_COMPONENTS_ALL} doxygen)
 
   install(
