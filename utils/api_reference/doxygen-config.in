@@ -327,8 +327,8 @@ SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
 # Configuration options related to external references
 #---------------------------------------------------------------------------
-TAGFILES               =
-GENERATE_TAGFILE       =
+TAGFILES               = "@DOXYGEN_TAGFILES@"
+GENERATE_TAGFILE       = "@DOXYGEN_GENERATE_TAGFILE@"
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
 EXTERNAL_PAGES         = YES
