@@ -1,6 +1,3 @@
-# To test this example in DDS, you should compile and execute the provided HelloWorld
-# example in Fast DDS: https://fast-dds.docs.eprosima.com/en/latest/fastdds/getting_started/simple_app/simple_app.html
-
 types:
     idls:
         - >

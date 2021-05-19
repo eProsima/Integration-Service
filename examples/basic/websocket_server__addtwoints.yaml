@@ -1,0 +1,49 @@
+types:
+    idls:
+        - >
+            struct AddTwoInts_Request
+            {
+                int64 a;
+                int64 b;
+            };
+
+            struct AddTwoInts_Response
+            {
+                int64 sum;
+            };
+systems:
+    dds: { type: fastdds }
+    ros1: { type: ros1 }
+    ros2: { type: ros2 }
+    websocket:
+        type: websocket_client
+        security: none
+        host: localhost
+        port: 80
+        authentication:
+            token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoic29zcy13ZWJzb2NrZXQtdGVzdCIsImlhdCI6MTU1NDc5ODg4N30.c7XzL8ytDezkXTuniNi1YEYXOpKj0_Tj2gm0BLn4c4o
+
+routes:
+    websocket_server:
+        server: websocket
+        clients: [dds, ros1, ros2]
+
+services:
+    add_two_ints: {
+        request_type: AddTwoInts_Request,
+        reply_type: AddTwoInts_Response,
+        route: websocket_server,
+        remap: {
+            dds: {
+                topic: AddTwoIntsService,
+            },
+            ros1: {
+                request_type: "example_interfaces/AddTwoInts:request",
+                reply_type: "example_interfaces/AddTwoInts:response"
+            },
+            ros2: {
+                request_type: "example_interfaces/AddTwoInts:request",
+                reply_type: "example_interfaces/AddTwoInts:response"
+            }
+        }
+    }
