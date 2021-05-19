@@ -159,7 +159,7 @@ public:
     ~UnknownFieldToStringCast() = default;
 
     /**
-     * @brief Getter method for _type parameter.
+     * @brief Getter method for `_type` parameter.
      *
      * @returns A const reference to the field type string.
      */

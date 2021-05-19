@@ -38,7 +38,7 @@ namespace detail {
 using SystemHandleFactoryBuilder = std::function<std::unique_ptr<SystemHandle>()>;
 
 /**
- * @brief Wrapper method for Register::insert.
+ * @brief Wrapper method for is::internal::Register::insert.
  *
  * @param[in] middleware The middleware's name.
  *

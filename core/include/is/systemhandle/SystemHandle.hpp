@@ -39,10 +39,10 @@ namespace core {
  * @brief Contains the set of topics and services types required in order
  *        to successfully create an *Integration Service* instance, based on the
  *        configuration provided.
- * 
+ *
  * @var RequiredTypes::messages
  *      @brief Set of topic types stated within the configuration file.
- * 
+ *
  * @var RequiredTypes::services
  *      @brief Set of service types stated within the configuration file.
  */
@@ -61,7 +61,7 @@ using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
 
 /**
  * @brief Call this macro in a .cpp file of your middleware's plugin library,
- *        so that the *Integration Service* can find your SystemHandle implementation
+ *        so that the *Integration Service* can find your eprosima::is::SystemHandle implementation
  *        when your plugin library gets dynamically loaded. For example:
  *
  *        `IS_REGISTER_SYSTEM("my_middleware", my::middleware::SystemHandle)`
@@ -71,7 +71,7 @@ using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
  *        *Integration Service* configuration file. Each middleware should have a unique name.
  *
  *        The second argument should be the literal type (not a string) of the class
- *        that implements SystemHandle in your plugin library.
+ *        that implements eprosima::is::SystemHandle in your plugin library.
  */
 #define IS_REGISTER_SYSTEM(middleware_name_str, SystemType) \
     DETAIL_IS_REGISTER_SYSTEM(middleware_name_str, SystemType)
@@ -138,11 +138,11 @@ public:
      *
      * @param[in] types The set of types (messages and services)
      *            that this middleware needs to support.
-     *            The SystemHandle must register this type into the TypeRegistry,
-     *            using for that the storage class SystemHandleInfo.    
-     * 
+     *            The SystemHandle must register this type into the is::TypeRegistry,
+     *            using for that the storage class is::internal::SystemHandleInfo.
+     *
      * @param[in] configuration The configuration specific for this SystemHandle,
-     *            as described in the user-provided `YAML` input file.
+     *            as described in the user-provided *YAML* input file.
      *            See the specific SystemHandle implementation documentation for
      *            a list of accepted configuration parameters for each middleware.
      *
@@ -164,7 +164,7 @@ public:
     virtual bool okay() const = 0;
 
     /**
-     * @brief Boolean operator overload. Implicit conversion, same as `okay()`.
+     * @brief `bool()` operator overload. Implicit conversion, same as `okay()`.
      *
      * @returns `true` if the SystemHandle is under normal behaviour, `false` otherwise.
      */
@@ -212,7 +212,7 @@ public:
      *
      * @param[in] callback The callback which should be triggered when a message comes in.
      *
-     * @param[in] configuration A `YAML` node containing any middleware-specific
+     * @param[in] configuration A *YAML* node containing any middleware-specific
      *            configuration information for this subscription. This may be an empty node.
      *
      * @returns `true` if subscription was successfully established, `false` otherwise.
@@ -288,7 +288,7 @@ public:
      *
      * @param[in] message_type Message type that this entity will publish.
      *
-     * @param[in] configuration A `YAML` node containing any
+     * @param[in] configuration A *YAML* node containing any
      *            middleware-specific configuration information
      *            for this publisher. This may be an empty node.
      *
@@ -412,7 +412,7 @@ public:
      * @param[in] callback The callback that should be used when a request comes in
      *            from the middleware.
      *
-     * @param[in] configuration A `YAML` node containing any middleware-specific
+     * @param[in] configuration A *YAML* node containing any middleware-specific
      *            configuration information for this service client.
      *            This may be an empty node.
      *
@@ -440,7 +440,7 @@ public:
      * @param[in] callback The callback that should be used when a request comes in
      *            from the middleware.
      *
-     * @param[in] configuration A `YAML` node containing any middleware-specific
+     * @param[in] configuration A *YAML* node containing any middleware-specific
      *            configuration information for this service client.
      *            This may be an empty node.
      *
@@ -543,7 +543,7 @@ public:
      *
      * @param[in] service_type Type of service being offered.
      *
-     * @param[in] configuration A `YAML` node containing any middleware-specific
+     * @param[in] configuration A *YAML* node containing any middleware-specific
      *            configuration information for this service provider.
      *            This may be an empty node.
      *
@@ -568,7 +568,7 @@ public:
      *
      * @param[in] reply_type Type of service reply being offered.
      *
-     * @param[in] configuration A `YAML` node containing any middleware-specific
+     * @param[in] configuration A *YAML* node containing any middleware-specific
      *            configuration information for this service provider.
      *            This may be an empty node.
      *

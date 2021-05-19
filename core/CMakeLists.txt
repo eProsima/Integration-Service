@@ -264,7 +264,6 @@ if(BUILD_API_REFERENCE)
 
   set(IS_CORE_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include/is/")
   file(GLOB_RECURSE HPP_FILES "${IS_CORE_INCLUDE_DIR}/*.h*")
-  message(WARNING "HPP FILES ${HPP_FILES}")
 
   # Doxygen related variables
   set(DOXYGEN_INPUT_DIR "${IS_CORE_INCLUDE_DIR}/")
