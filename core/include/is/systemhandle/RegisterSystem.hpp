@@ -42,7 +42,7 @@ namespace internal {
  *        Later on, this will allow to know whether a certain SystemHandle comes
  *        or not with any of these four working capabilities.
  *
- *        Also, a TypeRegistry is defined, where all the types that the SystemHandle
+ *        Also, a is::TypeRegistry is defined, where all the types that the SystemHandle
  *        instance must know prior to start performing any conversion are defined.
  */
 class SystemHandleInfo
@@ -76,9 +76,9 @@ public:
     ~SystemHandleInfo() = default;
 
     /**
-     * @brief bool operator overload.
+     * @brief `bool()` operator overload.
      *
-     * @brief Returns `true` if the pointer to the handle is not `nullptr`, `false` otherwise.
+     * @returns `true` if the pointer to the handle is not `nullptr`, `false` otherwise.
      */
     operator bool() const;
 
@@ -105,9 +105,9 @@ using SystemHandleInfoMap = std::map<std::string, SystemHandleInfo>;
 
 /**
  * @class Register
- *        Static class that contains a static map of SystemHandleFactoryBuilder instances.
+ *        Static class that contains a static map of is::detail::SystemHandleFactoryBuilder instances.
  *
- *        SystemHandleFactoryBuilder is nothing but a function signature that helps
+ *        is::detail::SystemHandleFactoryBuilder is nothing but a function signature that helps
  *        in the creation of a `std::unique_ptr<SystemHandle>` object.
  *
  *        In this way, each time a given SystemHandle instance is required,
@@ -118,7 +118,7 @@ class Register
 public:
 
     /**
-     * @brief Inserts a new SystemHandleFactoryBuilder element in the factory map.
+     * @brief Inserts a new is::detail::SystemHandleFactoryBuilder element in the factory map.
      *
      * @param[in] middleware The middleware's name.
      *

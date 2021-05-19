@@ -39,8 +39,8 @@ namespace core {
  *        These files will be searched based on a fixed lookup scheme.
  *        This lookup scheme comprises two phases:
  *
- *        -# Look based on the middleware prefixes `mw_prefix`.
- *        -# Look based on the *Integration Service* prefixes `<is_prefix>`.
+ *        * First, it searchs based on the middleware prefixes `mw_prefix`.
+ *        * Second, it searchs based on the *Integration Service* prefixes `<is_prefix>`.
  *
  *        The middleware prefixes and *Integration Service* prefixes can be
  *        passed in as command line arguments or set as environment variables.
@@ -58,7 +58,9 @@ namespace core {
  *        and `/usr/lib` will be added to the *Integration Service* prefixes
  *        `<is_prefix>` in this same order of precedence.
  *
- *        The search scheme is described below, where `mw_prefix` and `<is_prefix>`
+ *        **Lookup Scheme**
+ *
+ *        The lookup scheme is described below, where `mw_prefix` and `<is_prefix>`
  *        are defined above. `<middleware>` refers to the name of the middleware (as
  *        given to the constructor of the Search class). `type` is the type name of
  *        the message or service. In cases of ROS `<msg|srv|*>`, messages will use `msg`
@@ -75,7 +77,9 @@ namespace core {
  *        The `type` value will usually look like *package_name/MessageType*. Any
  *        slashes within the `type` name will be used as a directory delimiters while searching.
  *
- *        Similarly, the search pattern for the base *Integration Service* middleware interface
+ *        **Lookup Pattern**
+ *
+ *        Similarly, the lookup pattern for the base *Integration Service* middleware interface
  *        extension file `(<middleware>.mix)` will be:
  *
  *        * `<mw_prefix>/<middleware>.mix`
@@ -168,9 +172,9 @@ public:
 
 
     /**
-     * @brief Adds priority to the specified path. The paths given here will be used as 
+     * @brief Adds priority to the specified path. The paths given here will be used as
      *        the first option during the search.
-     * 
+     *
      * @param[in] path The path to prioritize.
      */
     void add_priority_middleware_prefix(
@@ -189,7 +193,7 @@ public:
             const std::string& path);
 
     /**
-     * @brief Looks for a *mix* file that provides information for a message type.
+     * @brief Looks for a `mix` file that provides information for a message type.
      *
      * @param[in] msg_type This type will be used for `type` in the search scheme.
      *
@@ -205,7 +209,7 @@ public:
             std::vector<std::string>* checked_paths = nullptr) const;
 
     /**
-     * @brief Looks for a *mix* file that provides information for a service type.
+     * @brief Looks for a `mix` file that provides information for a service type.
      *
      * @param[in] srv_type This type will be used for `type` in the search scheme.
      *
@@ -221,7 +225,7 @@ public:
             std::vector<std::string>* checked_paths = nullptr) const;
 
     /**
-     * @brief Looks for a *mix* file that provides information
+     * @brief Looks for a `mix` file that provides information
      *        for a type which is not a message nor a service.
      *
      * @param[in] type This type will be used for `type` in the search scheme.
@@ -265,7 +269,7 @@ public:
             std::vector<std::string>* checked_paths = nullptr) const;
 
     /**
-     * @brief Looks for a *mix* file for the middleware specified during the construction
+     * @brief Looks for a `mix` file for the middleware specified during the construction
      *        of this Search instance.
      *
      * @param[out] checked_paths If given a non-nullptr, it will be filled

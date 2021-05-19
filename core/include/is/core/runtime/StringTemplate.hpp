@@ -53,10 +53,6 @@ public:
      *            requested field when `compute_string()` is called.
      *
      * @param[in] usage_details A string that describes how this StringTemplate is being used.
-     *            \n
-     *            Ideally, this should contain information like:
-     *            1. Which *middleware* is using the template?
-     *            2. What message + topic pair is using the conversion?
      */
     StringTemplate(
             const std::string& template_string,
@@ -96,14 +92,14 @@ public:
     /**
      * @brief Gets a mutable reference to the usage_details for this StringTemplate.
      *
-     * @returns The mutable reference to the usage_details string.
+     * @returns The mutable reference to the `usage_details` string.
      */
     std::string& usage_details();
 
     /**
      * @brief Gets a const reference to the usage_details for this StringTemplate.
      *
-     * @returns A const reference to the usage_details string.
+     * @returns A const reference to the `usage_details` string.
      */
     const std::string& usage_details() const;
 
@@ -133,7 +129,7 @@ private:
 /**
  * @class InvalidTemplateFormat
  *        Runtime error that gets thrown when a certain runtime substitution
- *        string template is malformed in the `YAML` file.
+ *        string template is malformed in the *YAML* file.
  */
 class InvalidTemplateFormat : public std::runtime_error
 {
@@ -156,7 +152,7 @@ public:
     ~InvalidTemplateFormat() = default;
 
     /**
-     * @brief Gets a const reference to the malformed string template.
+     * @brief Gets a const reference to the malformed StringTemplate.
      *
      * @returns A const reference to the template.
      */
@@ -170,7 +166,7 @@ private:
 /**
  * @class UnavailableMessageField
  *        Runtime error that gets thrown when a certain field, required to perform
- *        the substitution in a string template, is unavailable within the provided Dynamic Data.
+ *        the substitution in a StringTemplate, is unavailable within the provided Dynamic Data.
  */
 class UnavailableMessageField : public std::runtime_error
 {

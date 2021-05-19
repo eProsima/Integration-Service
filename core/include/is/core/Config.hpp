@@ -42,13 +42,13 @@ namespace internal {
 /**
  * @struct MiddlewareConfig
  * @brief Holds information relative to each middleware configuration.
- * 
- * @var MiddlewareConfig::type 
+ *
+ * @var MiddlewareConfig::type
  *      @brief The name of the middleware.
- * 
+ *
  * @var MiddlewareConfig::types_from
  *      @brief The name of middleware whose types want to be used.
- * 
+ *
  * @var MiddlewareConfig::config_node
  *      @brief YAML configuration associated with the specific middleware.
  */
@@ -63,9 +63,9 @@ struct MiddlewareConfig
  * @struct TopicRoute
  * @brief Stores information relative to topic routes:
  *
- * @var TopicRoute::from 
+ * @var TopicRoute::from
  *      @brief Source middleware endpoint.
- * 
+ *
  * @var TopicRoute::to
  *      @brief Destination middleware endpoint.
  */
@@ -94,7 +94,7 @@ struct TopicRoute
  *
  * @var ServiceRoute::server
  *     @brief Server endpoint.
- * 
+ *
  * @var ServiceRoute::clients
  *      @brief Client endpoints.
  */
@@ -120,13 +120,13 @@ struct ServiceRoute
 /**
  * @struct TopicInfo
  * @brief Struct containing information about a certain topic.
- * 
+ *
  * @var TopicInfo::name
  *      @brief The name of the topic.
- * 
+ *
  * @var TopicInfo::type
  *      @brief The name of the type for the specific topic.
- * 
+ *
  */
 struct TopicInfo
 {
@@ -148,14 +148,15 @@ struct TopicInfo
 };
 
 /**
- * @brief Struct containing information about a certain service. 
+ * @brief
+ *      Struct containing information about a certain service.
  *
  *      * **std::string name** \n
  *        The name of the service.
- * 
+ *
  *      * **std::string type** \n
  *        The name of the request type for the specific service.
- * 
+ *
  *      * **std::string reply_type** \n
  *        The name of the reply type for the specific service.
  */
@@ -164,16 +165,16 @@ using ServiceInfo = TopicInfo;
 /**
  * @struct TopicConfig
  * @brief Holds the configuration provided for a certain topic.
- * 
+ *
  * @var TopicConfig::message_type
  *      @brief The name of the type for the specific topic.
- * 
+ *
  * @var TopicConfig::route
  *      @brief The route followed by the specific topic.
- * 
+ *
  * @var TopicConfig::remap
  *      @brief A map with the remaps needed for the specific topic.
- * 
+ *
  * @var TopicConfig::middleware_configs
  *      @brief A map with the YAML configuration for the specific topic.
  */
@@ -190,19 +191,19 @@ struct TopicConfig
 /**
  * @struct ServiceConfig
  * @brief This struct stores the configuration provided for a certain service.
- * 
+ *
  * @var ServiceConfig::request_type
  *      @brief The name of the request type for the specific service.
- * 
+ *
  * @var ServiceConfig::reply_type
  *      @brief The name of the reply type for the specific service.
- * 
+ *
  * @var ServiceConfig::route
  *      @brief The route followed by the specific service.
- * 
+ *
  * @var ServiceConfig::remap
  *      @brief A map with the remaps needed for the specific service.
- * 
+ *
  * @var ServiceConfig::middleware_configs
  *      @brief A map with the YAML configuration for the specific service.
  */
@@ -220,7 +221,7 @@ struct ServiceConfig
 /**
  * @class Config
  *        Internal representation of the configuration provided to the
- *        *Integration Service* instance, by means of a `YAML` file.
+ *        *Integration Service* instance, by means of a *YAML* file.
  */
 class Config
 {
@@ -243,10 +244,10 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param[in] node Parsed representation of the `YAML` configuration file.
+     * @param[in] node Parsed representation of the *YAML* configuration file.
      *            It defaults to empty.
      *
-     * @param[in] filename The path of the `YAML` configuration file.
+     * @param[in] filename The path of the *YAML* configuration file.
      */
     Config(
             const YAML::Node& node = YAML::Node(),
@@ -273,7 +274,7 @@ public:
      *             The following subsections are permitted:
      *
      *             1.1. `idl`: IDL content.
-     * 
+     *
      *             1.2. `paths`: includes paths containing IDL definitions that will
      *                  also be parsed and added to the types database.
      *
@@ -284,11 +285,11 @@ public:
      *
      *             2.1. `type`: to be selected among the middlewares supported by
      *                  *Integration Service*: `ros2`, `dds`, `websocket`, `ros1`...
-     * 
+     *
      *             2.2. `types-from`: allows to inherit type definitions from one
      *                  system to another. In this way, users do not have to redefine
      *                  types for each system.
-     * 
+     *
      *             2.3. Custom configuration parameters, such as `domain_id` (for ROS 2).
      *                  Each SystemHandle may define its own configuration fields,
      *                  please refer to their documentation for more details.
@@ -299,26 +300,26 @@ public:
      *             The following subsections are permitted:
      *
      *             3.1. `from/to`: publisher/subscriber communication.
-     * 
+     *
      *             3.2. `server/clients`: server/client communication.
      *
      *          4. `topics/services`: Allows to configure the topics exchanged over the `routes`
      *             described above, in either publisher/subscriber or client/server
      *             communication, and provides detailed information about them.
-     *             Each topic or service must have a unique name in the `YAML` file.
+     *             Each topic or service must have a unique name in the *YAML* file.
      *
      *             The following subsections are permitted:
      *
      *             4.1. `type`: Type involved in the communication. It can be a built-in
      *                   type, usually coming from a `mix` library; or a custom user-defined
      *                   type, by means of an IDL definition.
-     * 
+     *
      *             4.2. `route`: Communication bridge, of the ones defined above, that must
      *                  perform the communication.
-     * 
+     *
      *             4.3. `remap`: allows to establish equivalences between `topic` names and
      *                           `types` for each system involved in the communication.
-     * 
+     *
      *             4.4. Custom configuration parameters, which are specific for each middleware.
      *                  Please refer to the specific SystemHandle documentation.
      *
@@ -352,7 +353,7 @@ public:
      *
      * @details After the SystemHandle shared library is loaded successfully,
      *          the required types to be found during the SystemHandle configuration
-     *          phase are registered, according to what was specified in the `YAML` configuration.
+     *          phase are registered, according to what was specified in the *YAML* configuration.
      *
      *          Next, the `types-from` parameter is checked, which specifies the middleware
      *          from which each SystemHandle wants to inherit types from, as declared
@@ -434,7 +435,7 @@ public:
      *          executes the `ServiceProvider::call_service` method from the associated provider.
      *          This `call_service` is then responsible of sending back the response
      *          to the client, if applicable (that is, if a `reply_type` has been defined
-     *          in the `YAML` configuration.)
+     *          in the *YAML* configuration.)
      *
      *          If any of the defined services cannot find server or client capabilities
      *          (i.e. invalid routes), the returned value will be false and the process will fail.
@@ -509,9 +510,9 @@ public:
     /**
      * @brief This function allows to retrieve a type member from an externally defined type containing
      *        it, to use it as the type for a certain configuration.
-     *        
+     *
      *        The used syntax when retrieving the inner type must be `<outer_type>.<type_member_name>`.
-     * 
+     *
      *        For example, if a type is defined like this in an *IDL*:
      *
      *        @code{.cpp}
@@ -522,7 +523,7 @@ public:
      *              default: int128 _default;
      *        };
      *        @endcode
-     *        
+     *
      *        You can define the following topic: \n
      *        `ExampleTopic: { route: "a_to_b", type: MyUnion._zero }`
      *

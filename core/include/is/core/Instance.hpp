@@ -83,8 +83,8 @@ public:
      *        the configuration of the *Integration Service* core and of the dedicated
      *        middleware SystemHandle plugins, and setting their relevant properties.
      *
-     * @param[in] config_node The `YAML` configuration file, structured as defined in the Config
-     *            `parse()` method documentation, that should be provided to *Integration Service*
+     * @param[in] config_node The *YAML* configuration file, structured as defined in the `is::core::internal::Config::parse()`
+     *            method documentation, that should be provided to *Integration Service*
      *            to successfully start a communication between two or more
      *            applications using different communication protocols.
      *
@@ -107,8 +107,8 @@ public:
      *        the configuration of the *Integration Service* core and of the dedicated
      *        middleware SystemHandle plugins, and setting their relevant properties.
      *
-     * @param[in] config_file_path The `YAML` configuration file, structured as defined in the Config
-     *            `parse()` method documentation, that should be provided to *Integration Service*
+     * @param[in] config_file_path The *YAML* configuration file, structured as defined in the `is::core::internal::Config::parse()`
+     *            method documentation, that should be provided to *Integration Service*
      *            to successfully start a communication between two or more
      *            applications using different communication protocols.
      *
@@ -134,9 +134,9 @@ public:
     /**
      * @brief Runs the *Integration Service* instance in its own thread.
      *
-     * @details 
+     * @details
      *          The handle allows to wait on that thread or instruct it to quit.
-     * 
+     *
      *          The handle uses RAII, so the instance will stop running automatically
      *          if the InstanceHandle dies.
      *
@@ -240,10 +240,11 @@ public:
     operator bool() const;
 
     /**
-     * @brief Waits for the instance to stop running.
+     * @brief
+     *        Waits for the instance to stop running.
      *
      *        The instance may be stopped by calling `quit()` or by sending `SIGINT`
-     *        (*ctrl+C* from the terminal).
+     *        (`ctrl+C` from the terminal).
      *
      * @returns The return code for the execution process of this instance.
      */
@@ -262,7 +263,8 @@ public:
             const std::chrono::nanoseconds& max_time);
 
     /**
-     * @brief Instructs the node handle to quit (this will not occur instantly).
+     * @brief
+     *        Instructs the node handle to quit (this will not occur instantly).
      *
      *        After this, it calls `wait()` in order to wait until the instance has
      *        finished running, and retrieves the return code.
@@ -322,7 +324,7 @@ private:
 
 /**
  * @brief Creates an *Integration Service* instance and runs it in its own thread.
- *        This is a wrapper for the `core::Instance` constructor and for the `run()` method.
+ *        This is a wrapper for the `core::Instance` constructor and for the `core::Instance::run()` method.
  *
  * @param[in] argc Number of given arguments.
  *
@@ -339,8 +341,8 @@ IS_CORE_API core::InstanceHandle run_instance(
  * @brief Creates an *Integration Service* instance and runs it in its own thread.
  *        This is a wrapper for the `core::Instance` constructor and the `run()` method.
  *
- * @param[in] config_node The `YAML` configuration file, structured as defined in the Config
- *            `parse()` method documentation, that should be provided to *Integration Service*
+ * @param[in] config_node The *YAML* configuration file, structured as defined in the `is::core::internal::Config::parse()`
+ *            method documentation, that should be provided to *Integration Service*
  *            to successfully start a communication between two or more
  *            applications using different communication protocols.
  *
@@ -364,8 +366,8 @@ IS_CORE_API core::InstanceHandle run_instance(
  * @brief Creates an *Integration Service* instance and runs it in its own thread.
  *        This is a wrapper for the `core::Instance` constructor and the `run()` method.
  *
- * @param[in] config_file_path The `YAML` configuration file, structured as defined in the Config
- *            `parse()` method documentation, that should be provided to *Integration Service*
+ * @param[in] config_file_path The *YAML* configuration file, structured as defined in the `is::core::internal::Config::parse()`
+ *            method documentation, that should be provided to *Integration Service*
  *            to successfully start a communication between two or more
  *            applications using different communication protocols.
  *
