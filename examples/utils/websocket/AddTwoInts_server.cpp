@@ -96,12 +96,14 @@ void AddTwoIntsServer::on_tcp_message(
 {
     const auto json_request_msg = nlohmann::json::parse(msg->get_payload());
 
-    const auto req_it = json_request_msg.find("args");
+    const auto args_it = json_request_msg.find("args");
+    const auto id_it = json_request_msg.find("id");
 
     // Check request valid format
-    if (req_it != json_request_msg.end() /* && req_it.value()["a"] && req_it.value()["b"]*/)
+    if (json_request_msg.end() != args_it && json_request_msg.end() != id_it)
     {
-        auto json_request_payload = req_it.value();
+        auto json_request_payload = args_it.value();
+
         if (json_request_payload.end() != json_request_payload.find("a") &&
                 json_request_payload.end() != json_request_payload.find("b"))
         {
@@ -116,7 +118,9 @@ void AddTwoIntsServer::on_tcp_message(
             auto connection = _tcp_server->get_con_from_hdl(hdl);
 
             const std::string response_msg =
-                    "{\"op\":\"service_response\", \"result\":\"true\", \"values\":{\"sum\":"
+                    "{\"op\":\"service_response\", \"result\":\"true\", \"id\": "
+                    + id_it.value().dump() + ", \"service\": \""
+                    + _service_name + "\", \"values\":{\"sum\":"
                     + std::to_string(result) + "}}";
 
             std::cout << "\t - Sending response: '" << response_msg << "'" << std::endl;
