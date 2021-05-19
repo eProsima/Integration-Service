@@ -22,9 +22,18 @@ cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
 project(is-mock VERSION "3.0.0" LANGUAGES CXX)
 
+###################################################################################
+# Configure options
+###################################################################################
+option(BUILD_LIBRARY "Compile the Integration Service" ON)
+
 ##################################################################################
 # Find required dependencies for the Integration Service Mock SystemHandle library
 ##################################################################################
+if(NOT BUILD_LIBRARY)
+    return()
+endif()
+
 find_package(is-core REQUIRED)
 find_package(Sanitizers QUIET)
 

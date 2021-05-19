@@ -22,6 +22,15 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(is-json-xtypes VERSION "3.0.0" LANGUAGES CXX)
 
+###################################################################################
+# Configure options
+###################################################################################
+option(BUILD_LIBRARY "Compile the Integration Service" ON)
+
+if(NOT BUILD_LIBRARY)
+    return()
+endif()
+
 ###############################################################################
 # Load external CMake Modules.
 ###############################################################################
