@@ -43,7 +43,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG OR
     endif()
 endif()
 
-message(STATUS "Configuring HelloWorld example...")
+message(STATUS "Configuring ${PROJECT_NAME} example...")
 file(GLOB DDS_HELLOWORLD_SOURCES_CXX "*.cxx")
 file(GLOB DDS_HELLOWORLD_SOURCES_CPP "*.cpp")
 

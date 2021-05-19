@@ -43,13 +43,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG OR
     endif()
 endif()
 
-message(STATUS "Configuring HelloWorld example...")
-file(GLOB DDS_HELLOWORLD_SOURCES_CXX "*.cxx")
-file(GLOB DDS_HELLOWORLD_SOURCES_CPP "*.cpp")
+message(STATUS "Configuring ${PROJECT_NAME} example...")
+file(GLOB DDS_ADDTWOINTS_SOURCES_CXX "*.cxx")
+file(GLOB DDS_ADDTWOINTS_SOURCES_CPP "*.cpp")
 
 add_executable(${PROJECT_NAME}
-    ${DDS_HELLOWORLD_SOURCES_CXX}
-    ${DDS_HELLOWORLD_SOURCES_CPP}
+    ${DDS_ADDTWOINTS_SOURCES_CXX}
+    ${DDS_ADDTWOINTS_SOURCES_CPP}
 )
 
 target_compile_definitions(${PROJECT_NAME}

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _DDS_ADDTWOINTS_SERVICE_HPP_
-#define _DDS_ADDTWOINTS_SERVICE_HPP_
+#ifndef _IS_EXAMPLES_UTILS_DDS__ADDTWOINTS_SERVICE_HPP_
+#define _IS_EXAMPLES_UTILS_DDS__ADDTWOINTS_SERVICE_HPP_
 
 #include <fastdds/dds/domain/DomainParticipantFactory.hpp>
 #include <fastdds/dds/domain/DomainParticipantListener.hpp>
@@ -146,4 +146,4 @@ private:
     ReplyListener reply_listener;
 };
 
-#endif //  _DDS_ADDTWOINTS_SERVICE_HPP_
+#endif //  _IS_EXAMPLES_UTILS_DDS__ADDTWOINTS_SERVICE_HPP_
