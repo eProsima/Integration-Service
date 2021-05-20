@@ -159,14 +159,14 @@ public:
     /**
      * @brief Method that allows to check if a SystemHandle is correctly working.
      *
-     * @returns `true` if the SystemHandle is under normal behaviour, `false` otherwise.
+     * @returns `true` if the SystemHandle is under normal behavior, `false` otherwise.
      */
     virtual bool okay() const = 0;
 
     /**
      * @brief `bool()` operator overload. Implicit conversion, same as `okay()`.
      *
-     * @returns `true` if the SystemHandle is under normal behaviour, `false` otherwise.
+     * @returns `true` if the SystemHandle is under normal behavior, `false` otherwise.
      */
     operator bool() const
     {
@@ -333,7 +333,7 @@ public:
  *        client proxy objects themselves.
  *
  *        This class, when overridden by the specific middleware implementation, will
- *        tipically contain a `middleware::server` object, so that `receive_response`
+ *        typically contain a `middleware::server` object, so that `receive_response`
  *        can fetch the response sent by the *user server application* (usually, implemented
  *        using a different middleware) and pass this response to the *target user client
  *        application*, which will receive the final response by means of the internal server
@@ -358,8 +358,8 @@ public:
      *
      * @attention Services are assumed to all be asynchronous (non-blocking), so
      *            this function may be called by multiple threads at once.
-     *            ServiceClient implementers must make sure that they can handle
-     *            multiple simultaneous calls to this function.
+     *            developers implementing a ServiceClient derived class must make
+     *            sure that they can handle multiple simultaneous calls to this function.
      *
      * @param[in] call_handle The handle that was given to the call by this ServiceClient.
      *            The usage of the handle is determined by the ServiceClient
@@ -469,11 +469,11 @@ public:
  *        service server proxy objects themselves.
  *
  *        This class, when overridden by the specific middleware implementation, will
- *        tipically contain a `middleware::client` object that will actually send the
+ *        typically contain a `middleware::client` object that will actually send the
  *        request to the *user server application*.
  *        After processing the request by means of the `call_service` method,
  *        thanks to the associated ServiceClient entity, `receive_response`
- *        will be called, to pass the response to the *user client application* (tipically,
+ *        will be called, to pass the response to the *user client application* (typically,
  *        implemented using a different middleware, which justifies the use of the
  *        *Integration Service* to interconnect them).
  */

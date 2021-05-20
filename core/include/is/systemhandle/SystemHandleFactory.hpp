@@ -53,7 +53,7 @@ void IS_CORE_API register_system_handle_factory(
  * @class SystemHandleRegistrar
  *         Builder class to help register any SystemHandle kind, during runtime.
  *
- * @tparam SystemHandleImplType The is::SystemHandle overriden
+ * @tparam SystemHandleImplType The is::SystemHandle overridden
  *         implementation kind, for a certain middleware.
  */
 template<typename SystemHandleImplType>

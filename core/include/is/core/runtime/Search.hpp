@@ -284,7 +284,7 @@ public:
      *        relative to the directory of the config file that was used
      *        to launch the *Integration Service*.
      *
-     *        By default, this behaviour is turned off.
+     *        By default, this behavior is turned off.
      *
      *        The config-file directory will be treated as a middleware prefix,
      *        whose priority comes directly before the "fallback" middleware prefixes.
@@ -292,7 +292,7 @@ public:
      *        prefix passed in as command line argument or given as environment
      *        variables.
      *
-     * @param[in] toggle Boolean to enable or disable this behaviour.
+     * @param[in] toggle Boolean to enable or disable this behavior.
      *
      * @returns A reference to this very Search instance.
      */
@@ -303,14 +303,14 @@ public:
      * @brief It can be used to toggle the Search to check for files
      *        relative to the user's home directory.
      *
-     *        By default this behaviour is turned off.
+     *        By default this behavior is turned off.
      *
      *        The home directory will be treated as a middleware prefix,
      *        whose priority is the same as the `relative_to_config()` priority,
      *        except `relative_to_config()` will have higher priority if both
      *        are activated at the same time.
      *
-     * @param[in] toggle Boolean to enable or disable this behaviour.
+     * @param[in] toggle Boolean to enable or disable this behavior.
      *
      * @returns A reference to this very Search instance.
      */
@@ -323,7 +323,7 @@ public:
      *
      *        By default these prefixes are not ignored.
      *
-     * @param[in] toggle Boolean to enable or disable this behaviour.
+     * @param[in] toggle Boolean to enable or disable this behavior.
      *
      * @returns A reference to this very Search instance.
      */
@@ -337,7 +337,7 @@ public:
      *
      *        By default these prefixes are not ignored.
      *
-     * @param[in] toggle Boolean to enable or disable this behaviour.
+     * @param[in] toggle Boolean to enable or disable this behavior.
      *
      * @returns A reference to this very Search instance.
      */
@@ -350,7 +350,7 @@ public:
      *
      *        By default these prefixes are not ignored.
      *
-     * @param[in] toggle Boolean to enable or disable this behaviour.
+     * @param[in] toggle Boolean to enable or disable this behavior.
      *
      * @returns A reference to this very Search instance.
      */

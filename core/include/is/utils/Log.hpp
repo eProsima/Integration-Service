@@ -43,10 +43,10 @@ public:
      *        than the configured maximum level will not be displayed.
      *        This level is configurable via CMake parameters and can
      *        also be set using the provided `set_logging_level` method API.
-     * 
+     *
      *        * **Values**:
-     * 
-     *          * Level::**ERROR** 
+     *
+     *          * Level::**ERROR**
      *          * Level::**WARN**
      *          * Level::**INFO**
      *          * Level::**DEBUG**
@@ -65,7 +65,7 @@ public:
      *        for the current operation in the logger.
      *
      *        * **Values**:
-     * 
+     *
      *          * CurrentLevelStatus::**NON_SPECIFIED**
      *          * CurrentLevelStatus::**SPECIFIED**
      *          * CurrentLevelStatus::**SPECIFIED_BUT_HIDDEN**
@@ -86,7 +86,7 @@ public:
      * @brief Constructor.
      *
      * @param[in] header The user-defined headed that will be printed
-     *            at the begginning of every logger's message.
+     *            at the beginning of every logger's message.
      */
     Logger(
             const std::string& header);
@@ -111,7 +111,7 @@ public:
     /**
      * @brief Operator << overload for a certain logging Level.
      *        Sets the logging level for the char/string messages
-     *        streamed aferwards, until std::endl is received.
+     *        streamed afterwards, until std::endl is received.
      *
      * @param[in] level The logging Level of a new upcoming message.
      *
