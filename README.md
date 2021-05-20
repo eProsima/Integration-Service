@@ -234,7 +234,8 @@ Additionally, creating a *System Handle* is a relatively easy task and allows to
 protocol to the *Integration System* infrastructure, which automatically provides the new protocol
 with communication capabilities towards all of the aforementioned middlewares and protocols.
 
-For more information, please refer to the [System Handle creation tutorial](<!-- TODO: ADD LINK TO SH CREATION TUTORIAL -->) available in the official documentation.
+For more information, please refer to the [System Handle user manual](https://integration-service.docs.eprosima.com/en/latest/user_manual/systemhandle/sh.html#)
+and [System Handle API reference](https://integration-service.docs.eprosima.com/en/latest/api_reference/core/systemhandle/api_systemhandle.html) sections, available in the official documentation.
 
 # Compilation flags
 
@@ -280,10 +281,12 @@ There are several CMake flags, which can be tuned during the configuration step:
 The official documentation for *eProsima Integration Service* is hosted by Read the Docs,
 and comprises the following sections:
 
-* [Index](<!-- TODO: ADD LINK -->)
-* [Installation manual](<!-- TODO: ADD LINK -->)
-* [User manual](<!-- TODO: ADD LINK -->)
-* [Use cases and examples](<!-- TODO: ADD LINK -->)
+* [Introduction](https://integration-service.docs.eprosima.com/en/latest/index.html)
+* [Installation Manual](https://integration-service.docs.eprosima.com/en/latest/installation_manual/installation_manual.html)
+* [User Manual](https://integration-service.docs.eprosima.com/en/latest/user_manual/user_manual.html)
+* [API Reference](https://integration-service.docs.eprosima.com/en/latest/api_reference/api_reference.html)
+* [Examples](https://integration-service.docs.eprosima.com/en/latest/examples/examples.html)
+* [Release Notes](https://integration-service.docs.eprosima.com/en/latest/release_notes/release_notes.html)
 
 # License
 
