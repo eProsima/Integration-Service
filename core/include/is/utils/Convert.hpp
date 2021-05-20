@@ -235,7 +235,7 @@ struct MessageConvert
  * } // namespace eprosima
  * @endcode
  *
- * @note The UpperBound limit could tipically be calculated as
+ * @note The UpperBound limit could typically be calculated as
  *       @code{.cpp}
  *       std::numeric_limits<typename native::middleware::type<ElementType, Allocator>::size_type>::max()
  *       @endcode
