@@ -38,7 +38,7 @@ namespace internal {
  *        TopicSubscriberSystem, ServiceClientSystem and ServiceProviderSystem
  *        instances associated to the SystemHandle instance, if applicable.
  *
- *        If not applicable, these instances will just be casted to `nullptr`.
+ *        If not applicable, these instances will just be cast to `nullptr`.
  *        Later on, this will allow to know whether a certain SystemHandle comes
  *        or not with any of these four working capabilities.
  *

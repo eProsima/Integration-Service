@@ -142,9 +142,9 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param[in] type The type kind that should have been casted to a string.
+     * @param[in] type The type kind that should have been cast to a string.
      *
-     * @param[in] field_name The field whose conversion to string was unsuccessfully atttempted.
+     * @param[in] field_name The field whose conversion to string was unsuccessfully attempted.
      *
      * @param[in] details The details on how the conversion is being done.
      */

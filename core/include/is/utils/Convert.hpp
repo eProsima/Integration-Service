@@ -97,7 +97,7 @@ struct Convert
  *          This patch solves this issue when the native type differs from the
  *          DynamicData type for this specific case.
  *
- * @note This specialization can be removed safety if rosidl modifies its behaviour.
+ * @note This specialization can be removed safety if rosidl modifies its behavior.
  */
 struct CharConvert
 {
