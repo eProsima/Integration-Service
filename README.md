@@ -303,27 +303,61 @@ There are several CMake flags, which can be tuned during the configuration step:
 
 * `BUILD_EXAMPLES`: Allows to compile utilities that can be used for the several provided
   usage examples for *Integration Service*, located under the [examples/utils](examples/utils/) folder.
+  
+    :warning: | *To use this flag all the examples dependencies need to be installed.*
+    :---: | :---
+  
   These applications can be used to test the *Integration Service* with some of the provided YAML configuration
   files, which are located under the [examples/basic](examples/basic) directory:
 
-  ```bash
-  ~/is_ws$ colcon build --cmake-args -DBUILD_EXAMPLES=ON
-  ```
+    ```bash
+    ~/is_ws$ colcon build --cmake-args -DBUILD_EXAMPLES=ON
+    ```
+
+* `BUILD_FASTDDS_EXAMPLES`: Allows to compile the FastDDS utilities that can be used for several of the
+  provided usage examples for *Integration Service*, located under the [examples/utils](examples/utils/)
+  folder.
+  
+    :warning: | *To compile these examples you need to have FastDDS (v.2.0.0 or superior) and its dependencies installed.*
+    :---: | :---:
+  
+  These applications can be used to test the *Integration Service* with some of the provided YAML configuration
+  files, which are located under the [examples/basic](examples/basic) directory:
+
+    ```bash
+    ~/is_ws$ colcon build --cmake-args -DBUILD_FASTDDS_EXAMPLES=ON
+    ```
+
   <details>
-  <summary>To date, the following user application examples are available: <i>(click to expand)</i></summary>
+  <summary>To date, the following FastDDS user application examples are available: <i>(click to expand)</i></summary>
 
   * `DDSHelloWorld`: A simple publisher/subscriber application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
     It publishes or subscribes to a simple string topic, named *HelloWorldTopic*.
     As an alternative to `colcon`, in order to compile the `DDSHelloWorld` example, the following commands can be executed:
 
     ```bash
-    ~/is_ws$ cd examples/utils/DDSHelloWorld
-    ~/is_ws/examples/utils/DDSHelloWorld$ mkdir build
-    ~/is_ws/examples/utils/DDSHelloWorld$ cd build
-    ~/is_ws/examples/utils/DDSHelloWorld/build$ cmake ..
-    ~/is_ws/examples/utils/DDSHelloWorld$ make
+    ~/is_ws$ cd examples/utils/dds/DDSHelloWorld
+    ~/is_ws/examples/utils/dds/DDSHelloWorld$ mkdir build
+    ~/is_ws/examples/utils/dds/DDSHelloWorld$ cd build
+    ~/is_ws/examples/utils/dds/DDSHelloWorld/build$ cmake .. -DBUILD_EXAMPLES=ON
+    ~/is_ws/examples/utils/dds/DDSHelloWorld$ make
     ```
-    The resulting executable will be located inside the `build` folder, and named `DDSHelloWorld`.
+    The executable resulting from the previous instructions will be located inside the `build` folder and named `DDSHelloWorld`. Please execute `DDSHelloWorld -h` to see a full list of supported input parameters.
+
+
+  * `DDSAddTwoInts`: A simple server/client C++ application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
+    It allows performing service requests and replies to a service named AddTwoIntsService, which consists
+    of two integer numbers as request type and answers with a single value, indicating the sum of them.
+    As an alternative to colcon, in order to compile the DDSAddTwoInts example, the following commands can be executed:
+
+    ```bash
+    ~/is_ws$ cd examples/utils/dds/DDSAddTwoInts
+    ~/is_ws/examples/utils/dds/DDSAddTwoInts$ mkdir build
+    ~/is_ws/examples/utils/dds/DDSAddTwoInts$ cd build
+    ~/is_ws/examples/utils/dds/DDSAddTwoInts/build$ cmake .. -DBUILD_EXAMPLES=ON
+    ~/is_ws/examples/utils/dds/DDSAddTwoInts/build$ make
+    ```
+    The executable resulting from the previous instructions will be located inside the `build` folder and named `DDSAddTwoInts`. Please execute `DDSAddTwoInts -h` to see a full list of supported input parameters.
 
   </details>
 
