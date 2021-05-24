@@ -360,6 +360,75 @@ There are several CMake flags, which can be tuned during the configuration step:
     The executable resulting from the previous instructions will be located inside the `build` folder and named `DDSAddTwoInts`. Please execute `DDSAddTwoInts -h` to see a full list of supported input parameters.
 
   </details>
+  
+* `BUILD_ROS1_EXAMPLES`: Allows to compile the ROS 1 utilities that can be used for several of the
+  provided usage examples for *Integration Service*, located under the [examples/utils](examples/utils/)
+  folder.
+  
+  :warning: | *To compile this example you need to have ROS 1 (Melodic or superior) installed and sourced.*
+  :---: | :---:
+  
+  These applications can be used to test the *Integration Service* with some of the provided YAML configuration
+  files, which are located under the [examples/basic](examples/basic) directory:
+
+    ```bash
+    ~/is_ws$ colcon build --cmake-args -DBUILD_ROS1_EXAMPLES=ON
+    ```
+    <details>
+    <summary>To date, the following ROS 1 user application examples are available: <i>(click to expand)</i></summary>
+    
+    * `add_two_ints_server`: A simple C++ server application, running under ROS 1. It listens to requests coming from ROS 1 clients and produces an appropriate
+      answer for them; specifically, it is capable of listening to a ROS 1 service called `add_two_ints`, which consists of two integer numbers as request type
+      and answers with a single value, indicating the sum of them. As an alternative to *colcon*, in order to compile the `add_two_ints_server` example, the 
+      following commands can be executed:
+  
+        ```bash
+        ~/is_ws$ cd examples/utils/ros1/add_two_ints_server
+        ~/is_ws/examples/utils/ros1/add_two_ints_server$ mkdir build
+        ~/is_ws/examples/utils/ros1/add_two_ints_server$ cd build
+        ~/is_ws/examples/utils/ros1/add_two_ints_server/build$ cmake .. -DBUILD_EXAMPLES=ON
+        ~/is_ws/examples/utils/ros1/add_two_ints_server/build$ make
+        ```
+      The resulting executable will be located inside the `build/devel/lib/add_two_ints_server` folder, and named `add_two_ints_server_node`.
+    * `example_interfaces`: ROS 1 package containing the service type definitions for the AddTwoInts services examples, for which the ROS 1 type support files
+      will be automatically generated. As specified in the services examples tutorials, it must be compiled and installed in the system, using catkin:
+  
+      ```bash
+      ~/is_ws$ cd examples/utils/ros1/
+      ~/is_ws/examples/utils/ros1$ catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/$ROS1_DISTRO install
+      ```
+  
+    </details>
+    
+* `BUILD_WEBSOCKET_EXAMPLES`: Allows to compile the WebSocket utilities that can be used for several of the provided usage examples for 
+  *Integration Service*, located under the [examples/utils](examples/utils/) folder.
+
+  :warning: | *To compile this example you need to have OpenSSL and WebSocket++ installed.*
+  :---: | :---:
+
+  These applications can be used to test the *Integration Service* with some of the provided YAML configuration
+  files, which are located under the [examples/basic](examples/basic) directory:
+
+  ```bash
+  ~/is_ws$ colcon build --cmake-args -DBUILD_WEBSOCEKT_EXAMPLES=ON
+  ```
+  <details>
+  <summary>To date, the following WebSocket user application examples are available: <i>(click to expand)</i></summary>
+
+  * `WebSocketAddTwoInts`: A simple server/client C++ application, running under WebSocket++. It allows performing service requests and replies to a service
+    named add_two_ints, which consists of two integer numbers as request type and answers with a single value, indicating the sum of them. As an alternative
+    to *colcon*, in order to compile the`WebSocketAddTwoInts` example, the following commands can be executed:
+
+      ```bash
+      ~/is_ws$ cd examples/utils/websocket/WebSocketAddTwoInts
+      ~/is_ws/examples/utils/websocket/WebSocketAddTwoInts$ mkdir build
+      ~/is_ws/examples/utils/websocket/WebSocketAddTwoInts$ cd build
+      ~/is_ws/examples/utils/websocket/WebSocketAddTwoInts/build$ cmake .. -DBUILD_EXAMPLES=ON
+      ~/is_ws/examples/utils/websocket/WebSocketAddTwoInts/build$ make
+      ```
+    The resulting executable will be located inside the `build` folder, and named `WebSocketAddTwoInts`. Please execute `WebSocketAddTwoInts -h` to see a full list of supported input parameters.
+
+  </details>
 
 # Documentation
 
