@@ -45,7 +45,7 @@ These requirements will be different depending on the *System Handles* you want 
 
 #### Integration Service Core
 
-* [YAML-cpp](https://github.com/jbeder/yaml-cpp): A YAML parser and emiter for C++.
+* [YAML-cpp](https://github.com/jbeder/yaml-cpp): A *YAML* parser and emiter for C++.
 * [Boost program options](https://github.com/boostorg/program_options): Library that allows obtaining name-value pairs from the config file.
 
   These libraries can be installed using your Linux distribution package manager with the following command:
@@ -56,7 +56,7 @@ These requirements will be different depending on the *System Handles* you want 
   
 #### FastDDS System Handle
 
-* [FastDDS](https://github.com/eProsima/Fast-DDS#installation-guide): eProsima C++ implementation for DDS.
+* [FastDDS](https://github.com/eProsima/Fast-DDS#installation-guide): eProsima C++ implementation for *DDS*.
 
 #### Fiware System Handle
 
@@ -72,16 +72,16 @@ These requirements will be different depending on the *System Handles* you want 
 
 #### ROS 1 System Handle
 
-* [ROS 1](http://wiki.ros.org/ROS/Installation): Melodic/Noetic ROS 1 distribution.
+* [ROS 1](http://wiki.ros.org/ROS/Installation): *Melodic/Noetic ROS 1* distribution.
 
 #### ROS 2 System Handle
 
-* [ROS 2](https://docs.ros.org/en/foxy/Installation.html): Foxy ROS 2 distribution.
+* [ROS 2](https://docs.ros.org/en/foxy/Installation.html): *Foxy ROS 2* distribution.
 
 #### WebSocket System Handle
 
 * [OpenSSL](https://www.openssl.org/): Toolkit for the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols.
-* [WebSocket++](https://github.com/zaphoyd/websocketpp): WebSocket Protocol C++ library implementation.
+* [WebSocket++](https://github.com/zaphoyd/websocketpp): *WebSocket* Protocol C++ library implementation.
 
   These libraries can be installed using your Linux distribution package manager with the following command:
 
