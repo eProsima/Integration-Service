@@ -38,6 +38,57 @@ It is recommended to use [colcon](https://colcon.readthedocs.io/en/released/) to
 *Integration Service* executable and its associated middleware plugins; for more information, please refer to
 the `Installation manual` section in the [documentation](#documentation) chapter of this document.
 
+# Dependencies
+
+This section provides a list of the dependencies needed in order to compile *Integration Service*. 
+These requirements will be different depending on the *System Handles* you want to use. 
+
+#### Integration Service Core
+
+* [YAML-cpp](https://github.com/jbeder/yaml-cpp): A YAML parser and emiter for C++.
+* [Boost program options](https://github.com/boostorg/program_options): Library that allows obtaining name-value pairs from the config file.
+
+  These libraries can be installed using your Linux distribution package manager with the following command:
+
+  ```
+  sudo apt-get install -y libyaml-cpp-dev libboost-program-options-dev
+  ```
+  
+#### FastDDS System Handle
+
+* [FastDDS](https://github.com/eProsima/Fast-DDS#installation-guide): eProsima C++ implementation for DDS.
+
+#### Fiware System Handle
+
+* [Asio](https://think-async.com/Asio/): C++ library for network and low-level I/O programming.
+* [cURLpp](http://www.curlpp.org/): C++ wrapper for libcURL.
+* [cURL](https://curl.se/): Command-line tool for getting or sending data using URL syntax.
+
+  These libraries can be installed using your Linux distribution package manager with the following command:
+
+  ```
+  sudo apt-get install -y libcurlpp-dev libasio-dev libcurl4-openssl-dev
+  ```
+
+#### ROS 1 System Handle
+
+* [ROS 1](http://wiki.ros.org/ROS/Installation): Melodic/Noetic ROS 1 distribution.
+
+#### ROS 2 System Handle
+
+* [ROS 2](https://docs.ros.org/en/foxy/Installation.html): Foxy ROS 2 distribution.
+
+#### WebSocket System Handle
+
+* [OpenSSL](https://www.openssl.org/): Toolkit for the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols.
+* [WebSocket++](https://github.com/zaphoyd/websocketpp): WebSocket Protocol C++ library implementation.
+
+  These libraries can be installed using your Linux distribution package manager with the following command:
+
+  ```
+  sudo apt-get install -y libssl-dev libwebsocketpp-dev
+  ```
+
 # Configuration
 
 The *Integration Service* can be configured during runtime by means of a dedicated **YAML** file.
