@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(example_interfaces)
 
-if (NOT BUILD_EXAMPLES)
+if (NOT (BUILD_EXAMPLES OR BUILD_ROS1_EXAMPLES))
     return()
 endif()
 

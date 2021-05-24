@@ -20,7 +20,7 @@ endif()
 
 project(DDSHelloWorld)
 
-if (NOT BUILD_EXAMPLES)
+if (NOT (BUILD_EXAMPLES OR BUILD_FASTDDS_EXAMPLES))
     return()
 endif()
 
