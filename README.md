@@ -417,7 +417,7 @@ There are several CMake flags, which can be tuned during the configuration step:
 
   * `WebSocketAddTwoInts`: A simple server/client C++ application, running under WebSocket++. It allows performing service requests and replies to a service
     named add_two_ints, which consists of two integer numbers as request type and answers with a single value, indicating the sum of them. As an alternative
-    to *colcon*, in order to compile the`WebSocketAddTwoInts` example, the following commands can be executed:
+    to `colcon`, in order to compile the`WebSocketAddTwoInts` example, the following commands can be executed:
 
       ```bash
       ~/is_ws$ cd examples/utils/websocket/WebSocketAddTwoInts
