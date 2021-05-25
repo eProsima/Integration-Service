@@ -58,7 +58,7 @@ jobs:
         run: |
           . /opt/ros/foxy/setup.sh
           . /opt/ros/noetic/setup.sh
-          colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_TESTS=ON --event-handlers console_direct+
+          colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON --event-handlers console_direct+
 
       - name: Test the Integration Service Core
         run: |
