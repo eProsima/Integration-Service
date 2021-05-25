@@ -10,8 +10,11 @@ on:
 
 jobs:
   integration-service_CI:
+    strategy:
+      matrix:
+        node: [foxy, rolling]
     runs-on: ubuntu-20.04
-    container: ros:foxy
+    container: ros:${{ matrix.node }}
 
     steps:
       - uses: actions/checkout@v2
@@ -21,7 +24,7 @@ jobs:
       - name: Download required dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev libcurlpp-dev libasio-dev libcurl4-openssl-dev
+          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev libcurlpp-dev libasio-dev libcurl4-openssl-dev ros-${{ matrix.node }}-fastrtps
 
       - name: Download and install ROS 1 Noetic
         run: |
@@ -54,47 +57,47 @@ jobs:
         run: |
           git clone https://github.com/eProsima/FIWARE-SH.git src/fiware-sh
 
+      - name: Install ROS 1 example_interfaces package
+        working-directory: ./src/integration-service/examples/utils/ros1
+        run: |
+          . /opt/ros/noetic/setup.sh
+          catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
+
       - name: Build
         run: |
-          . /opt/ros/foxy/setup.sh
+          . /opt/ros/${{ matrix.node }}/setup.sh
           . /opt/ros/noetic/setup.sh
-          colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON --event-handlers console_direct+
+          colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
 
       - name: Test the Integration Service Core
         run: |
-          . install/local_setup.sh
           colcon test --packages-select is-core --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service Fast DDS SystemHandle
         run: |
-          . /opt/ros/foxy/setup.sh
-          . install/local_setup.sh
+          . /opt/ros/${{ matrix.node }}/setup.sh
           colcon test --packages-select is-fastdds --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service ROS 1 SystemHandle
         run: |
           . /opt/ros/noetic/setup.sh
-          . install/local_setup.sh
           roscore & colcon test --packages-select is-ros1 is-ros1-test --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service ROS 2 SystemHandle
         run: |
-          . /opt/ros/foxy/setup.sh
-          . install/local_setup.sh
+          . /opt/ros/${{ matrix.node }}/setup.sh
           colcon test --packages-select is-ros2 is-ros2-test --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service WebSocket SystemHandle
         run: |
-          . install/local_setup.sh
           colcon test --packages-select is-websocket --event-handlers console_direct+
           colcon test-result
 
       #- name: Test the Integration Service FIWARE SystemHandle
       #  run: |
-      #    . install/local_setup.sh
       #    colcon test --packages-select is-fiware --event-handlers console_direct+
       #    colcon test-result
