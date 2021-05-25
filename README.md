@@ -237,7 +237,7 @@ while others are optional. Both kinds are listed and reviewed below:
   ```
 
   <details>
-  <summary>Regarding the common parameters, they differ slightly from the `topics` section: <i>(click to expand)</i></summary>
+  <summary>Regarding the common parameters, they differ slightly from the <i>topics</i> section: <i>(click to expand)</i></summary>
 
   * `type` *(optional):* The service type. As services usually are composed of a request and a reply, this field
     only makes sense for those services which consist solely of a request action with no reply.
@@ -329,7 +329,7 @@ There are several CMake flags, which can be tuned during the configuration step:
     ```
 
   <details>
-  <summary>To date, the following *FastDDS* user application examples are available: <i>(click to expand)</i></summary>
+  <summary>To date, the following <i>FastDDS</i> user application examples are available: <i>(click to expand)</i></summary>
 
   * `DDSHelloWorld`: A simple publisher/subscriber application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
     It publishes or subscribes to a simple string topic, named *HelloWorldTopic*.
@@ -375,7 +375,7 @@ There are several CMake flags, which can be tuned during the configuration step:
     ~/is_ws$ colcon build --cmake-args -DBUILD_ROS1_EXAMPLES=ON
     ```
     <details>
-    <summary>To date, the following *ROS 1* userr-defined packages and application examples are available: <i>(click to expand)</i></summary>
+    <summary>To date, the following <i>ROS 1</i> userr-defined packages and application examples are available: <i>(click to expand)</i></summary>
 
     * `add_two_ints_server`: A simple C++ server application, running under *ROS 1*. It listens to requests coming from *ROS 1* clients and produces an appropriate
       answer for them; specifically, it is capable of listening to a *ROS 1* service called `add_two_ints`, which consists of two integer numbers as request type
@@ -413,7 +413,7 @@ There are several CMake flags, which can be tuned during the configuration step:
   ~/is_ws$ colcon build --cmake-args -DBUILD_WEBSOCKET_EXAMPLES=ON
   ```
   <details>
-  <summary>To date, the following *WebSocket* user application examples are available: <i>(click to expand)</i></summary>
+  <summary>To date, the following <i>WebSocket</i> user application examples are available: <i>(click to expand)</i></summary>
 
   * `WebSocketAddTwoInts`: A simple server/client C++ application, running under WebSocket++. It allows performing service requests and replies to a service
     named add_two_ints, which consists of two integer numbers as request type and answers with a single value, indicating the sum of them. As an alternative
