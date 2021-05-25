@@ -62,11 +62,12 @@ jobs:
           . /opt/ros/noetic/setup.sh
           cd src/integration-service/examples/utils/ros1
           catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
+          rm -rf build/ devel/ src/CMakeLists.txt
 
       - name: Build
         run: |
-          . /opt/ros/noetic/setup.sh
           . /opt/ros/${{ matrix.node }}/setup.sh
+          . /opt/ros/noetic/setup.sh
           colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON --event-handlers console_direct+
 
       - name: Test the Integration Service Core
