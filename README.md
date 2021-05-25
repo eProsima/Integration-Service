@@ -391,7 +391,7 @@ There are several CMake flags, which can be tuned during the configuration step:
         ```
       The resulting executable will be located inside the `build/devel/lib/add_two_ints_server` folder, and named `add_two_ints_server_node`.
     * `example_interfaces`: *ROS 1* package containing the service type definitions for the AddTwoInts services examples, for which the *ROS 1* type support files
-      will be automatically generated. As specified in the services examples tutorials, it must be compiled and installed in the system, using catkin:
+      will be automatically generated. As specified in the services examples tutorials, it must be compiled and installed in the system, using `catkin`:
 
       ```bash
       ~/is_ws$ cd examples/utils/ros1/
