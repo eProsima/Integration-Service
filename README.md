@@ -76,7 +76,7 @@ These requirements will be different depending on the *System Handles* you want 
 
 #### ROS 2 System Handle
 
-* [ROS 2](https://docs.ros.org/en/foxy/Installation.html): *Foxy ROS 2* distribution.
+* [ROS 2](https://docs.ros.org/en/foxy/Releases.html): *Foxy/Galactic ROS 2* distribution.
 
 #### WebSocket System Handle
 
