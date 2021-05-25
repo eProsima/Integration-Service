@@ -66,8 +66,8 @@ jobs:
 
       - name: Build
         run: |
-          . /opt/ros/${{ matrix.node }}/setup.sh
           . /opt/ros/noetic/setup.sh
+          . /opt/ros/${{ matrix.node }}/setup.sh
           colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON --event-handlers console_direct+
 
       - name: Test the Integration Service Core
