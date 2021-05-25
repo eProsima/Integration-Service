@@ -920,7 +920,7 @@ bool Config::parse(
             }
 
             auto it_mw_remap = topic_config.remap.find(mw);
-            if (it_mw_remap == topic_config.remap.end() || it_mw_remap->second.type == "")
+            if (it_mw_remap == topic_config.remap.end() || it_mw_remap->second.type.empty())
             {
                 _m_required_types[mw].messages.insert(topic_config.message_type);
             }
@@ -940,7 +940,11 @@ bool Config::parse(
                        << "'" << topic_name << "'" << std::endl;
                 return false;
             }
-            _m_required_types[mw_name].messages.insert(topic_info.type);
+
+            if (!topic_info.type.empty())
+            {
+                _m_required_types[mw_name].messages.insert(topic_info.type);
+            }
         }
     }
 
