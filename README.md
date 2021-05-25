@@ -293,6 +293,25 @@ and [System Handle API reference](https://integration-service.docs.eprosima.com/
 *Integration Service* uses `CMake` for building and packaging the project.
 There are several CMake flags, which can be tuned during the configuration step:
 
+* `BUILD_LIBRARY`: This compilation flag can be used to completely disable the compilation of
+  the *Integration Service* set of libraries, that is, the *Integration Service Core* and all the
+  existing *System Handles* existing in the `colcon` workspace. It is enabled by default.
+
+  This flag is useful, for example, to speed up the documentation generation process, when building the
+  [API Reference](https://integration-service.docs.eprosima.com/en/latest/api_reference/api_reference.html) from the *Doxygen* source code comments.
+
+  ```bash
+  ~/is_ws$ colcon build --cmake-args -DBUILD_LIBRARY=OFF
+  ```
+
+* `BUILD_API_REFERENCE`: It is used to generate all the necessary files for building the
+  [API Reference](https://integration-service.docs.eprosima.com/en/latest/api_reference/api_reference.html) section of this documentation, starting from the source code comments written
+  using a *Doxygen*-like format. It is disabled by default; to use it:
+
+  ```bash
+   ~/is_ws$ colcon build --cmake-args -DBUILD_API_REFERENCE=ON
+  ```
+
 * `BUILD_TESTS`: When compiling *Integration Service*, use the `-DBUILD_TESTS=ON` CMake option
   to compile both the unitary tests for the [Integration Service Core](core/) and the unitary
   and integration tests for all the *System Handles* present in the `colcon` workspace:
