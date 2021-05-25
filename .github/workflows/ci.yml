@@ -58,10 +58,9 @@ jobs:
           git clone https://github.com/eProsima/FIWARE-SH.git src/fiware-sh
 
       - name: Install ROS 1 example_interfaces package
-        working-directory: ./src/integration-service/examples/utils/ros1
         run: |
           . /opt/ros/noetic/setup.sh
-          catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
+          cd src/integration-service/examples/utils/ros1 && catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
 
       - name: Build
         run: |
