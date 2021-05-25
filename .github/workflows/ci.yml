@@ -62,7 +62,6 @@ jobs:
           . /opt/ros/noetic/setup.sh
           cd src/integration-service/examples/utils/ros1
           catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
-          rm -rf build/ devel/ src/CMakeLists.txt
 
       - name: Build
         run: |
