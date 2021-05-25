@@ -304,8 +304,8 @@ There are several CMake flags, which can be tuned during the configuration step:
 * `BUILD_EXAMPLES`: Allows to compile utilities that can be used for the several provided
   usage examples for *Integration Service*, located under the [examples/utils](examples/utils/) folder.
 
-    :warning: | *To use this flag, all the examples dependencies need to be installed.*
-    :---: | :---
+    | :warning: | *To use this flag, all the examples dependencies need to be installed.* |
+    | :-------: | :---------------------------------------------------------------------- |
 
   These applications can be used to test the *Integration Service* with some of the provided *YAML* configuration
   files, which are located under the [examples/basic](examples/basic) directory:
@@ -318,8 +318,8 @@ There are several CMake flags, which can be tuned during the configuration step:
   provided usage examples for *Integration Service*, located under the [examples/utils/dds](examples/utils/dds)
   folder.
 
-    :warning: | *To compile these examples you need to have FastDDS (v.2.0.0 or superior) and its dependencies installed.*
-    :---: | :---:
+    | :warning: | *To compile these examples you need to have FastDDS (v.2.0.0 or superior) installed.* |
+    | :-------: | :-----------------------------------------------------------------------------------: |
 
   These applications can be used to test the *Integration Service* with some of the provided *YAML* configuration
   files, which are located under the [examples/basic](examples/basic) directory:
@@ -365,8 +365,8 @@ There are several CMake flags, which can be tuned during the configuration step:
   provided usage examples for *Integration Service*, located under the [examples/utils/ros1](examples/utils/ros1)
   folder.
 
-  :warning: | *To compile this example you need to have ROS 1 (Melodic or superior) installed and sourced.*
-  :---: | :---:
+  | :warning: | *To compile this example you need to have ROS 1 (Melodic or superior) installed and sourced.* |
+  | :-------: | :-------------------------------------------------------------------------------------------: |
 
   These applications can be used to test the *Integration Service* with some of the provided *YAML* configuration
   files, which are located under the [examples/basic](examples/basic) directory:
@@ -403,8 +403,8 @@ There are several CMake flags, which can be tuned during the configuration step:
 * `BUILD_WEBSOCKET_EXAMPLES`: Allows to compile the *WebSocket* utilities that can be used for several of the provided usage examples for
   *Integration Service*, located under the [examples/utils/websocket](examples/utils/websocket) folder.
 
-  :warning: | *To compile this example you need to have OpenSSL and WebSocket++ installed.*
-  :---: | :---:
+  | :warning: | *To compile this example you need to have OpenSSL and WebSocket++ installed.* |
+  | :-------: | :---------------------------------------------------------------------------: |
 
   These applications can be used to test the *Integration Service* with some of the provided *YAML* configuration
   files, which are located under the [examples/basic](examples/basic) directory:
