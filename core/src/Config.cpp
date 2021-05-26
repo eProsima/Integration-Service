@@ -1432,10 +1432,17 @@ bool Config::configure_topics(
              */
 
             std::unique_ptr<TopicSubscriberSystem::SubscriptionCallback> unique_callback = nullptr;
+            TopicSubscriberSystem* topic_subscriber_system = it_from->second.topic_subscriber;
 
             unique_callback.reset(new TopicSubscriberSystem::SubscriptionCallback(
-                        [=](const eprosima::xtypes::DynamicData& message)
+                        [=](const eprosima::xtypes::DynamicData& message,
+                        void* filter_handle)
                         {
+                            if (topic_subscriber_system->is_internal_message(filter_handle))
+                            {
+                                return;
+                            }
+
                             for (const Publication& publication : publications)
                             {
                                 if (publication.consistency == eprosima::xtypes::TypeConsistency::EQUALS)

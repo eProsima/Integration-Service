@@ -191,7 +191,7 @@ public:
     /**
      * @brief Signature of the callback that gets triggered when a subscriber receives some data.
      */
-    using SubscriptionCallback = std::function<void (const xtypes::DynamicData& message)>;
+    using SubscriptionCallback = std::function<void (const xtypes::DynamicData& message, void* filter_handle)>;
 
     /**
      * @brief Constructor.
@@ -222,6 +222,16 @@ public:
             const xtypes::DynamicType& message_type,
             SubscriptionCallback* callback,
             const YAML::Node& configuration) = 0;
+
+    /**
+     * TODO docs
+     */
+    virtual bool is_internal_message(
+            void* filter_handle) = 0;
+
+private:
+
+    const std::string filter_;
 };
 
 /**

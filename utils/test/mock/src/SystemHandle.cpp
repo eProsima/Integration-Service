@@ -199,6 +199,12 @@ public:
         return true;
     }
 
+    bool is_internal_message(
+            void* /*filter_message*/)
+    {
+        return false;
+    }
+
     std::shared_ptr<TopicPublisher> advertise(
             const std::string& topic_name,
             const eprosima::xtypes::DynamicType& message_type,
@@ -248,7 +254,7 @@ bool publish_message(
         return false;
     }
 
-    (*cb->second)(msg);
+    (*cb->second)(msg, nullptr);
 
     return true;
 }
