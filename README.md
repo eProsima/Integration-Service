@@ -305,7 +305,7 @@ There are several CMake flags, which can be tuned during the configuration step:
   ```
 
 * `BUILD_API_REFERENCE`: It is used to generate all the necessary files for building the
-  [API Reference](https://integration-service.docs.eprosima.com/en/latest/api_reference/api_reference.html) section of this documentation, starting from the source code comments written
+  [API Reference](https://integration-service.docs.eprosima.com/en/latest/api_reference/api_reference.html) section of the documentation, starting from the source code comments written
   using a *Doxygen*-like format. It is disabled by default; to use it:
 
   ```bash
