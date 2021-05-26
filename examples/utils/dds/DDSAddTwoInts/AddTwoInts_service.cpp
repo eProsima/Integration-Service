@@ -156,9 +156,12 @@ std::future<AddTwoInts_Response> AddTwoInts_Service::request(
 {
     if (!server_)
     {
+        std::unique_lock<std::mutex> lock(mutex_);
+
         datawriter_->write(static_cast<void*>(&request));
         delete promise_;
         promise_ = new std::promise<AddTwoInts_Response>();
+
         return promise_->get_future();
     }
     else
@@ -216,6 +219,8 @@ void AddTwoInts_Service::runThread(
         const uint32_t samples,
         const uint32_t sleep)
 {
+    mutex_.unlock();
+
     if (samples == 0)
     {
         int64_t a = 0;
@@ -344,6 +349,8 @@ void AddTwoInts_Service::ReplyListener::on_subscription_matched(
 void AddTwoInts_Service::ReplyListener::on_data_available(
         fastdds::dds::DataReader* reader)
 {
+    std::unique_lock<std::mutex> lock(service_->mutex_);
+
     fastdds::dds::SampleInfo info;
     AddTwoInts_Response response;
 
