@@ -228,10 +228,6 @@ public:
      */
     virtual bool is_internal_message(
             void* filter_handle) = 0;
-
-private:
-
-    const std::string filter_;
 };
 
 /**
