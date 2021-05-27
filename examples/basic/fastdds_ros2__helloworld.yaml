@@ -28,6 +28,6 @@ topics:
         route: dds_to_ros2,
         remap: {
             dds: { type: HelloWorld, topic: HelloWorldTopic },
-            ros2: { topic: "listener" }
+            ros2: { topic: "chatter" }
         }
     }
