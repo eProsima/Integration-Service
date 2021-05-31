@@ -23,7 +23,7 @@ jobs:
   integration-service_CI:
     strategy:
       matrix:
-        node: [foxy, rolling]
+        node: [foxy, galactic]
     runs-on: ubuntu-20.04
     container: ros:${{ matrix.node }}
 
