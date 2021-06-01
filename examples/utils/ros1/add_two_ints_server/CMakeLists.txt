@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(add_two_ints_server)
-
-if (NOT (BUILD_EXAMPLES OR BUILD_ROS1_EXAMPLES))
-    return()
-endif()
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -11,10 +6,11 @@ endif()
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  example_interfaces
-)
+
+set(PROJECT_NAME "add_two_ints_server")
+
+find_package(roscpp REQUIRED)
+find_package(example_interfaces REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -105,12 +101,12 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
+#catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES add_two_ints_server
 #  CATKIN_DEPENDS example_interfaces
 #  DEPENDS system_lib
-)
+#)
 
 ###########
 ## Build ##
@@ -120,7 +116,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 # include
-  ${catkin_INCLUDE_DIRS}
+    ${roscpp_INCLUDE_DIRS}
+    ${example_interfaces_INCLUDE_DIRS}
+#${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -146,11 +144,13 @@ add_executable(${PROJECT_NAME}_node src/add_two_ints_server_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
+	#${catkin_LIBRARIES}
+    ${roscpp_LIBRARIES}
+    ${example_interfaces_LIBRARIES}
 )
 
 #############
@@ -169,9 +169,9 @@ target_link_libraries(${PROJECT_NAME}_node
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-install(TARGETS ${PROJECT_NAME}_node
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#install(TARGETS ${PROJECT_NAME}_node
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html

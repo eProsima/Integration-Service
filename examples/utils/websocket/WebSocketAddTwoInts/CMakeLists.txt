@@ -20,15 +20,11 @@
 ###################################################################################
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
-project(WebSocketAddTwoInts)
-
-if (NOT (BUILD_EXAMPLES OR BUILD_WEBSOCKET_EXAMPLES))
-    return()
-endif()
-
 find_package(websocketpp REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Threads REQUIRED)
+
+set(PROJECT_NAME "WebSocketAddTwoInts")
 
 message(STATUS "Configuring ${PROJECT_NAME} example...")
 

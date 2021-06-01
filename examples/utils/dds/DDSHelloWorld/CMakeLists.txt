@@ -18,12 +18,6 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.0)
     cmake_policy(SET CMP0048 NEW)
 endif()
 
-project(DDSHelloWorld)
-
-if (NOT (BUILD_EXAMPLES OR BUILD_FASTDDS_EXAMPLES))
-    return()
-endif()
-
 # Find requirements
 if(NOT fastcdr_FOUND)
     find_package(fastcdr REQUIRED)
@@ -42,6 +36,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG OR
         message(FATAL_ERROR "Compiler doesn't support C++11")
     endif()
 endif()
+
+set(PROJECT_NAME "DDSHelloWorld")
 
 message(STATUS "Configuring ${PROJECT_NAME} example...")
 file(GLOB DDS_HELLOWORLD_SOURCES_CXX "*.cxx")
