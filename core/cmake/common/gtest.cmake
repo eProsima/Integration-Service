@@ -76,7 +76,7 @@ macro(add_gtest)
     endif()
 
     foreach(GTEST_SOURCE_FILE ${GTEST_SOURCES})
-        file(STRINGS ${GTEST_SOURCE_FILE} GTEST_TEST_NAMES REGEX "^TEST|^TYPED_TEST\\(")
+        file(STRINGS ${GTEST_SOURCE_FILE} GTEST_TEST_NAMES REGEX "^TEST")
         foreach(GTEST_TEST_NAME ${GTEST_TEST_NAMES})
             string(REGEX REPLACE ["\) \(,"] ";" GTEST_TEST_NAME ${GTEST_TEST_NAME})
             list(GET GTEST_TEST_NAME 1 GTEST_GROUP_NAME)
@@ -102,6 +102,43 @@ macro(add_gtest)
 
             # Add labels
             set_property(TEST ${GTEST_GROUP_NAME}.${GTEST_TEST_NAME} PROPERTY LABELS "${GTEST_LABELS}")
+
+        endforeach()
+        file(STRINGS ${GTEST_SOURCE_FILE} GTEST_TEST_CONTENT)
+        string(REGEX MATCHALL "testing::Types<([A-Za-z0-9:, _])+>" GTEST_TEST_TYPES ${GTEST_TEST_CONTENT})
+        if (GTEST_TEST_TYPES)
+            string(REGEX MATCHALL "([A-Za-z0-9: _])+[,>]" GTEST_TEST_TYPES_LIST ${GTEST_TEST_TYPES})
+            list(LENGTH GTEST_TEST_TYPES_LIST GTEST_TEST_TYPES_COUNT)
+        endif()
+        file(STRINGS ${GTEST_SOURCE_FILE} GTEST_TEST_NAMES REGEX "^TYPED_TEST\\(")
+        message(WARNING "NAMES ${GTEST_TEST_NAMES}, TYPES ${GTEST_TEST_TYPES} ${GTEST_TEST_TYPES_COUNT}")
+        foreach(GTEST_TEST_NAME ${GTEST_TEST_NAMES})
+            string(REGEX REPLACE ["\) \(,"] ";" GTEST_TEST_NAME ${GTEST_TEST_NAME})
+            list(GET GTEST_TEST_NAME 1 GTEST_GROUP_NAME)
+            list(GET GTEST_TEST_NAME 3 GTEST_TEST_NAME)
+            foreach(num RANGE ${GTEST_TEST_TYPES_COUNT})
+                add_test(NAME ${GTEST_GROUP_NAME}/${num}.${GTEST_TEST_NAME}
+                    COMMAND ${command} --gtest_filter=${GTEST_GROUP_NAME}/${num}.${GTEST_TEST_NAME}:*/${GTEST_GROUP_NAME}/${num}.${GTEST_TEST_NAME}/*)
+
+                # Add environment
+                set(GTEST_ENVIRONMENT "")
+                if(WIN32)
+                    set(GTEST_ENVIRONMENT "PATH=${WIN_PATH}")
+                endif()
+
+                foreach(property ${GTEST_ENVIRONMENTS})
+                    list(APPEND GTEST_ENVIRONMENT "${property}")
+                endforeach()
+
+                if(GTEST_ENVIRONMENT)
+                    set_tests_properties(${GTEST_GROUP_NAME}/${num}.${GTEST_TEST_NAME}
+                        PROPERTIES ENVIRONMENT "${GTEST_ENVIRONMENT}")
+                endif()
+                unset(GTEST_ENVIRONMENT)
+
+                # Add labels
+                set_property(TEST ${GTEST_GROUP_NAME}/${num}.${GTEST_TEST_NAME} PROPERTY LABELS "${GTEST_LABELS}")
+            endforeach()
 
         endforeach()
     endforeach()
