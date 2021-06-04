@@ -352,31 +352,15 @@ There are several CMake flags, which can be tuned during the configuration step:
 
   * `DDSHelloWorld`: A simple publisher/subscriber application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
     It publishes or subscribes to a simple string topic, named *HelloWorldTopic*.
-    As an alternative to `colcon`, in order to compile the `DDSHelloWorld` example, the following commands can be executed:
 
-    ```bash
-    ~/is_ws$ cd examples/utils/dds/DDSHelloWorld
-    ~/is_ws/examples/utils/dds/DDSHelloWorld$ mkdir build
-    ~/is_ws/examples/utils/dds/DDSHelloWorld$ cd build
-    ~/is_ws/examples/utils/dds/DDSHelloWorld/build$ cmake .. -DBUILD_EXAMPLES=ON
-    ~/is_ws/examples/utils/dds/DDSHelloWorld$ make
-    ```
-    The executable resulting from the previous instructions will be located inside the `build` folder and named `DDSHelloWorld`. Please execute `DDSHelloWorld -h` to see a full list of supported input parameters.
+    The executable resulting will be located inside the `build/is-examples/dds` folder and named `DDSHelloWorld`. Please execute `DDSHelloWorld -h` to see a full list of supported input parameters.
 
 
   * `DDSAddTwoInts`: A simple server/client C++ application, running under [Fast DDS](https://fast-dds.docs.eprosima.com/).
     It allows performing service requests and replies to a service named `AddTwoIntsService`, which consists
     of two integer numbers as request type and answers with a single value, indicating the sum of them.
-    As an alternative to `colcon`, in order to compile the `DDSAddTwoInts` example, the following commands can be executed:
 
-    ```bash
-    ~/is_ws$ cd examples/utils/dds/DDSAddTwoInts
-    ~/is_ws/examples/utils/dds/DDSAddTwoInts$ mkdir build
-    ~/is_ws/examples/utils/dds/DDSAddTwoInts$ cd build
-    ~/is_ws/examples/utils/dds/DDSAddTwoInts/build$ cmake .. -DBUILD_EXAMPLES=ON
-    ~/is_ws/examples/utils/dds/DDSAddTwoInts/build$ make
-    ```
-    The executable resulting from the previous instructions will be located inside the `build` folder and named `DDSAddTwoInts`. Please execute `DDSAddTwoInts -h` to see a full list of supported input parameters.
+    The executable resulting will be located inside the `build/is-examples/dds` folder and named `DDSAddTwoInts`. Please execute `DDSAddTwoInts -h` to see a full list of supported input parameters.
 
   </details>
 
@@ -398,23 +382,15 @@ There are several CMake flags, which can be tuned during the configuration step:
 
     * `add_two_ints_server`: A simple C++ server application, running under *ROS 1*. It listens to requests coming from *ROS 1* clients and produces an appropriate
       answer for them; specifically, it is capable of listening to a *ROS 1* service called `add_two_ints`, which consists of two integer numbers as request type
-      and answers with a single value, indicating the sum of them. As an alternative to `colcon`, in order to compile the `add_two_ints_server` example, the
-      following commands can be executed:
+      and answers with a single value, indicating the sum of them.
 
-        ```bash
-        ~/is_ws$ cd examples/utils/ros1/add_two_ints_server
-        ~/is_ws/examples/utils/ros1/add_two_ints_server$ mkdir build
-        ~/is_ws/examples/utils/ros1/add_two_ints_server$ cd build
-        ~/is_ws/examples/utils/ros1/add_two_ints_server/build$ cmake .. -DBUILD_EXAMPLES=ON
-        ~/is_ws/examples/utils/ros1/add_two_ints_server/build$ make
-        ```
-      The resulting executable will be located inside the `build/devel/lib/add_two_ints_server` folder, and named `add_two_ints_server_node`.
+      The resulting executable will be located inside the `build/is-examples/ros1/add_two_ints_server` folder, and named `add_two_ints_server_node`.
     * `example_interfaces`: *ROS 1* package containing the service type definitions for the AddTwoInts services examples, for which the *ROS 1* type support files
       will be automatically generated. As specified in the services examples tutorials, it must be compiled and installed in the system, using `catkin`:
 
       ```bash
       ~/is_ws$ cd examples/utils/ros1/
-      ~/is_ws/examples/utils/ros1$ catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/$ROS1_DISTRO install
+      ~/is_ws/examples/utils/ros1$ catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/<ROS1_DISTRO> install
       ```
 
     </details>
@@ -435,17 +411,9 @@ There are several CMake flags, which can be tuned during the configuration step:
   <summary>To date, the following <i>WebSocket</i> user application examples are available: <i>(click to expand)</i></summary>
 
   * `WebSocketAddTwoInts`: A simple server/client C++ application, running under WebSocket++. It allows performing service requests and replies to a service
-    named add_two_ints, which consists of two integer numbers as request type and answers with a single value, indicating the sum of them. As an alternative
-    to `colcon`, in order to compile the`WebSocketAddTwoInts` example, the following commands can be executed:
+    named add_two_ints, which consists of two integer numbers as request type and answers with a single value, indicating the sum of them.
 
-      ```bash
-      ~/is_ws$ cd examples/utils/websocket/WebSocketAddTwoInts
-      ~/is_ws/examples/utils/websocket/WebSocketAddTwoInts$ mkdir build
-      ~/is_ws/examples/utils/websocket/WebSocketAddTwoInts$ cd build
-      ~/is_ws/examples/utils/websocket/WebSocketAddTwoInts/build$ cmake .. -DBUILD_EXAMPLES=ON
-      ~/is_ws/examples/utils/websocket/WebSocketAddTwoInts/build$ make
-      ```
-    The resulting executable will be located inside the `build` folder, and named `WebSocketAddTwoInts`. Please execute `WebSocketAddTwoInts -h` to see a full list of supported input parameters.
+    The resulting executable will be located inside the `build/is-examples/websocket` folder, and named `WebSocketAddTwoInts`. Please execute `WebSocketAddTwoInts -h` to see a full list of supported input parameters.
 
   </details>
 

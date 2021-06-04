@@ -161,7 +161,7 @@ include_directories(
 
 # Ignore after it was built first time with catkin. This is done so that consequent steps using colcon
 # do not try to compile this package, since colcon is used in the Integration Service compilation.
-file(TOUCH COLCON_IGNORE)
+file(TOUCH ../../COLCON_IGNORE)
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
