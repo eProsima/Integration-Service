@@ -483,12 +483,6 @@ function(_is_configure_mix_package)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
     COMPONENT is-${_ARG_IDL_TYPE}-mix
   )
-  # file(
-  #   COPY
-  #     ${mix_build_dir}
-  #   DESTINATION
-  #     ${CMAKE_INSTALL_PREFIX}/lib/
-  # )
 
 endfunction()
 
