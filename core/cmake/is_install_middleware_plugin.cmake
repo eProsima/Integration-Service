@@ -102,17 +102,18 @@ function(is_install_middleware_plugin)
     )
 
     set(plugin_library_mix "${mix_build_dir}/is/${type}/${type}.mix")
+    set(plugin_library_install_mix "${CMAKE_INSTALL_PREFIX}/lib/is/${type}/${type}.mix")
 
     file(GENERATE
       OUTPUT ${plugin_library_mix}
       INPUT  ${plugin_library_mix_template}
     )
 
-    install(
-      FILES ${plugin_library_mix}
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/is/${type}/
-      COMPONENT ${plugin_library_target}
+    file(GENERATE
+      OUTPUT ${plugin_library_install_mix}
+      INPUT  ${plugin_library_mix_template}
     )
+
   endforeach()
 
   if(NOT _ARG_NO_CONFIG)
@@ -125,12 +126,12 @@ function(is_install_middleware_plugin)
       list(APPEND extensions ${ext_filename})
     endforeach()
 
-    install(
-      EXPORT ${plugin_library_target}
-      DESTINATION ${config_install_dir}
-      FILE ${plugin_library_target}-target.cmake
+    export(
+      TARGETS
+        ${plugin_library_target}
+      FILE
+        ${CMAKE_INSTALL_PREFIX}/lib/cmake/is-${middleware}/${plugin_library_target}-target.cmake
       NAMESPACE is::
-      COMPONENT ${plugin_library_target}
     )
 
     include(CMakePackageConfigHelpers)
@@ -142,10 +143,11 @@ function(is_install_middleware_plugin)
       INSTALL_DESTINATION ${config_install_dir}
     )
 
-    install(
-      FILES ${config_file_output}
-      DESTINATION ${config_install_dir}
-      COMPONENT ${plugin_library_target}
+    file(
+      COPY
+        ${config_file_output}
+      DESTINATION
+        ${CMAKE_INSTALL_PREFIX}/lib/cmake/is-${middleware}
     )
 
     if(_ARG_EXTENSIONS)
