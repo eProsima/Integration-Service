@@ -418,11 +418,11 @@ function(_is_configure_mix_package)
 
   set(config_install_dir ${CMAKE_INSTALL_LIBDIR}/cmake/${mix_target})
 
-  install(
-    EXPORT ${mix_target}
-    DESTINATION ${config_install_dir}
-    FILE ${mix_target}-target.cmake
-    COMPONENT is-${_ARG_IDL_TYPE}-mix
+  export(
+    TARGETS
+      ${mix_target}
+    FILE
+      ${CMAKE_INSTALL_PREFIX}/lib/cmake/${mix_target}/${mix_target}-target.cmake
   )
 
   set(config_output ${CMAKE_BINARY_DIR}/is/${_ARG_IDL_TYPE}/config/${mix_target}Config.cmake)
@@ -432,17 +432,20 @@ function(_is_configure_mix_package)
     @ONLY
   )
 
-  install(
-    FILES ${config_output}
-    DESTINATION ${config_install_dir}
-    COMPONENT is-${_ARG_IDL_TYPE}-mix
+  file(
+    COPY
+      ${config_output}
+    DESTINATION
+      ${CMAKE_INSTALL_PREFIX}/lib/cmake/${mix_target}/
   )
 
   if(_${middleware}_${package}_mix_include_dir)
     if(EXISTS ${_${middleware}_${package}_mix_include_dir})
-      install(
-        DIRECTORY ${_${middleware}_${package}_mix_include_dir}/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+      file(
+        COPY
+          ${_${middleware}_${package}_mix_include_dir}/
+        DESTINATION
+          ${CMAKE_INSTALL_PREFIX}/include
       )
     endif()
   endif()

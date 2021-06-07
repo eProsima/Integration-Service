@@ -32,10 +32,11 @@ function(is_generate_export_header component_name)
     EXPORT_FILE_NAME ${binary_include_dir}/is/${component_name}/export.hpp
   )
 
-  install(
-    DIRECTORY ${binary_include_dir}/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    COMPONENT is-${component_name}
+  file(
+    COPY
+      ${binary_include_dir}/
+    DESTINATION
+      ${CMAKE_INSTALL_PREFIX}/include
   )
 
   target_include_directories(is-${component_name}
