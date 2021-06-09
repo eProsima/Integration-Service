@@ -112,6 +112,9 @@ jobs:
           cd src/integration-service
           git fetch --prune --unshallow
 
+      - uses: ./src/integration-service/.github/actions/install-apt-packages
+      - uses: ./src/integration-service/.github/actions/install-python-packages
+
       - name: Install uncrustify
         run: |
           git clone https://github.com/uncrustify/uncrustify.git \
