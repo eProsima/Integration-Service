@@ -1074,13 +1074,19 @@ bool Config::load_middlewares(
      */
     for (const auto& [mw_name, mw_config] : middlewares)
     {
-        const std::string& middleware_type = mw_config.type;
+        std::string middleware_type = mw_config.type;
+
+        // TODO make it in a more dignified way
+        if (middleware_type == "databroker")
+        {
+            middleware_type = std::string("fastdds");
+        }
 
         logger << utils::Logger::Level::DEBUG
                << "Config::load_middlewares: looking for middleware '" << mw_name
                << "' with type '" << middleware_type << "'" << std::endl;
 
-        const Search search(mw_config.type);
+        const Search search(middleware_type);
 
         /**
          * Looks for the middleware's SystemHandle dynamic library.
