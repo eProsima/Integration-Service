@@ -187,8 +187,7 @@ std::ostream& Logger::green(
 
 //==============================================================================
 std::ostream& Logger::yellow(
-        std::ostream& os)
-{
+        std::ostream& os){
     return os << "\033[33m";
 }
 
