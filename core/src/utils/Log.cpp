@@ -36,6 +36,11 @@ Logger::Logger(
 {
 }
 
+const Logger::Level& Logger::get_level() const
+{
+    return _max_level;
+}
+
 //==============================================================================
 Logger& Logger::operator <<(
         const Logger::Level& level)
