@@ -34,12 +34,35 @@ Json::const_reference access_json_value(
     if (xtypes_node.parent().type().is_collection_type())
     {
         size_t index = xtypes_node.from_index();
+        auto json_subnode = json_node->operator [](index);
+        if (!submember.empty() && json_subnode.end() == json_subnode.find(submember))
+        {
+            const std::string err =
+                    "Cannot access member '" + submember + "' because it does not exist";
+            std::cerr << err << std::endl;
+            throw Json::type_error::create(0, err.c_str());
+        }
         return submember.empty() ? json_node->operator [](index)
                : json_node->operator [](index)[submember];
     }
     if (xtypes_node.parent().type().is_aggregation_type())
     {
         const std::string& member_name = xtypes_node.from_member()->name();
+        if (json_node->end() == json_node->find(member_name))
+        {
+            const std::string err =
+                    "Cannot access member '" + member_name + "' because it does not exist";
+            std::cerr << err << std::endl;
+            throw Json::type_error::create(0, err.c_str());
+        }
+        auto json_subnode = json_node->operator [](member_name);
+        if (!submember.empty() && json_subnode.end() == json_subnode.find(submember))
+        {
+            const std::string err =
+                    "Cannot access member '" + submember + "' because it does not exist";
+            std::cerr << err << std::endl;
+            throw Json::type_error::create(0, err.c_str());
+        }
         return submember.empty() ? json_node->operator [](member_name)
                : json_node->operator [](member_name)[submember];
     }
@@ -97,7 +120,6 @@ bool json_to_xtypes(
             if (!xtypes_node.has_parent())
             {
                 return;                 // avoid the first level already pushed into stack.
-
             }
             while (json_stack.size() > xtypes_node.deep())
             {
