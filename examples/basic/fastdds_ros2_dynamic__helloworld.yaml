@@ -1,0 +1,37 @@
+types:
+    idls:
+        - >
+            #include <HelloWorld.idl>
+
+            module custom_msgs
+            {
+                module msg
+                {
+                    struct HelloWorld2
+                    {
+                        custom_msgs::msg::HelloWorld h;
+                    };
+                };
+            };
+
+    paths: ["/is_ws/src/is/examples/utils/dds/DDSHelloWorld/"]
+
+systems:
+    dds_3:
+        type: fastdds
+        participant:
+            domain_id: 3
+
+    dds_5:
+        type: ros2_dynamic
+        namespace: foo/
+        node_name: "my_ros_node"
+        domain: 0
+
+routes:
+    domain_3_to_5: { from: dds_3, to: dds_5 }
+    domain_5_to_3: { from: dds_5, to: dds_3 }
+
+topics:
+    hello_domain_5: { type: "custom_msgs::msg::HelloWorld2", route: domain_3_to_5}
+    hello_domain_3: { type: "custom_msgs::msg::HelloWorld2", route: domain_5_to_3}
