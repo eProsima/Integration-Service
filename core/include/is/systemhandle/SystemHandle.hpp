@@ -178,6 +178,18 @@ public:
      * @returns `true` if the SystemHandle is still working; `false` otherwise.
      */
     virtual bool spin_once() = 0;
+
+    /**
+     * @brief Perform additional actions prior to configure the System Handle regarding types.
+     *
+     * @param[in] types_node A *YAML* node containing the types definition. This may be an empty node.
+     */
+    virtual bool preprocess_types(
+        const YAML::Node& types_node)
+    {
+        (void) types_node;
+        return true;
+    }
 };
 
 /**

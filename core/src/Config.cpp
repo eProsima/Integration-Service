@@ -846,7 +846,7 @@ bool Config::parse(
 
         _m_middlewares.insert(
             std::make_pair(
-                middleware_alias, MiddlewareConfig{middleware, types_from, config}));
+                middleware_alias, MiddlewareConfig{middleware, types_from, config, config_node["types"]}));
     }
 
     if (_m_middlewares.size() < 2)
@@ -1136,7 +1136,7 @@ bool Config::load_middlewares(
          */
         is::internal::SystemHandleInfo info = is::internal::Register::get(middleware_type);
 
-        if (!info)
+        if (!info || !info.handle->preprocess_types(mw_config.types_node))
         {
             return false;
         }
