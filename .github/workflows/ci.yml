@@ -95,13 +95,15 @@ jobs:
       - name: Test the Integration Service ROS 1 SystemHandle
         run: |
           . /opt/ros/noetic/setup.sh
-          roscore & colcon test --packages-select is-ros1 is-ros1-test --event-handlers console_direct+
+          . install/setup.sh
+          roscore & colcon test --packages-select is-ros1 --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service ROS 2 SystemHandle
         run: |
           . /opt/ros/${{ matrix.node }}/setup.sh
-          colcon test --packages-select is-ros2 is-ros2-test --event-handlers console_direct+
+          . install/setup.sh
+          colcon test --packages-select is-ros2 --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service WebSocket SystemHandle
