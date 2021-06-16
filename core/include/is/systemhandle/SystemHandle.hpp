@@ -183,6 +183,8 @@ public:
      * @brief Perform additional actions prior to configure the System Handle regarding types.
      *
      * @param[in] types_node A *YAML* node containing the types definition. This may be an empty node.
+     *
+     * @returns `true` if the preprocess stage ends succesfully; `false` otherwise.
      */
     virtual bool preprocess_types(
         const YAML::Node& types_node)
