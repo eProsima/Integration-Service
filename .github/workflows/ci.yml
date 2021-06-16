@@ -77,6 +77,7 @@ jobs:
       - name: Build
         run: |
           . /opt/ros/${{ matrix.node }}/setup.sh
+          colcon build --packages-skip-regex is-ros1 --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
           . /opt/ros/noetic/setup.sh
           colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
 
@@ -94,13 +95,18 @@ jobs:
       - name: Test the Integration Service ROS 1 SystemHandle
         run: |
           . /opt/ros/noetic/setup.sh
-          roscore & colcon test --packages-select is-ros1 is-ros1-test --event-handlers console_direct+
+          roscore &
+          echo "Waiting until roscore has been launched..."
+          sleep 5
+          . install/local_setup.sh
+          colcon test --packages-select is-ros1 --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service ROS 2 SystemHandle
         run: |
           . /opt/ros/${{ matrix.node }}/setup.sh
-          colcon test --packages-select is-ros2 is-ros2-test --event-handlers console_direct+
+          . install/setup.sh
+          colcon test --packages-select is-ros2 --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service WebSocket SystemHandle
