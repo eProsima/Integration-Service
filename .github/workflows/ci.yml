@@ -94,8 +94,8 @@ jobs:
 
       - name: Test the Integration Service ROS 1 SystemHandle
         run: |
+          . install/local_setup.sh
           . /opt/ros/noetic/setup.sh
-          . install/setup.sh
           roscore &
           echo "Waiting until roscore has been launched..."
           sleep 5
