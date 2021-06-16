@@ -77,6 +77,7 @@ jobs:
       - name: Build
         run: |
           . /opt/ros/${{ matrix.node }}/setup.sh
+          colcon build --packages-skip-regex is-ros1 --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
           . /opt/ros/noetic/setup.sh
           colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
 
