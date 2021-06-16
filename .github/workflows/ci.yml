@@ -96,7 +96,10 @@ jobs:
         run: |
           . /opt/ros/noetic/setup.sh
           . install/setup.sh
-          roscore & colcon test --packages-select is-ros1 --event-handlers console_direct+
+          roscore &
+          echo "Waiting until roscore has been launched..."
+          sleep 5
+          colcon test --packages-select is-ros1 --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service ROS 2 SystemHandle
