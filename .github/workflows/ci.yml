@@ -94,11 +94,11 @@ jobs:
 
       - name: Test the Integration Service ROS 1 SystemHandle
         run: |
-          . install/local_setup.sh
           . /opt/ros/noetic/setup.sh
           roscore &
           echo "Waiting until roscore has been launched..."
           sleep 5
+          . install/local_setup.sh
           colcon test --packages-select is-ros1 --event-handlers console_direct+
           colcon test-result
 
