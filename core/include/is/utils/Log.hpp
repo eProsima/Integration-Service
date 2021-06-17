@@ -109,6 +109,14 @@ public:
     ~Logger() = default;
 
     /**
+     * @brief Get the maximum logging level for this Logger instance.
+     *
+     * @returns A non-mutable reference to the maximum permitted
+     *          logging level: `DEBUG`, `INFO`, `WARN`, `ERROR`.
+     */
+    const Level& get_level() const;
+
+    /**
      * @brief Operator << overload for a certain logging Level.
      *        Sets the logging level for the char/string messages
      *        streamed afterwards, until std::endl is received.

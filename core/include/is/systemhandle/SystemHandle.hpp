@@ -191,7 +191,7 @@ public:
     /**
      * @brief Signature of the callback that gets triggered when a subscriber receives some data.
      */
-    using SubscriptionCallback = std::function<void (const xtypes::DynamicData& message)>;
+    using SubscriptionCallback = std::function<void (const xtypes::DynamicData& message, void* filter_handle)>;
 
     /**
      * @brief Constructor.
@@ -222,6 +222,22 @@ public:
             const xtypes::DynamicType& message_type,
             SubscriptionCallback* callback,
             const YAML::Node& configuration) = 0;
+
+    /**
+     * @brief Check if a certain message in a subscriber comes from a middleware publisher
+     *        created by *Integration Service* in the same SystemHandle instance.
+     *
+     *        This method must be implemented by each SystemHandle according to its middleware
+     *        and protocol intricacies and particularities. Some protocols might not need this at all.
+     *        This method is called, during the SubscriptionCallback function, to avoid sending
+     *        messages indefinitely, thus creating an infinite loop.
+     *
+     * @param[in] filter_handle Opaque pointer to entity containing the information used to perform
+     *        the filtering; this is usually meta-information regarding the just received message
+     *        instance in the middleware's subscriber side.
+     */
+    virtual bool is_internal_message(
+            void* filter_handle) = 0;
 };
 
 /**
