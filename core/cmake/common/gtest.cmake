@@ -77,13 +77,14 @@ macro(add_gtest)
     endif()
 
     foreach(GTEST_SOURCE_FILE ${GTEST_SOURCES})
-        file(STRINGS ${GTEST_SOURCE_FILE} GTEST_TEST_NAMES REGEX "^TEST")
+        file(STRINGS ${GTEST_SOURCE_FILE} GTEST_TEST_NAMES REGEX "^TEST_F|^TEST")
         foreach(GTEST_TEST_NAME ${GTEST_TEST_NAMES})
             string(REGEX REPLACE ["\) \(,"] ";" GTEST_TEST_NAME ${GTEST_TEST_NAME})
             list(GET GTEST_TEST_NAME 1 GTEST_GROUP_NAME)
             list(GET GTEST_TEST_NAME 3 GTEST_TEST_NAME)
             add_test(NAME ${GTEST_GROUP_NAME}.${GTEST_TEST_NAME}
                 COMMAND ${command} --gtest_filter=${GTEST_GROUP_NAME}.${GTEST_TEST_NAME}:*/${GTEST_GROUP_NAME}.${GTEST_TEST_NAME}/*)
+
 
             # Add environment
             set(GTEST_ENVIRONMENT "")
