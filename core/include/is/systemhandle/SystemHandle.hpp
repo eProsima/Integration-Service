@@ -184,7 +184,7 @@ public:
      *
      * @param[in] types_node A *YAML* node containing the types definition. This may be an empty node.
      *
-     * @returns `true` if the preprocess stage ends succesfully; `false` otherwise.
+     * @returns `true` if the preprocess stage ends successfully; `false` otherwise.
      */
     virtual bool preprocess_types(
         const YAML::Node& types_node)
