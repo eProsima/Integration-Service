@@ -109,6 +109,7 @@ while others are optional. Both kinds are listed and reviewed below:
       idls:
         - >
           #include <GoodbyeWorld.idl>
+
           struct HelloWorld
           {
             string data;
@@ -389,8 +390,8 @@ There are several CMake flags, which can be tuned during the configuration step:
       will be automatically generated. As specified in the services examples tutorials, it must be compiled and installed in the system, using `catkin`:
 
       ```bash
-      ~/is_ws$ cd examples/utils/ros1/
-      ~/is_ws/examples/utils/ros1$ catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/<ROS1_DISTRO> install
+      ~/is_ws$ cd examples/utils/ros1/catkin_ws/
+      ~/is_ws/examples/utils/ros1/catkin_ws$ catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/<ROS1_DISTRO> install
       ```
 
     </details>
