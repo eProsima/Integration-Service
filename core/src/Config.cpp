@@ -819,7 +819,7 @@ bool Config::parse(
         {
             if (types_from_node.IsSequence())
             {
-                for (const YAML::Node& types : types_from_node)
+                for (const YAML::Node types : types_from_node)
                 {
                     types_from.push_back(types.as<std::string>());
                 }
