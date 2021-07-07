@@ -35,7 +35,7 @@ jobs:
       - name: Download required dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev libcurlpp-dev libasio-dev libcurl4-openssl-dev ros-${{ matrix.node }}-fastrtps
+          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev libcurlpp-dev libasio-dev libcurl4-openssl-dev ros-${{ matrix.node }}-fastrtps ros-${{ matrix.node }}-rmw-fastrtps-cpp
 
       - name: Download and install ROS 1 Noetic
         run: |
@@ -106,7 +106,7 @@ jobs:
         run: |
           . /opt/ros/${{ matrix.node }}/setup.sh
           . install/setup.sh
-          colcon test --packages-select is-ros2 --event-handlers console_direct+
+          RMW_IMPLEMENTATION=rmw_fastrtps_cpp colcon test --packages-select is-ros2 --event-handlers console_direct+
           colcon test-result
 
       - name: Test the Integration Service WebSocket SystemHandle
