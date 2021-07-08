@@ -359,14 +359,27 @@ void set_middleware_config(
         const TopicRoute& route,
         const YAML::Node& node)
 {
-    // TODO (@jamoralp): types, route, and remap should be ignored here?
     for (const std::string& from : route.from)
     {
-        middleware_configs[from] = node;
+        if (node[from])
+        {
+            middleware_configs[from] = node[from];
+        }
+        else
+        {
+            middleware_configs[from] = node;
+        }
     }
     for (const std::string& to : route.to)
     {
-        middleware_configs[to] = node;
+        if (node[to])
+        {
+            middleware_configs[to] = node[to];
+        }
+        else
+        {
+            middleware_configs[to] = node;
+        }
     }
 }
 
