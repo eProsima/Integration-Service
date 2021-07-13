@@ -41,7 +41,8 @@ HelloWorldPublisher::HelloWorldPublisher()
 
 bool HelloWorldPublisher::init(
         const eprosima::fastdds::dds::DomainId_t domain_id,
-        const std::string& topic_name)
+        const std::string& topic_name,
+        const eprosima::fastdds::dds::DataWriterQos dw_qos)
 {
     hello_.data("HelloWorld");
     DomainParticipantQos pqos;
@@ -72,7 +73,7 @@ bool HelloWorldPublisher::init(
     }
 
     // CREATE THE WRITER
-    writer_ = publisher_->create_datawriter(topic_, DATAWRITER_QOS_DEFAULT, &listener_);
+    writer_ = publisher_->create_datawriter(topic_, dw_qos, &listener_);
 
     if (writer_ == nullptr)
     {

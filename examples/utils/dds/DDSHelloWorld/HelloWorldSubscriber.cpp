@@ -39,7 +39,8 @@ HelloWorldSubscriber::HelloWorldSubscriber()
 
 bool HelloWorldSubscriber::init(
         const eprosima::fastdds::dds::DomainId_t domain_id,
-        const std::string& topic_name)
+        const std::string& topic_name,
+        const eprosima::fastdds::dds::DataReaderQos dr_qos)
 {
     DomainParticipantQos pqos;
     pqos.name("Participant_sub");
@@ -73,9 +74,7 @@ bool HelloWorldSubscriber::init(
     }
 
     // CREATE THE READER
-    DataReaderQos rqos = DATAREADER_QOS_DEFAULT;
-    rqos.reliability().kind = RELIABLE_RELIABILITY_QOS;
-    reader_ = subscriber_->create_datareader(topic_, rqos, &listener_);
+    reader_ = subscriber_->create_datareader(topic_, dr_qos, &listener_);
 
     if (reader_ == nullptr)
     {

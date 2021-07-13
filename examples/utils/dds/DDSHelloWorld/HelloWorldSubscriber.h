@@ -24,6 +24,7 @@
 
 #include <fastdds/dds/domain/DomainParticipant.hpp>
 #include <fastdds/dds/subscriber/DataReaderListener.hpp>
+#include <fastdds/dds/subscriber/qos/DataReaderQos.hpp>
 #include <fastrtps/subscriber/SampleInfo.h>
 #include <fastdds/dds/core/status/SubscriptionMatchedStatus.hpp>
 
@@ -38,7 +39,8 @@ public:
     //!Initialize the subscriber
     bool init(
             const eprosima::fastdds::dds::DomainId_t domain_id,
-            const std::string& topic_name);
+            const std::string& topic_name,
+            const eprosima::fastdds::dds::DataReaderQos dr_qos);
 
     //!RUN the subscriber
     void run();

@@ -23,6 +23,7 @@
 #include "HelloWorldPubSubTypes.h"
 
 #include <fastdds/dds/publisher/DataWriterListener.hpp>
+#include <fastdds/dds/publisher/qos/DataWriterQos.hpp>
 #include <fastdds/dds/topic/TypeSupport.hpp>
 #include <fastdds/dds/domain/DomainParticipant.hpp>
 
@@ -37,7 +38,8 @@ public:
     //!Initialize
     bool init(
             const eprosima::fastdds::dds::DomainId_t domain_id,
-            const std::string& topic_name);
+            const std::string& topic_name,
+            const eprosima::fastdds::dds::DataWriterQos dw_qos);
 
     //!Publish a sample
     bool publish(
