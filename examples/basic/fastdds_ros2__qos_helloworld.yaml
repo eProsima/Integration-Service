@@ -1,0 +1,39 @@
+types:
+    idls:
+        - >
+            struct HelloWorld
+            {
+                string data;
+            };
+
+systems:
+    dds: { type: fastdds, types-from: ros2 }
+    ros2: { type: ros2 }
+
+routes:
+    ros2_to_dds: { from: ros2, to: dds }
+
+topics:
+    hello_v_dds: {
+        type: "std_msgs/String",
+        route: ros2_to_dds,
+        remap: {
+            dds: { type: HelloWorld },
+            ros2: { topic: "hello_dds" }
+        },
+        ros2: { qos: {
+            durability: VOLATILE
+        }}
+    }
+
+    hello_t_dds: {
+        type: "std_msgs/String",
+        route: ros2_to_dds,
+        remap: {
+            dds: { type: HelloWorld },
+            ros2: { topic: "hello_dds" }
+        },
+        ros2: { qos: {
+            durability: TRANSIENT_LOCAL
+        }}
+    }
