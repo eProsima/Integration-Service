@@ -115,7 +115,8 @@ macro(add_gtest)
             string(REGEX REPLACE ["\) \(,"] ";" GTEST_TEST_NAME ${GTEST_TEST_NAME})
             list(GET GTEST_TEST_NAME 1 GTEST_GROUP_NAME)
             list(GET GTEST_TEST_NAME 3 GTEST_TEST_NAME)
-            foreach(num RANGE ${GTEST_TEST_TYPES_COUNT})
+            math(EXPR GTEST_MAX_INDEX ${GTEST_TEST_TYPES_COUNT}-1)
+            foreach(num RANGE ${GTEST_MAX_INDEX})
                 add_test(NAME ${GTEST_GROUP_NAME}/${num}.${GTEST_TEST_NAME}
                     COMMAND ${command} --gtest_filter=${GTEST_GROUP_NAME}/${num}.${GTEST_TEST_NAME}:*/${GTEST_GROUP_NAME}/${num}.${GTEST_TEST_NAME}/*)
 
