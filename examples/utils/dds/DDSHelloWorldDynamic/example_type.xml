@@ -1,0 +1,7 @@
+<types>
+    <type>
+        <struct name="HelloWorld">
+            <member name="data" type="string"/>
+        </struct>
+    </type>
+</types>
