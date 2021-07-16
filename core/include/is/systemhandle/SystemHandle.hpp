@@ -59,6 +59,8 @@ struct RequiredTypes
  */
 using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
 
+#define NOPAREN(...) __VA_ARGS__
+
 /**
  * @brief Call this macro in a .cpp file of your middleware's plugin library,
  *        so that the *Integration Service* can find your eprosima::is::SystemHandle implementation
@@ -73,8 +75,8 @@ using TypeRegistry = std::map<std::string, xtypes::DynamicType::Ptr>;
  *        The second argument should be the literal type (not a string) of the class
  *        that implements eprosima::is::SystemHandle in your plugin library.
  */
-#define IS_REGISTER_SYSTEM(middleware_name_str, SystemType) \
-    DETAIL_IS_REGISTER_SYSTEM(middleware_name_str, SystemType)
+#define IS_REGISTER_SYSTEM(middleware_name, SystemType, ...) \
+    DETAIL_IS_REGISTER_SYSTEM(middleware_name, SystemType, std::vector<std::string>({__VA_ARGS__}))
 
 /**
  * @class SystemHandle

@@ -23,6 +23,7 @@
 #include <is/utils/Log.hpp>
 
 #include <mutex>
+#include <vector>
 
 namespace eprosima {
 namespace is {
@@ -120,13 +121,15 @@ public:
     /**
      * @brief Inserts a new is::detail::SystemHandleFactoryBuilder element in the factory map.
      *
-     * @param[in] middleware The middleware's name.
+     * @param[in] middleware_aliases Array where first value is the middleware name or main alias,
+     *            and the other values are different names for the same middleware.
      *
      * @param[in] handle The handle function responsible for creating the
      *            SystemHandle instance.
      */
     static void insert(
-            std::string&& middleware,
+            std::string&& middleware_id,
+            std::vector<std::string>&& middleware_aliases,
             detail::SystemHandleFactoryBuilder&& handle);
 
     /**
@@ -140,7 +143,7 @@ public:
      *          to `nullptr` otherwise.
      */
     static SystemHandleInfo get(
-            const std::string& middleware);
+            const std::string& middleware_alias);
 
 private:
 
@@ -151,6 +154,9 @@ private:
      */
 
     static FactoryMap _info_map;
+
+    // Map with key alias and value the actual main alias of the Middleware
+    static std::map<std::string, std::string> _alias_map;
 
     static std::mutex _mutex;
 };

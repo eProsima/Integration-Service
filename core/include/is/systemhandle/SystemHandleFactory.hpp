@@ -21,6 +21,7 @@
 
 #include <is/core/export.hpp>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <type_traits>
 
@@ -46,7 +47,8 @@ using SystemHandleFactoryBuilder = std::function<std::unique_ptr<SystemHandle>()
  *            SystemHandle instance.
  */
 void IS_CORE_API register_system_handle_factory(
-        std::string&& middleware,
+        std::string&& middleware_id,
+        std::vector<std::string>&& middleware_aliases,
         SystemHandleFactoryBuilder&& handle);
 
 /**
@@ -64,44 +66,68 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param[in] middleware The middleware name to be registered into the factory.
+     * @param[in] middleware_id The middleware name to be registered into the factory.
      */
     SystemHandleRegistrar(
-            std::string&& middleware)
+            std::string&& middleware_id,
+            std::vector<std::string>&& middleware_aliases)
     {
+        std::cout << "SystemHandleRegistrar with string " << middleware_id << std::endl;
         register_system_handle_factory(
-            std::move(middleware),
+            std::move(middleware_id),
+            std::move(middleware_aliases),
             []()
             {
                 return std::make_unique<SystemHandleImplType>();
             });
     }
 
+    /**
+     * @brief Constructor.
+     *
+     * @param[in] middleware_aliases First value the middleware name or main alias followed by the allowed aliases
+     *                  that this middleware supports. Be aware that each alias needs a <alias>.mix file
+     *                  referencing the middleware library.
+     */
+    // SystemHandleRegistrar(
+    //         std::vector<std::string>&& middleware_aliases)
+    // {
+    //     std::cout << "SystemHandleRegistrar with array with size " << middleware_aliases.size() << std::endl;
+
+    //     register_system_handle_factory(
+    //         std::vector<std::string>(),
+    //         []()
+    //         {
+    //             return std::make_unique<SystemHandleImplType>();
+    //         });
+    // }
 };
 
 } //  namespace detail
 } //  namespace is
 } //  namespace eprosima
 
+// This macro is needed to call a macro with an array of values. {} are not well intepreted by macros calls.
+#define _MACRO_ARRAY_CALL(...) std::initializer_list<std::string>({__VA_ARGS__}).begin()
+
 #define DETAIL_IS_REGISTER_SYSTEM_HELPER( \
-        UniqueID, middleware_name, HandleType) \
+        UniqueID, middleware_name, HandleType, middleware_aliases) \
     namespace { \
     eprosima::is::detail::SystemHandleRegistrar<HandleType> \
-    execute_at_load_ ## UniqueID (middleware_name); \
+    execute_at_load_ ## UniqueID (middleware_name, middleware_aliases); \
     } /* anonymous namespace */
-
 
 /**
  * Because of C macro expansion rules, we need this middle step in order for
  * __COUNTER__/UniqueID to be expanded to an integer value correctly
  */
 #define DETAIL_IS_REGISTER_SYSTEM_WITH_COUNTER( \
-        UniqueID, middleware_name, HandleType) \
-    DETAIL_IS_REGISTER_SYSTEM_HELPER(UniqueID, middleware_name, HandleType)
+        UniqueID, middleware_name, HandleType, middleware_aliases) \
+    DETAIL_IS_REGISTER_SYSTEM_HELPER(UniqueID, middleware_name, HandleType, middleware_aliases)
 
 
-#define DETAIL_IS_REGISTER_SYSTEM(middleware_name, HandleType) \
+#define DETAIL_IS_REGISTER_SYSTEM(middleware_name, HandleType, middleware_aliases) \
     DETAIL_IS_REGISTER_SYSTEM_WITH_COUNTER( \
-        __COUNTER__, middleware_name, HandleType)
+        __COUNTER__, middleware_name, HandleType, middleware_aliases)
 
 #endif //  _IS_DETAIL_SYSTEMHANDLE_SYSTEMHANDLEFACTORY_HPP_

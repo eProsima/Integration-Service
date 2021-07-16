@@ -1076,12 +1076,6 @@ bool Config::load_middlewares(
     {
         std::string middleware_type = mw_config.type;
 
-        // TODO make it in a more dignified way
-        if (middleware_type == "databroker")
-        {
-            middleware_type = std::string("fastdds");
-        }
-
         logger << utils::Logger::Level::DEBUG
                << "Config::load_middlewares: looking for middleware '" << mw_name
                << "' with type '" << middleware_type << "'" << std::endl;

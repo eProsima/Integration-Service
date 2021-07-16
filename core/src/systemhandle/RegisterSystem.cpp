@@ -57,20 +57,23 @@ SystemHandleInfo::operator bool () const
  * Initializes Register of static members.
  */
 Register::FactoryMap Register::_info_map;
+std::map<std::string, std::string> Register::_alias_map;
 std::mutex Register::_mutex;
 
 //==============================================================================
 void Register::insert(
-        std::string&& middleware,
+        std::string&& middleware_id,
+        std::vector<std::string>&& middleware_aliases,
         detail::SystemHandleFactoryBuilder&& handle_factory)
 {
     utils::Logger logger("is::core::systemhandle::RegisterSystem");
 
     FactoryMap::value_type entry(
-        std::move(middleware), std::move(handle_factory));
+        middleware_id, std::move(handle_factory));
 
     std::unique_lock<std::mutex> lock(_mutex);
 
+    // Store in map the SystemHandle associated with the main alias
     auto res = _info_map.insert(std::move(entry));
 
     if (res.second)
@@ -86,21 +89,51 @@ void Register::insert(
                << "for middleware '" << res.first->first << "' into the "
                << "SystemHandle factory map." << std::endl;
     }
+
+    // Always add middleware id as an alias (under same mutes as _info_map)
+    _alias_map.insert(std::make_pair(middleware_id, middleware_id));
+
+    // For each alias add it to alias map so they connect to their middleware id
+    // It does not check if the alias has already been set
+    for (auto alias : middleware_aliases)
+    {
+        _alias_map.insert(std::make_pair(alias, middleware_id));
+    }
 }
 
 //==============================================================================
 SystemHandleInfo Register::get(
-        const std::string& middleware)
+        const std::string& middleware_alias)
 {
     utils::Logger logger("is::core::systemhandle::RegisterSystem");
 
-    const FactoryMap::const_iterator it_mw = _info_map.find(middleware);
+    std::string middleware_id;
+    auto it_alias = _alias_map.find(middleware_alias);
+
+    if (it_alias == _alias_map.end())
+    {
+        logger << utils::Logger::Level::ERROR
+               << "Middleware alias '"
+               << middleware_alias << "' does not reference any known SystemHandle."
+               << std::endl;
+
+        return SystemHandleInfo(nullptr);
+    }
+    else
+    {
+        middleware_id = it_alias->second;
+        logger << utils::Logger::Level::DEBUG
+               << "Alias '" << middleware_alias << "' referencing middleware: '" << middleware_id << "'"
+               << std::endl;
+    }
+
+    const FactoryMap::const_iterator it_mw = _info_map.find(middleware_alias);
 
     if (it_mw == _info_map.end())
     {
         logger << utils::Logger::Level::ERROR
                << "Could not find SystemHandle library for middleware '"
-               << middleware << "' within the SystemHandle factory registry."
+               << middleware_alias << "' within the SystemHandle factory registry."
                << std::endl;
 
         return SystemHandleInfo(nullptr);
@@ -108,12 +141,12 @@ SystemHandleInfo Register::get(
     else
     {
         logger << utils::Logger::Level::DEBUG
-               << "Found SystemHandle library for middleware '" << middleware
+               << "Found SystemHandle library for middleware '" << middleware_alias
                << "' within the SystemHandle factory registry."
                << std::endl;
     }
 
-    return SystemHandleInfo(_info_map.at(middleware)());
+    return SystemHandleInfo(_info_map.at(middleware_alias)());
 }
 
 } //  namespace internal
@@ -122,10 +155,11 @@ namespace detail {
 
 //==============================================================================
 void register_system_handle_factory(
-        std::string&& middleware,
+        std::string&& middleware_id,
+        std::vector<std::string>&& middleware_aliases,
         SystemHandleFactoryBuilder&& handle_factory)
 {
-    internal::Register::insert(std::move(middleware), std::move(handle_factory));
+    internal::Register::insert(std::move(middleware_id), std::move(middleware_aliases), std::move(handle_factory));
 }
 
 } //  namespace detail
