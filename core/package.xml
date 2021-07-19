@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>integration-service-core</name>
+  <version>3.0.0</version>
+  <description>
+    *eProsima Integration Service* is a **Linux** tool that enables communication among an arbitrary number of protocols that speak different languages.
+  </description>
+  <maintainer email="joseantoniomoralparras@eprosima.com">Jose Antonio Moral Parras</maintainer>
+  <maintainer email="laura@eprosima.com">Laura Martin Gallardo</maintainer>
+  <license file="LICENSE">Apache 2.0</license>
+
+  <url type="website">https://www.eprosima.com/</url>
+  <url type="bugtracker">https://github.com/eProsima/Integration-Service/issues</url>
+  <url type="repository">https://github.com/eProsima/Integration-Service</url>
+
+  <build_depend>xtypes</build_depend>
+
+  <depend>yaml-cpp</depend>
+  <depend>libboost-program-options-dev</depend>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <doc_depend>doxygen</doc_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
