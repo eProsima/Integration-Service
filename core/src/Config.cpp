@@ -845,7 +845,7 @@ bool Config::parse(
 
         _m_middlewares.insert(
             std::make_pair(
-                middleware_alias, MiddlewareConfig{middleware, types_from, config}));
+                middleware_alias, MiddlewareConfig{middleware, types_from, config, config_node["types"]}));
     }
 
     if (_m_middlewares.size() < 2)
@@ -1141,6 +1141,10 @@ bool Config::load_middlewares(
         }
 
         bool configured = true;
+        if (!info.handle->preprocess_types(mw_config.types_node))
+        {
+            return false;
+        }
 
         /**
          * Now, it iterates the middleware required types map.

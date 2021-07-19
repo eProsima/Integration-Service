@@ -57,6 +57,7 @@ struct MiddlewareConfig
     std::string type;
     std::vector<std::string> types_from;
     YAML::Node config_node;
+    YAML::Node types_node;
 };
 
 /**
