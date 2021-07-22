@@ -294,6 +294,10 @@ and [System Handle API reference](https://integration-service.docs.eprosima.com/
 *Integration Service* uses `CMake` for building and packaging the project.
 There are several CMake flags, which can be tuned during the configuration step:
 
+* `IS_THIRDPARTY`: This compilation flag is used to avoid the `--recursive` flag during the repository cloning phase. By default it is set to `ON`, which means
+  that it automatically initialize and update the *xTypes* submodule. If you want to use a different instance of *xTypes* repository instead of the 
+  submodule, you will need to disable it (`-DIS_THIRDPARTY=OFF`).
+
 * `BUILD_LIBRARY`: This compilation flag can be used to completely disable the compilation of
   the *Integration Service* set of libraries, that is, the *Integration Service Core* and all the
   existing *System Handles* existing in the `colcon` workspace. It is enabled by default.

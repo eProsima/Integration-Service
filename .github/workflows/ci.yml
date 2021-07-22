@@ -44,10 +44,6 @@ jobs:
           curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
           apt update && apt install -y ros-noetic-ros-base
 
-      - name: Download xTypes
-        run: |
-          git clone --recursive https://github.com/eProsima/xtypes.git src/xtypes
-
       - name: Download the Integration Service Fast DDS SystemHandle
         run: |
           git clone https://github.com/eProsima/FastDDS-SH.git src/fastdds-sh
