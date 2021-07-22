@@ -69,12 +69,13 @@ if(BUILD_LIBRARY)
 
     if(NOT EXECUTE_RESULT EQUAL 0)
       message(ERROR "Cannot update git submodules")
+    else()
+      set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/thirdparty/xtypes ${CMAKE_PREFIX_PATH})
     endif()
     
-    set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/thirdparty/xtypes ${CMAKE_PREFIX_PATH})
+  else()  
+    find_package(xtypes REQUIRED)
   endif()
-
-  find_package(xtypes REQUIRED)
 
   find_package(yaml-cpp REQUIRED)
 
