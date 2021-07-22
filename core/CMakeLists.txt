@@ -70,6 +70,8 @@ if(BUILD_LIBRARY)
     if(NOT EXECUTE_RESULT EQUAL 0)
       message(ERROR "Cannot update git submodules")
     endif()
+    
+    set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/thirdparty/xtypes ${CMAKE_PREFIX_PATH})
   endif()
 
   find_package(xtypes REQUIRED)
