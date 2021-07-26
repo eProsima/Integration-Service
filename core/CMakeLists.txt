@@ -27,6 +27,7 @@ cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 option(IS_COMPILE_DEBUG "Compile the Integration Service project in debug mode." OFF)
 
 option(BUILD_LIBRARY "Compile the Integration Service" ON)
+option(IS_THIRDPARTY "Allow to download thidparty repository when needed." ON)
 
 if(DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE_LOWERCASE "" CACHE STRING "Build type to lowercase")
@@ -57,6 +58,22 @@ endif()
 # External dependencies for the Integration Service Core library
 ###############################################################################
 if(BUILD_LIBRARY)
+
+  if(IS_THIRDPARTY)
+    message(STATUS "Updating submodules")
+    execute_process(
+      COMMAND git submodule update --init
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/../
+      RESULT_VARIABLE EXECUTE_RESULT
+    )
+
+    if(NOT EXECUTE_RESULT EQUAL 0)
+      message(ERROR "Cannot update git submodules")
+    else()
+      set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/thirdparty/xtypes ${CMAKE_PREFIX_PATH})
+    endif()
+  endif()
+
   find_package(xtypes REQUIRED)
 
   find_package(yaml-cpp REQUIRED)
