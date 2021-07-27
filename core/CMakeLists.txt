@@ -78,6 +78,15 @@ if(BUILD_LIBRARY)
         FILES_MATCHING
           PATTERN "*.hpp"
       )
+      
+      file(
+        COPY
+          ${PROJECT_SOURCE_DIR}/../thirdparty/xtypes/thirdparty/cpp-peglib
+        DESTINATION
+          ${CMAKE_INSTALL_PREFIX}/include
+        FILES_MATCHING
+          PATTERN "*.hpp"
+      )
     endif()
   else()
     find_package(xtypes REQUIRED)
