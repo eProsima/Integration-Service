@@ -70,11 +70,18 @@ if(BUILD_LIBRARY)
     if(NOT EXECUTE_RESULT EQUAL 0)
       message(ERROR "Cannot update git submodules")
     else()
-      set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/thirdparty/xtypes ${CMAKE_PREFIX_PATH})
+      file(
+        COPY
+          ${PROJECT_SOURCE_DIR}/../thirdparty/xtypes/include/xtypes
+        DESTINATION
+          ${CMAKE_INSTALL_PREFIX}/include
+        FILES_MATCHING
+          PATTERN "*.hpp"
+      )
     endif()
+  else()
+    find_package(xtypes REQUIRED)
   endif()
-
-  find_package(xtypes REQUIRED)
 
   find_package(yaml-cpp REQUIRED)
 
@@ -156,6 +163,7 @@ if(BUILD_LIBRARY)
     PUBLIC
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../thirdparty/xtypes/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       #$<INSTALL_INTERFACE:${xtypes_INCLUDE_DIR}>  #propagate the xtypes headers
   )
