@@ -44,6 +44,105 @@ jobs:
           curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
           apt update && apt install -y ros-noetic-ros-base
 
+      - name: Download xTypes
+        run: |
+          git clone --recursive https://github.com/eProsima/xtypes.git src/xtypes
+
+      - name: Download the Integration Service Fast DDS SystemHandle
+        run: |
+          git clone https://github.com/eProsima/FastDDS-SH.git src/fastdds-sh
+
+      - name: Download the Integration Service ROS 1 SystemHandle
+        run: |
+          git clone https://github.com/eProsima/ROS1-SH.git src/ros1-sh
+
+      - name: Download the Integration Service ROS 2 SystemHandle
+        run: |
+          git clone https://github.com/eProsima/ROS2-SH.git src/ros2-sh
+
+      - name: Download the Integration Service WebSocket SystemHandle
+        run: |
+          git clone https://github.com/eProsima/WebSocket-SH.git src/websocket-sh
+
+      - name: Download the Integration Service FIWARE SystemHandle
+        run: |
+          git clone https://github.com/eProsima/FIWARE-SH.git src/fiware-sh
+
+      - name: Install ROS 1 example_interfaces package
+        working-directory: ./src/integration-service/examples/utils/ros1/catkin_ws
+        run: |
+          . /opt/ros/noetic/setup.sh
+          catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
+
+      - name: Build
+        run: |
+          . /opt/ros/${{ matrix.node }}/setup.sh
+          colcon build --packages-skip-regex is-ros1 --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
+          . /opt/ros/noetic/setup.sh
+          colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
+
+      - name: Test the Integration Service Core
+        run: |
+          colcon test --packages-select is-core --event-handlers console_direct+
+          colcon test-result
+
+      - name: Test the Integration Service Fast DDS SystemHandle
+        run: |
+          . /opt/ros/${{ matrix.node }}/setup.sh
+          colcon test --packages-select is-fastdds --event-handlers console_direct+
+          colcon test-result
+
+      - name: Test the Integration Service ROS 1 SystemHandle
+        run: |
+          . /opt/ros/noetic/setup.sh
+          roscore &
+          echo "Waiting until roscore has been launched..."
+          sleep 5
+          . install/local_setup.sh
+          colcon test --packages-select is-ros1 --event-handlers console_direct+
+          colcon test-result
+
+      - name: Test the Integration Service ROS 2 SystemHandle
+        run: |
+          . /opt/ros/${{ matrix.node }}/setup.sh
+          . install/setup.sh
+          RMW_IMPLEMENTATION=rmw_fastrtps_cpp colcon test --packages-select is-ros2 --event-handlers console_direct+
+          colcon test-result
+
+      - name: Test the Integration Service WebSocket SystemHandle
+        run: |
+          colcon test --packages-select is-websocket --event-handlers console_direct+
+          colcon test-result
+
+      #- name: Test the Integration Service FIWARE SystemHandle
+      #  run: |
+      #    colcon test --packages-select is-fiware --event-handlers console_direct+
+      #    colcon test-result
+      
+  integration-service_submodule_CI:
+    strategy:
+      matrix:
+        node: [foxy, galactic]
+    runs-on: ubuntu-20.04
+    container: ros:${{ matrix.node }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: src/integration-service
+
+      - name: Download required dependencies
+        run: |
+          apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev libcurlpp-dev libasio-dev libcurl4-openssl-dev ros-${{ matrix.node }}-fastrtps ros-${{ matrix.node }}-rmw-fastrtps-cpp
+
+      - name: Download and install ROS 1 Noetic
+        run: |
+          echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
+          apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+          curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
+          apt update && apt install -y ros-noetic-ros-base
+
       - name: Download the Integration Service Fast DDS SystemHandle
         run: |
           git clone https://github.com/eProsima/FastDDS-SH.git src/fastdds-sh
