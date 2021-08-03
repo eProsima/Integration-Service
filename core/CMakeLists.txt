@@ -59,7 +59,8 @@ endif()
 ###############################################################################
 if(BUILD_LIBRARY)
 
-  if(IS_THIRDPARTY)
+  find_package(xtypes QUIET)
+  if(IS_THIRDPARTY AND NOT xtypes_FOUND)
     message(STATUS "Updating submodules")
     execute_process(
       COMMAND git submodule update --init
@@ -88,8 +89,8 @@ if(BUILD_LIBRARY)
           PATTERN "*.hpp"
       )
     endif()
-  else()
-    find_package(xtypes REQUIRED)
+  elseif(NOT IS_THIRDPARTY AND NOT xtypes_FOUND)
+      message(FATAL_ERROR "xtypes not found")
   endif()
 
   find_package(yaml-cpp REQUIRED)
@@ -173,6 +174,7 @@ if(BUILD_LIBRARY)
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../thirdparty/xtypes/include>
+      $<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/../xtypes/thirdparty/cpp-peglib/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       #$<INSTALL_INTERFACE:${xtypes_INCLUDE_DIR}>  #propagate the xtypes headers
   )
