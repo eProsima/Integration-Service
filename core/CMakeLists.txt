@@ -37,8 +37,7 @@ if(DEFINED CMAKE_BUILD_TYPE)
     endif()
 endif()
 
-# TODO (@jamoralp): which version do we want to release?
-project(is-core VERSION "0.1.0" LANGUAGES CXX)
+project(is-core VERSION "3.1.0" LANGUAGES CXX)
 
 ###############################################################################
 # Load external CMake Modules.
