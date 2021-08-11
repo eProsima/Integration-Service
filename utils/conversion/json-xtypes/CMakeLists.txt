@@ -20,7 +20,7 @@
 ###################################################################################
 cmake_minimum_required(VERSION 3.5.0)
 
-project(is-json-xtypes VERSION "3.0.0" LANGUAGES CXX)
+project(is-json-xtypes VERSION "3.1.0" LANGUAGES CXX)
 
 ###################################################################################
 # Configure options
