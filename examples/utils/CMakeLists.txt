@@ -26,7 +26,14 @@ if (BUILD_EXAMPLES OR BUILD_FASTDDS_EXAMPLES)
 endif()
 
 if (BUILD_EXAMPLES OR BUILD_ROS1_EXAMPLES)
-    add_subdirectory(ros1/add_two_ints_server)
+    if(NOT DEFINED ENV{ROS_VERSION} OR $ENV{ROS_VERSION} GREATER 1)
+        message(FATAL_ERROR "Cannot BUILD_ROS1_EXAMPLES without sourcing a ROS1 overlay")
+    endif()
+    # The ROS1 overlay sets the environment variable CMAKE_PREFIX_PATH to ROS1 installation dir
+    # Note execute_process WORKING_DIRECTORY doesn't work on the focal container
+    execute_process(COMMAND catkin_make install -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=$ENV{CMAKE_PREFIX_PATH} -C ${CMAKE_CURRENT_LIST_DIR}/ros1/catkin_ws
+        OUTPUT_VARIABLE CATKINRES)
+    message(STATUS ${CATKINRES})
 endif()
 
 if (BUILD_EXAMPLES OR BUILD_WEBSOCKET_EXAMPLES)

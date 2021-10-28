@@ -44,6 +44,10 @@ jobs:
           curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
           apt update && apt install -y ros-noetic-ros-base
 
+      - name: Check ROS 1 installation
+        run: |
+          ls -l /opt/ros/noetic
+
       - name: Download xTypes
         run: |
           git clone --recursive https://github.com/eProsima/xtypes.git src/xtypes
@@ -72,7 +76,8 @@ jobs:
         working-directory: ./src/integration-service/examples/utils/ros1/catkin_ws
         run: |
           . /opt/ros/noetic/setup.sh
-          catkin_make -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
+          catkin_make --pkg example_interfaces -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
+          catkin_make --pkg add_two_ints_server -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
 
       - name: Build
         run: |

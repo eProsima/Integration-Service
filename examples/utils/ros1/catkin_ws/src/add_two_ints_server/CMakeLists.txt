@@ -101,12 +101,12 @@ find_package(example_interfaces REQUIRED)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-#catkin_package(
+catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES add_two_ints_server
 #  CATKIN_DEPENDS example_interfaces
 #  DEPENDS system_lib
-#)
+)
 
 ###########
 ## Build ##
@@ -116,9 +116,9 @@ find_package(example_interfaces REQUIRED)
 ## Your package locations should be listed before other locations
 include_directories(
 # include
+    ${catkin_INCLUDE_DIRS}
     ${roscpp_INCLUDE_DIRS}
     ${example_interfaces_INCLUDE_DIRS}
-#${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -169,9 +169,9 @@ target_link_libraries(${PROJECT_NAME}_node
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-#install(TARGETS ${PROJECT_NAME}_node
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
+install(TARGETS ${PROJECT_NAME}_node
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html

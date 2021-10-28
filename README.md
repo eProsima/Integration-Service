@@ -38,6 +38,12 @@ It is recommended to use [colcon](https://colcon.readthedocs.io/en/released/) to
 *Integration Service* executable and its associated middleware plugins; for more information, please refer to
 the `Installation manual` section in the [documentation](#documentation) chapter of this document.
 
+# Quick start
+
+Download [here](https://www.eprosima.com/index.php/downloads-all) the *Integration Service* docker image that contains
+pre-installed *Fast DDS*, *ROS 1*, *ROS 2* and *WebSocket System Handles* and the
+[documentation examples](https://integration-service.docs.eprosima.com/en/latest/examples/dockers/dockers.html). 
+
 # Dependencies
 
 This section provides a list of the dependencies needed in order to compile *Integration Service*.
