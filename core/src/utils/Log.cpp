@@ -135,9 +135,9 @@ Logger& Logger::operator <<(
 
 //==============================================================================
 Logger& Logger::operator <<(
-        std::basic_ostream<char, std::char_traits<char> >&
+        std::basic_ostream<char, std::char_traits<char>>&
         (*func)(
-            std::basic_ostream<char, std::char_traits<char> >&))
+            std::basic_ostream<char, std::char_traits<char>>&))
 {
     switch (_status)
     {
