@@ -453,7 +453,11 @@ function(_is_configure_mix_package)
   set(plugin_library_extension $<IF:$<PLATFORM_ID:Windows>,"dll","dl">)
 
   set(plugin_library_target ${mix_target})
-  set(plugin_library_directory ../../../..)
+  if ("${middleware}" STREQUAL "ros2")
+    set(plugin_library_directory ../../../../..)
+  else()
+    set(plugin_library_directory ../../../..)
+  endif()
   set(_plugin_library_gen_template "${CMAKE_BINARY_DIR}/is/${_ARG_IDL_TYPE}/${middleware}/${package}.mix.gen")
   configure_file(
     ${IS_TEMPLATE_DIR}/plugin_library.mix.in
@@ -462,7 +466,11 @@ function(_is_configure_mix_package)
   )
 
   set(mix_build_dir "${library_build_dir}/is")
-  set(mix_msg_build_dir "${mix_build_dir}/${middleware}/msg/${package}")
+  if ("${middleware}" STREQUAL "ros2")
+    set(mix_msg_build_dir "${mix_build_dir}/${middleware}/msg/${package}/msg")
+  else()
+    set(mix_msg_build_dir "${mix_build_dir}/${middleware}/msg/${package}")
+  endif()
   foreach(msg_type ${_${package}_msg_types})
     file(GENERATE
       OUTPUT ${mix_msg_build_dir}/${msg_type}.mix
@@ -470,7 +478,11 @@ function(_is_configure_mix_package)
     )
   endforeach()
 
-  set(mix_srv_build_dir "${mix_build_dir}/${middleware}/srv/${package}")
+  if ("${middleware}" STREQUAL "ros2")
+    set(mix_srv_build_dir "${mix_build_dir}/${middleware}/srv/${package}/srv")
+  else()
+    set(mix_srv_build_dir "${mix_build_dir}/${middleware}/srv/${package}")
+  endif()
   foreach(srv_type ${_${package}_srv_types})
     file(GENERATE
       OUTPUT ${mix_srv_build_dir}/${srv_type}.mix
