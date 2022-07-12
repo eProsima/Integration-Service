@@ -21,6 +21,7 @@
 #include <is/systemhandle/SystemHandle.hpp>
 
 #include <iostream>
+#include <thread>
 
 // TODO(@jamoralp): Document doxygen
 // TODO(@jamoralp): Add logger
