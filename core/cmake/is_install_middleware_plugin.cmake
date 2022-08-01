@@ -24,6 +24,7 @@
 #   [DEPENDENCIES <middleware dependencies>]
 #   [EXTENSIONS   <files_of_config_extensions>]
 #   [BUILD_DIR    <relative_directory>]
+#   [ALIAS        <system_alias>]
 # )
 #
 # MIDDLEWARE: The name of the middleware. The resulting package will be called
@@ -51,6 +52,9 @@
 # BUILD_DIR: The absolute path where the mix files for this middleware should be
 # configured and where the library will be placed. If this argument is not
 # specified, the default will be ${CMAKE_BINARY_DIR}/is/<middleware-name>/lib.
+#
+# ALIAS: The alias given in this parameter will be used as other name for the
+# middleware and will create the .mix file associated.
 include(GNUInstallDirs)
 
 function(is_install_middleware_plugin)
@@ -60,104 +64,112 @@ function(is_install_middleware_plugin)
     _ARG # prefix
     "NO_CONFIG" # options
     "MIDDLEWARE;TARGET;BUILD_DIR" # one-value arguments
-    "TYPES;DEPENDENCIES;EXTENSIONS" # multi-value arguments
+    "TYPES;DEPENDENCIES;EXTENSIONS;ALIAS" # multi-value arguments
     ${ARGN}
   )
 
-  set(middleware ${_ARG_MIDDLEWARE})
-  set(plugin_library_target ${_ARG_TARGET})
+  message(STATUS "#! is_install_middleware_plugin called with aliases ${_ARG_ALIAS}")
 
-  if(NOT _ARG_TYPES)
-    set(system_types ${middleware})
-  else()
-    set(system_types ${_ARG_TYPES})
-  endif()
+  # Make the process once per valid name of the middleware
+  set(_MIDDLEWARE_ALIASES ${_ARG_MIDDLEWARE} ${_ARG_ALIAS})
+  foreach(middleware_name ${_MIDDLEWARE_ALIASES})
 
-  install(
-    TARGETS ${plugin_library_target}
-    EXPORT  ${plugin_library_target}
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    COMPONENT ${plugin_library_target}
-  )
+    set(middleware ${middleware_name})
+    set(plugin_library_target ${_ARG_TARGET})
 
-  if(_ARG_BUILD_DIR)
-    set(mix_build_dir "${_ARG_BUILD_DIR}")
-  else()
-    set(mix_build_dir "${CMAKE_BINARY_DIR}/is/${middleware}/lib")
-  endif()
-
-  set_target_properties(${plugin_library_target} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${mix_build_dir}
-  )
-
-  set(plugin_library_extension $<IF:$<PLATFORM_ID:Windows>,"dll","dl">)
-
-  foreach(type ${system_types})
-    set(plugin_library_mix_template "${mix_build_dir}/is/${type}/${type}.mix.gen")
-    set(plugin_library_directory "../..")
-    configure_file(
-      "${IS_TEMPLATE_DIR}/plugin_library.mix.in"
-      "${plugin_library_mix_template}"
-      @ONLY
-    )
-
-    set(plugin_library_mix "${mix_build_dir}/is/${type}/${type}.mix")
-    set(plugin_library_install_mix "${CMAKE_INSTALL_PREFIX}/lib/is/${type}/${type}.mix")
-
-    file(GENERATE
-      OUTPUT ${plugin_library_mix}
-      INPUT  ${plugin_library_mix_template}
-    )
-
-    file(GENERATE
-      OUTPUT ${plugin_library_install_mix}
-      INPUT  ${plugin_library_mix_template}
-    )
-
-  endforeach()
-
-  if(NOT _ARG_NO_CONFIG)
-
-    set(config_install_dir ${CMAKE_INSTALL_LIBDIR}/cmake/is-${middleware})
-
-    set(extensions)
-    foreach(extension ${_ARG_EXTENSIONS})
-      get_filename_component(ext_filename ${extension} NAME)
-      list(APPEND extensions ${ext_filename})
-    endforeach()
-
-    export(
-      TARGETS
-        ${plugin_library_target}
-      FILE
-        ${CMAKE_INSTALL_PREFIX}/lib/cmake/is-${middleware}/${plugin_library_target}-target.cmake
-      NAMESPACE is::
-    )
-
-    include(CMakePackageConfigHelpers)
-    set(config_file_input "${IS_TEMPLATE_DIR}/middleware-config.cmake.in")
-    set(config_file_output "${mix_build_dir}/is-${middleware}Config.cmake")
-    configure_package_config_file(
-      ${config_file_input}
-      ${config_file_output}
-      INSTALL_DESTINATION ${config_install_dir}
-    )
-
-    file(
-      COPY
-        ${config_file_output}
-      DESTINATION
-        ${CMAKE_INSTALL_PREFIX}/lib/cmake/is-${middleware}
-    )
-
-    if(_ARG_EXTENSIONS)
-      install(
-        FILES ${_ARG_EXTENSIONS}
-        DESTINATION ${config_install_dir}/extensions
-        COMPONENT ${plugin_library_target}
-      )
+    if(NOT _ARG_TYPES)
+        set(system_types ${middleware})
+    else()
+        set(system_types ${_ARG_TYPES})
     endif()
 
-  endif()
+    install(
+        TARGETS ${plugin_library_target}
+        EXPORT  ${plugin_library_target}
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        COMPONENT ${plugin_library_target}
+    )
+
+    if(_ARG_BUILD_DIR)
+        set(mix_build_dir "${_ARG_BUILD_DIR}")
+    else()
+        set(mix_build_dir "${CMAKE_BINARY_DIR}/is/${middleware}/lib")
+    endif()
+
+    set_target_properties(${plugin_library_target} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${mix_build_dir}
+    )
+
+    set(plugin_library_extension $<IF:$<PLATFORM_ID:Windows>,"dll","dl">)
+
+    foreach(type ${system_types})
+        set(plugin_library_mix_template "${mix_build_dir}/is/${type}/${type}.mix.gen")
+        set(plugin_library_directory "../..")
+        configure_file(
+        "${IS_TEMPLATE_DIR}/plugin_library.mix.in"
+        "${plugin_library_mix_template}"
+        @ONLY
+        )
+
+        set(plugin_library_mix "${mix_build_dir}/is/${type}/${type}.mix")
+        set(plugin_library_install_mix "${CMAKE_INSTALL_PREFIX}/lib/is/${type}/${type}.mix")
+
+        file(GENERATE
+        OUTPUT ${plugin_library_mix}
+        INPUT  ${plugin_library_mix_template}
+        )
+
+        file(GENERATE
+        OUTPUT ${plugin_library_install_mix}
+        INPUT  ${plugin_library_mix_template}
+        )
+
+    endforeach()
+
+    if(NOT _ARG_NO_CONFIG)
+
+        set(config_install_dir ${CMAKE_INSTALL_LIBDIR}/cmake/is-${middleware})
+
+        set(extensions)
+        foreach(extension ${_ARG_EXTENSIONS})
+        get_filename_component(ext_filename ${extension} NAME)
+        list(APPEND extensions ${ext_filename})
+        endforeach()
+
+        export(
+        TARGETS
+            ${plugin_library_target}
+        FILE
+            ${CMAKE_INSTALL_PREFIX}/lib/cmake/is-${middleware}/${plugin_library_target}-target.cmake
+        NAMESPACE is::
+        )
+
+        include(CMakePackageConfigHelpers)
+        set(config_file_input "${IS_TEMPLATE_DIR}/middleware-config.cmake.in")
+        set(config_file_output "${mix_build_dir}/is-${middleware}Config.cmake")
+        configure_package_config_file(
+        ${config_file_input}
+        ${config_file_output}
+        INSTALL_DESTINATION ${config_install_dir}
+        )
+
+        file(
+        COPY
+            ${config_file_output}
+        DESTINATION
+            ${CMAKE_INSTALL_PREFIX}/lib/cmake/is-${middleware}
+        )
+
+        if(_ARG_EXTENSIONS)
+        install(
+            FILES ${_ARG_EXTENSIONS}
+            DESTINATION ${config_install_dir}/extensions
+            COMPONENT ${plugin_library_target}
+        )
+        endif()
+
+    endif()
+
+  endforeach()
 
 endfunction()
