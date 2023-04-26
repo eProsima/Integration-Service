@@ -23,8 +23,12 @@ jobs:
   integration-service_CI:
     strategy:
       matrix:
-        node: [foxy, galactic]
-    runs-on: ubuntu-20.04
+        node: [foxy, galactic, humble]
+        include:
+          - os: ubuntu-20.04
+          - os: ubuntu-22.04
+            node: humble
+    runs-on: ${{ matrix.os }}
     container: ros:${{ matrix.node }}
 
     steps:
@@ -36,30 +40,56 @@ jobs:
       - name: Download required dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev libyaml-cpp-dev libwebsocketpp-dev libssl-dev libcurlpp-dev libasio-dev libcurl4-openssl-dev ros-${{ matrix.node }}-fastrtps ros-${{ matrix.node }}-rmw-fastrtps-cpp
+          DEBIAN_FRONTEND=noninteractive apt install -y curl git libboost-dev libboost-program-options-dev \
+                          libyaml-cpp-dev libwebsocketpp-dev libssl-dev libcurlpp-dev libasio-dev libcurl4-openssl-dev
 
       - name: Download and install ROS 1 Noetic
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
+          # Note there are not Noetic binaries for jammy
           echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
           apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-          curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
+          curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' \
+               | sudo apt-key add -
           apt update && apt install -y ros-noetic-ros-base
 
-      - name: Check ROS 1 installation
+      - name: Download and install ROS 2 ${{ matrix.node }}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
-          ls -l /opt/ros/noetic
+          apt install -y ros-${{ matrix.node }}-fastrtps ros-${{ matrix.node }}-rmw-fastrtps-cpp
+
+      - name: Download and install ROS 2 ${{ matrix.node }}
+        if: ${{ matrix.os != 'ubuntu-20.04' }}
+        run: |
+          apt install -y libboost-system-dev software-properties-common
+          add-apt-repository -y universe
+          curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+               -o /usr/share/keyrings/ros-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg]" \
+               "http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
+               > /etc/apt/sources.list.d/ros2.list
+          apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y python3-colcon-common-extensions python3-colcon-mixin python3-vcstool \
+          ros-${{ matrix.node }}-fastrtps ros-${{ matrix.node }}-rmw-fastrtps-cpp ros-${{ matrix.node }}-rclcpp \
+          ros-${{ matrix.node }}-nav-msgs ros-${{ matrix.node }}-geometry-msgs ros-${{ matrix.node }}-ros2pkg
+
+      - name: Check ROS 2 installation
+        run: |
+          . /opt/ros/${{ matrix.node }}/setup.sh
+          ros2 pkg list
 
       - name: Download the Integration Service Fast DDS SystemHandle
         run: |
-          git clone https://github.com/eProsima/FastDDS-SH.git src/fastdds-sh
+          git clone https://github.com/eProsima/FastDDS-SH.git src/fastdds-sh --branch hotfix/qualification
 
       - name: Download the Integration Service ROS 1 SystemHandle
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           git clone https://github.com/eProsima/ROS1-SH.git src/ros1-sh
 
       - name: Download the Integration Service ROS 2 SystemHandle
         run: |
-          git clone https://github.com/eProsima/ROS2-SH.git src/ros2-sh
+          git clone https://github.com/eProsima/ROS2-SH.git src/ros2-sh --branch hotfix/test_includes
 
       - name: Download the Integration Service WebSocket SystemHandle
         run: |
@@ -70,6 +100,7 @@ jobs:
           git clone https://github.com/eProsima/FIWARE-SH.git src/fiware-sh
 
       - name: Install ROS 1 example_interfaces package
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         working-directory: ./src/integration-service/examples/utils/ros1/catkin_ws
         run: |
           . /opt/ros/noetic/setup.sh
@@ -77,6 +108,7 @@ jobs:
           catkin_make --pkg add_two_ints_server -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
 
       - name: Build under ROS1 overlay
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           . /opt/ros/noetic/setup.sh
           colcon build --event-handler=console_direct+ \
@@ -102,6 +134,7 @@ jobs:
           colcon test-result
 
       - name: Test the Integration Service ROS 1 SystemHandle
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           . /opt/ros/noetic/setup.sh
           roscore &
