@@ -76,12 +76,19 @@ jobs:
           catkin_make --pkg example_interfaces -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
           catkin_make --pkg add_two_ints_server -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
 
-      - name: Build
+      - name: Build under ROS1 overlay
+        run: |
+          . /opt/ros/noetic/setup.sh
+          colcon build --event-handler=console_direct+ \
+            --packages-up-to-regex is-ros1 \
+            --cmake-args -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
+
+      - name: Build under ROS2 overlay
         run: |
           . /opt/ros/${{ matrix.node }}/setup.sh
-          colcon build --packages-skip-regex is-ros1 --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
-          . /opt/ros/noetic/setup.sh
-          colcon build --cmake-args -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DIS_ROS2_DISTRO=${{ matrix.node }} --event-handlers console_direct+
+          colcon build --event-handler=console_direct+ \
+            --packages-skip-regex is-ros1 \
+            --cmake-args -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
 
       - name: Test the Integration Service Core
         run: |
@@ -106,7 +113,6 @@ jobs:
 
       - name: Test the Integration Service ROS 2 SystemHandle
         run: |
-          . /opt/ros/${{ matrix.node }}/setup.sh
           . install/setup.sh
           RMW_IMPLEMENTATION=rmw_fastrtps_cpp colcon test --packages-select is-ros2 --event-handlers console_direct+
           colcon test-result
