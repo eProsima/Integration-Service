@@ -28,9 +28,10 @@ jobs:
     container: ros:${{ matrix.node }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/integration-service
+          submodules: 'true'
 
       - name: Download required dependencies
         run: |
@@ -47,10 +48,6 @@ jobs:
       - name: Check ROS 1 installation
         run: |
           ls -l /opt/ros/noetic
-
-      - name: Download xTypes
-        run: |
-          git clone --recursive https://github.com/eProsima/xtypes.git src/xtypes
 
       - name: Download the Integration Service Fast DDS SystemHandle
         run: |
