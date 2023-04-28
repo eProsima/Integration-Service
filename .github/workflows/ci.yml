@@ -19,6 +19,9 @@ on:
       - 'examples/wan_tunneling/*'
       - 'docs/**'
 
+  schedule:
+    - cron:  '0 0 * * 0'
+
 jobs:
   integration-service_CI:
     strategy:
@@ -73,7 +76,7 @@ jobs:
 
       - name: Download the Integration Service Fast DDS SystemHandle
         run: |
-          git clone https://github.com/eProsima/FastDDS-SH.git src/fastdds-sh --branch hotfix/qualification
+          git clone https://github.com/eProsima/FastDDS-SH.git src/fastdds-sh
 
       - name: Download the Integration Service ROS 1 SystemHandle
         if: ${{ matrix.os == 'ubuntu-20.04' }}
@@ -82,7 +85,7 @@ jobs:
 
       - name: Download the Integration Service ROS 2 SystemHandle
         run: |
-          git clone https://github.com/eProsima/ROS2-SH.git src/ros2-sh --branch hotfix/test_includes
+          git clone https://github.com/eProsima/ROS2-SH.git src/ros2-sh
 
       - name: Download the Integration Service WebSocket SystemHandle
         run: |
