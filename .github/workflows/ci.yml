@@ -151,7 +151,16 @@ jobs:
           colcon test --packages-select is-websocket --event-handlers console_direct+
           colcon test-result
 
-      #- name: Test the Integration Service FIWARE SystemHandle
-      #  run: |
-      #    colcon test --packages-select is-fiware --event-handlers console_direct+
-      #    colcon test-result
+      - name: Test the Integration Service FIWARE SystemHandle
+        run: |
+          # launch context-broker in a container
+          docker run -d --rm --name mongo --network host mongo:4.4 --bind_ip_all
+          docker run -d --rm --name broker --network host fiware/orion -dbhost 127.0.0.1
+
+          # launch tests
+          . /opt/ros/${{ matrix.node }}/setup.sh
+          colcon test --packages-select is-fiware --event-handlers console_direct+
+          colcon test-result
+
+          # stop containers
+          docker stop mongo broker
