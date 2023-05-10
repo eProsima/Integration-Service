@@ -1,6 +1,7 @@
 name: CI for eProsima Integration Service
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
