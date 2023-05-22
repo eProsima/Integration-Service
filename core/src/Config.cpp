@@ -1140,7 +1140,7 @@ bool Config::load_middlewares(
             return false;
         }
 
-        bool configured = true;
+        bool configured = false;
 
         /**
          * Now, it iterates the middleware required types map.
@@ -1263,6 +1263,9 @@ bool Config::load_middlewares(
         }
         else
         {
+            logger << utils::Logger::Level::ERROR
+                   << "The middleware '" << mw_name
+                   << " has no types associated" << std::endl;
             return false;
         }
     }
