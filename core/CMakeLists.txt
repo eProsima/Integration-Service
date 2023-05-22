@@ -28,6 +28,8 @@ option(IS_COMPILE_DEBUG "Compile the Integration Service project in debug mode."
 
 option(BUILD_LIBRARY "Compile the Integration Service" ON)
 
+option(IS_XTYPES_THIRDPARTY "Allow to download thirdparty xtypes repository when needed." ON)
+
 if(DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE_LOWERCASE "" CACHE STRING "Build type to lowercase")
     string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWERCASE)
@@ -56,7 +58,33 @@ endif()
 # External dependencies for the Integration Service Core library
 ###############################################################################
 if(BUILD_LIBRARY)
-  find_package(xtypes REQUIRED)
+  find_package(xtypes QUIET)
+
+  # if not externally provided use the thirdparty as external project
+  if(IS_XTYPES_THIRDPARTY AND NOT xtypes_FOUND)
+    message(STATUS "Updating submodules")
+    execute_process(
+        COMMAND git submodule update --init
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../
+        RESULT_VARIABLE EXECUTE_RESULT
+    )
+
+    if(NOT EXECUTE_RESULT EQUAL 0)
+        message(ERROR "Cannot update git submodules and xtypes are missing")
+    else()
+        include(ExternalProject)
+
+        ExternalProject_Add(xtypes-ext
+            SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/xtypes
+            INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+            CMAKE_ARGS
+              -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+              -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+              -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>/xtypes
+        )
+    endif()
+  endif()
 
   find_package(yaml-cpp REQUIRED)
 
@@ -81,6 +109,36 @@ if(BUILD_LIBRARY)
       src/Config.cpp
       src/Instance.cpp
   )
+
+  # if xtypes is not available use the ExternalProject
+  if(TARGET xtypes-ext)
+
+      # force the build
+      add_dependencies(${PROJECT_NAME} xtypes-ext)
+
+      # mimick xtypes target properties
+      # propagation is required for tools, utils and System Handles 
+      target_compile_features(${PROJECT_NAME}
+          INTERFACE
+              cxx_std_17
+              cxx_variadic_macros
+      )
+
+      ExternalProject_Get_Property(xtypes-ext INSTALL_DIR)
+  
+      target_include_directories(${PROJECT_NAME}
+        PUBLIC
+          ${INSTALL_DIR}/xtypes/include
+          ${INSTALL_DIR}/xtypes/thirdparty/cpp-peglib/include)
+  
+      if(MSVC)
+          target_compile_options(${PROJECT_NAME}
+            PUBLIC
+                /Zc:preprocessor
+                /execution-charset:UTF-8)
+      endif(MSVC)
+
+  endif()
 
   if (Sanitizers_FOUND)
     add_sanitizers(${PROJECT_NAME})
@@ -127,7 +185,7 @@ if(BUILD_LIBRARY)
   target_link_libraries(${PROJECT_NAME}
     PUBLIC
       yaml-cpp
-      xtypes
+      $<TARGET_NAME_IF_EXISTS:xtypes>
     PRIVATE
       Boost::program_options
       $<$<PLATFORM_ID:Linux>:dl>
@@ -139,7 +197,6 @@ if(BUILD_LIBRARY)
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-      #$<INSTALL_INTERFACE:${xtypes_INCLUDE_DIR}>  #propagate the xtypes headers
   )
 
   target_compile_definitions(${PROJECT_NAME}
