@@ -19,6 +19,7 @@
 #include <is/core/Config.hpp>
 #include <is/systemhandle/SystemHandle.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 namespace eprosima {
@@ -406,8 +407,8 @@ bool add_topic_or_service_config(
         const YAML::Node& node,
         const std::map<std::string, RouteType>& predefined_routes,
         std::map<std::string, ConfigType>& config_map,
-        std::function<void(ConfigType&, std::string &&)> set_type,
-        std::function<void(ConfigType&, std::string &&)> set_reply_type,
+        std::function<void(ConfigType&, std::string&&)> set_type,
+        std::function<void(ConfigType&, std::string&&)> set_reply_type,
         std::function<void(ConfigType&, const RouteType&)> set_route,
         std::function<std::unique_ptr<RouteType>(const YAML::Node&)> parse_route)
 {
@@ -1140,8 +1141,6 @@ bool Config::load_middlewares(
             return false;
         }
 
-        bool configured = false;
-
         /**
          * Now, it iterates the middleware required types map.
          * For each middleware, it checks which types it needs, and places them into
@@ -1245,27 +1244,40 @@ bool Config::load_middlewares(
                     }
                 }
             }
-
-            /**
-             * Finally, now that the SystemHandleInfo struct is filled with all its types, it
-             * calls to the SystemHandle::configure override function for the selected middleware.
-             */
-            configured = info.handle->configure(
-                requirements->second, mw_config.config_node, info.types);
+        }
+        else
+        {
+            // Check if another middleware relies on types builtin or dynamically loaded by the middleware but not
+            // explicit in the configuration file
+            if ( middlewares.end() ==
+                    std::find_if(middlewares.begin(), middlewares.end(), [&mw_name](const Entry& mw)
+                    {
+                        auto& from = mw.second.types_from;
+                        return mw_name != mw.first && std::find(from.begin(), from.end(), mw_name) != from.end();
+                    }))
+            {
+                logger << utils::Logger::Level::ERROR
+                       << "The middleware '" << mw_name
+                       << "' has no types associated" << std::endl;
+                return false;
+            }
         }
 
         /**
-         * If the middleware was correctly configured, it inserts it within the info_map.
+         * Finally, now that the SystemHandleInfo struct is filled with all its types, it
+         * calls to the SystemHandle::configure override function for the selected middleware.
          */
-        if (configured)
+        if ( info.handle->configure(
+                    requirements->second, mw_config.config_node, info.types))
         {
+            // If the middleware was correctly configured, it inserts it within the info_map.
             info_map.insert(std::make_pair(mw_name, std::move(info)));
         }
         else
         {
             logger << utils::Logger::Level::ERROR
                    << "The middleware '" << mw_name
-                   << " has no types associated" << std::endl;
+                   << "' configuration step failed" << std::endl;
             return false;
         }
     }
