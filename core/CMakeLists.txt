@@ -82,6 +82,7 @@ if(BUILD_LIBRARY)
               -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
               -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>/xtypes
+              -DXTYPES_BUILD_TOOLS=ON
         )
     endif()
   endif()
@@ -125,6 +126,11 @@ if(BUILD_LIBRARY)
       )
 
       ExternalProject_Get_Property(xtypes-ext INSTALL_DIR)
+
+      set_target_properties(xtypes-ext PROPERTIES
+        IDL_VALIDATOR_PATH 
+           ${INSTALL_DIR}/xtypes/bin/xtypes_idl_validator${CMAKE_EXECUTABLE_SUFFIX}
+        )
   
       target_include_directories(${PROJECT_NAME}
         PUBLIC
@@ -284,14 +290,23 @@ if(BUILD_LIBRARY)
     EXPORT
       integration-serviceTargets
     RUNTIME
-      DESTINATION ${BIN_INSTALL_DIR}
+      DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY
-      DESTINATION ${LIB_INSTALL_DIR}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE
-      DESTINATION ${LIB_INSTALL_DIR}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
     COMPONENT
       executables
     )
+
+  # Install the xtypes tools if used as thirdparty: this way they are accessible via colcon overlay
+  if(TARGET xtypes-ext)
+    install(PROGRAMS
+        $<TARGET_PROPERTY:xtypes-ext,IDL_VALIDATOR_PATH> 
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+        COMPONENT executables
+      )
+  endif()
 
   # Install core middleware extension development tools
   install(
