@@ -32,6 +32,8 @@
 # TARGET: The target for the library that should be loaded for this middleware.
 # TODO(MXG): See about supporting multiple libraries per middleware.
 #
+# INTERFACES: Optional list of interface targets required to be deployed on installation
+#
 # TYPES: Optional list of names of system types that this middleware supports.
 # If this argument is not provided, then we will assume that the middleware only
 # provides a system called <middleware_name>.
@@ -60,12 +62,13 @@ function(is_install_middleware_plugin)
     _ARG # prefix
     "NO_CONFIG" # options
     "MIDDLEWARE;TARGET;BUILD_DIR" # one-value arguments
-    "TYPES;DEPENDENCIES;EXTENSIONS" # multi-value arguments
+    "INTERFACES;TYPES;DEPENDENCIES;EXTENSIONS" # multi-value arguments
     ${ARGN}
   )
 
   set(middleware ${_ARG_MIDDLEWARE})
   set(plugin_library_target ${_ARG_TARGET})
+  string (REPLACE ";" " " interfaces "${_ARG_INTERFACES}")
 
   if(NOT _ARG_TYPES)
     set(system_types ${middleware})
@@ -74,7 +77,7 @@ function(is_install_middleware_plugin)
   endif()
 
   install(
-    TARGETS ${plugin_library_target}
+    TARGETS ${plugin_library_target} ${interfaces}
     EXPORT  ${plugin_library_target}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
     COMPONENT ${plugin_library_target}
@@ -129,6 +132,7 @@ function(is_install_middleware_plugin)
     export(
       TARGETS
         ${plugin_library_target}
+        ${interfaces}
       FILE
         ${CMAKE_INSTALL_PREFIX}/lib/cmake/is-${middleware}/${plugin_library_target}-target.cmake
       NAMESPACE is::
