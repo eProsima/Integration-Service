@@ -108,3 +108,6 @@ ENV/
 .catkin_workspace
 devel/
 build/
+
+# vscode
+.txt.user
