@@ -1088,6 +1088,7 @@ bool Config::load_middlewares(
      */
     for (const auto& [mw_name, mw_config] : middlewares)
     {
+        const auto& ref_mw_name = mw_name;
         const std::string& middleware_type = mw_config.type;
 
         logger << utils::Logger::Level::DEBUG
@@ -1250,10 +1251,10 @@ bool Config::load_middlewares(
             // Check if another middleware relies on types builtin or dynamically loaded by the middleware but not
             // explicit in the configuration file
             if ( middlewares.end() ==
-                    std::find_if(middlewares.begin(), middlewares.end(), [&mw_name](const Entry& mw)
+                    std::find_if(middlewares.begin(), middlewares.end(), [&ref_mw_name](const Entry& mw)
                     {
                         auto& from = mw.second.types_from;
-                        return mw_name != mw.first && std::find(from.begin(), from.end(), mw_name) != from.end();
+                        return ref_mw_name != mw.first && std::find(from.begin(), from.end(), ref_mw_name) != from.end();
                     }))
             {
                 logger << utils::Logger::Level::ERROR

@@ -159,13 +159,15 @@ public:
              * For each systemhandle, creates a working thread that will check that the
              * SystemHandle instance is alive and calls spin_once() to execute pending work.
              */
+            const auto& ref_mw_name = mw_name;
+            const auto& ref_systemhandle_info = systemhandle_info;
             auto runner = [&]()
                     {
                         ++_active_middlewares;
 
                         while (!interrupted && !_quit)
                         {
-                            const bool okay = systemhandle_info.handle->spin_once();
+                            const bool okay = ref_systemhandle_info.handle->spin_once();
 
                             if (!okay)
                             {
@@ -173,7 +175,7 @@ public:
                                 _return_code = 1;
                                 _logger << utils::Logger::Level::ERROR
                                         << "Runtime Error: SystemHandle of middleware named '"
-                                        << mw_name
+                                        << ref_mw_name
                                         << "' has experienced a failure! We will now quit."
                                         << std::endl;
                             }
