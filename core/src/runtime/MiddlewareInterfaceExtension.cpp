@@ -62,12 +62,6 @@ public:
         assert(std::experimental::filesystem::is_directory(_directory));
     }
 
-    Implementation(
-            const Implementation& /*other*/) = default;
-
-    Implementation(
-            Implementation&& /*other*/) = default;
-
     ~Implementation() = default;
 
     bool load()
