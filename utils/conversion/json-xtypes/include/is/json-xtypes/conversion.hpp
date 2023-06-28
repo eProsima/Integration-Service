@@ -45,19 +45,20 @@ public:
         : std::exception()
         , type_name_(type_name)
     {
+        std::ostringstream err;
+        err << "[json-xtypes] Unsupported type '" << type_name_ << "'";
+        err_str_ = err.str();
     }
 
     const char* what() const noexcept
     {
-        std::ostringstream err;
-        err << "[json-xtypes] Unsupported type '" << type_name_ << "'";
-        return err.str().c_str();
+        return err_str_.c_str();
     }
 
 private:
 
     const std::string type_name_;
-
+    std::string err_str_;
 };
 
 /**
