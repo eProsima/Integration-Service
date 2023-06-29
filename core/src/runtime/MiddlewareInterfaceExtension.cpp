@@ -19,7 +19,7 @@
 #include <is/core/runtime/MiddlewareInterfaceExtension.hpp>
 
 #include <cassert>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <iostream>
 
 #ifdef WIN32
@@ -59,7 +59,7 @@ public:
         , _logger("is::core::Mix")
     {
         assert(_directory.is_absolute());
-        assert(std::experimental::filesystem::is_directory(_directory));
+        assert(std::filesystem::is_directory(_directory));
     }
 
     Implementation(
@@ -104,16 +104,16 @@ private:
      */
     bool load_if_exists(
             const std::string& path,
-            const std::experimental::filesystem::path& relative_to)
+            const std::filesystem::path& relative_to)
     {
-        std::experimental::filesystem::path fpath(path);
+        std::filesystem::path fpath(path);
 
         if (fpath.is_relative())
         {
             fpath = relative_to / fpath;
         }
 
-        if (std::experimental::filesystem::exists(fpath))
+        if (std::filesystem::exists(fpath))
         {
             void* handle = OPEN_DYNAMIC_LIB(fpath.c_str());
             auto loading_error = GET_LAST_ERROR();
@@ -150,7 +150,7 @@ private:
      */
 
     YAML::Node _mix_content;
-    std::experimental::filesystem::path _directory;
+    std::filesystem::path _directory;
     utils::Logger _logger;
 
 };
@@ -182,7 +182,7 @@ MiddlewareInterfaceExtension::~MiddlewareInterfaceExtension()
 MiddlewareInterfaceExtension MiddlewareInterfaceExtension::from_file(
         const std::string& filename)
 {
-    auto parentpath = std::experimental::filesystem::path(filename).parent_path();
+    auto parentpath = std::filesystem::path(filename).parent_path();
     return MiddlewareInterfaceExtension(YAML::LoadFile(filename), parentpath.string());
 }
 

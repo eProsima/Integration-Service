@@ -23,7 +23,7 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <iostream>
 #include <thread>
 
@@ -314,9 +314,9 @@ public:
         else
         {
             _config_file = config_file;
-            const auto abs_config_path = std::experimental::filesystem::absolute(config_file);
+            const auto abs_config_path = std::filesystem::absolute(config_file);
 
-            if (std::experimental::filesystem::exists(abs_config_path))
+            if (std::filesystem::exists(abs_config_path))
             {
                 Search::set_config_file_directory(abs_config_path.parent_path().string());
             }
@@ -465,7 +465,7 @@ public:
         }
 
         _config_file = vm["config-file"].as<std::string>();
-        if (!std::experimental::filesystem::exists(_config_file))
+        if (!std::filesystem::exists(_config_file))
         {
             std::cerr << "The requested config-file does not exist: " << _config_file
                       << std::endl;
@@ -473,7 +473,7 @@ public:
         }
 
         Search::set_config_file_directory(
-            std::experimental::filesystem::absolute(std::experimental::filesystem::path(
+            std::filesystem::absolute(std::filesystem::path(
                 _config_file).parent_path()).string());
 
         return true;
