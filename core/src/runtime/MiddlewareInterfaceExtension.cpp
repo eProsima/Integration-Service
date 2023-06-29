@@ -62,8 +62,6 @@ public:
         assert(std::experimental::filesystem::is_directory(_directory));
     }
 
-    ~Implementation() = default;
-
     bool load()
     {
         bool result = true;
