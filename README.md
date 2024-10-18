@@ -38,11 +38,17 @@ It is recommended to use [colcon](https://colcon.readthedocs.io/en/released/) to
 *Integration Service* executable and its associated middleware plugins; for more information, please refer to
 the `Installation manual` section in the [documentation](#documentation) chapter of this document.
 
+# Commercial support
+
+Looking for commercial support? Write us to info@eprosima.com
+
+Find more about us at [eProsima’s webpage](https://eprosima.com/).
+
 # Quick start
 
 Download [here](https://www.eprosima.com/index.php/downloads-all) the *Integration Service* docker image that contains
 pre-installed *Fast DDS*, *ROS 1*, *ROS 2* and *WebSocket System Handles* and the
-[documentation examples](https://integration-service.docs.eprosima.com/en/latest/examples/dockers/dockers.html). 
+[documentation examples](https://integration-service.docs.eprosima.com/en/latest/examples/dockers/dockers.html).
 
 # Dependencies
 
@@ -439,7 +445,3 @@ and comprises the following sections:
 # License
 
 This repository is open-sourced under the *Apache-2.0* license. See the [LICENSE](LICENSE) file for more details.
-
-# Getting help
-
-If you need support you can reach us by mail at `support@eProsima.com` or by phone at `+34 91 804 34 48`.
